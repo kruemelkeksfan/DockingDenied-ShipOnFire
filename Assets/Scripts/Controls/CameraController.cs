@@ -16,7 +16,7 @@ public class CameraController : MonoBehaviour
 	private void Start()
 	{
 		transform = gameObject.GetComponent<Transform>();
-		//spacecraftTransform = gameObject.GetComponentInParent<Spacecraft>().transform;
+		spacecraftTransform = gameObject.GetComponentInParent<Spacecraft>().transform;
 
 		startPosition = transform.localPosition;
 		startRotation = transform.localRotation;
@@ -48,8 +48,8 @@ public class CameraController : MonoBehaviour
 			}
 
 			float directionMultiplier = Vector3.Dot(transform.rotation * Vector3.forward, Vector3.forward) * 1.2f - 0.2f;												// Turn Camera slower when looking at a flatter Angle
-			transform.RotateAround(Vector3.zero/*spacecraftTransform.position*/, transform.right, -Input.GetAxis("Mouse Y") * rotationSpeed * directionMultiplier);
-			transform.RotateAround(Vector3.zero/*spacecraftTransform.position*/, transform.up, Input.GetAxis("Mouse X") * rotationSpeed * directionMultiplier);
+			transform.RotateAround(spacecraftTransform.position, transform.right, -Input.GetAxis("Mouse Y") * rotationSpeed * directionMultiplier);
+			transform.RotateAround(spacecraftTransform.position, transform.up, Input.GetAxis("Mouse X") * rotationSpeed * directionMultiplier);
 			transform.position += direction * movementSpeed;
 		}
 		else
@@ -58,7 +58,7 @@ public class CameraController : MonoBehaviour
 			Cursor.lockState = CursorLockMode.None;
 		}
 
-		if(Input.GetButtonUp("Rotation Reset"))
+		if(Input.GetButtonUp("Reset Camera"))
 		{
 			transform.localPosition = startPosition;
 			transform.localRotation = startRotation;
