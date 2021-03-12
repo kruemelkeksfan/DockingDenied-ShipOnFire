@@ -88,14 +88,14 @@ public class AsteroidSpawner : MonoBehaviour
 		asteroid.GetComponent<Rigidbody2D>().velocity = asteroid.CalculateOptimalOrbitalVelocity();											// GetComponent(), because Start() has not yet been called on Asteroid
 
 		Transform asteroidTransform = asteroid.transform;
-		float asteroidExtentsZ = asteroidTransform.GetComponent<Collider2D>().bounds.extents.z;
+		float asteroidExtents = asteroidTransform.GetComponent<Collider2D>().bounds.extents.x;
 		Vector3 asteroidSize = asteroidTransform.localScale;
 		float asteroidHeight = -asteroid.transform.position.z;
 		while(asteroidHeight > 0.0002f && asteroid.gameObject.layer != 10)																	// Check if Asteroid is still in Approach and not decaying yet
 		{
 			if(Time.timeScale > 0.0f)
 			{
-				if(asteroidHeight < asteroidExtentsZ * 0.5f)
+				if(asteroidHeight < asteroidExtents)
 				{
 					asteroid.gameObject.layer = 9;
 				}
