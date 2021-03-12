@@ -16,9 +16,11 @@ public class Spacecraft : MonoBehaviour
 		all
 	};
 
+	[SerializeField] private Transform centerOfMassIndicator = null;
 	private Dictionary<Vector2Int, Module> modules = null;
 	private HashSet<Module> updateListeners = null;
 	private HashSet<Module> fixedUpdateListeners = null;
+	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
 	private HashSet<ThrusterModule>[] thrusters = null;
 
@@ -28,6 +30,7 @@ public class Spacecraft : MonoBehaviour
 		modules.Add(Vector2Int.zero, gameObject.GetComponentInChildren<Module>());
 		updateListeners = new HashSet<Module>();
 		fixedUpdateListeners = new HashSet<Module>();
+		transform = gameObject.GetComponent<Transform>();
 		rigidbody = gameObject.GetComponentInChildren<Rigidbody2D>();
 		thrusters = new HashSet<ThrusterModule>[Enum.GetValues(typeof(ThrusterGroup)).Length];
 		for(int i = 0; i < thrusters.Length; ++i)
@@ -111,6 +114,23 @@ public class Spacecraft : MonoBehaviour
 		}
 
 		return false;
+	}
+
+	public void UpdateModuleMass(Vector2 position, float newMass, float oldMass = 0.0f)
+	{
+		if(rigidbody.mass < 0.0002f)		// Set Rigidbody Mass when updating for the first Time
+		{
+			rigidbody.centerOfMass = position;
+			rigidbody.mass = newMass;
+		}
+		else
+		{
+			float deltaMass = newMass - oldMass;
+			rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (deltaMass / (rigidbody.mass + deltaMass));
+			rigidbody.mass += deltaMass;
+		}
+
+		centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
 	}
 
 	public bool PositionAvailable(Vector2Int position)

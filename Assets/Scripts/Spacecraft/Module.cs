@@ -4,15 +4,15 @@ using UnityEngine;
 
 public class Module : MonoBehaviour
 {
-	[SerializeField] private int mass = 1;
-	[SerializeField] private int hp = 100;
+	[SerializeField] protected int mass = 1;
+	[SerializeField] protected int hp = 100;
 	[SerializeField] private Vector2Int[] reservedPositions = { Vector2Int.zero };
 	[SerializeField] private bool firstPositionNeighboursOnly = false;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
 	protected new Transform transform = null;
 	protected Spacecraft spacecraft = null;
-	private Vector2Int position = Vector2Int.zero;
+	protected Vector2Int position = Vector2Int.zero;
 
 	protected virtual void Awake()
 	{
@@ -30,6 +30,7 @@ public class Module : MonoBehaviour
 		constructed = true;
 		this.position = position;
 		UpdateBuffer(position);
+		spacecraft.UpdateModuleMass(transform.localPosition, mass);
 
 		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
 		{
@@ -45,20 +46,20 @@ public class Module : MonoBehaviour
 			spacecraft.AddFixedUpdateListener(this);
 		}
 	}
+
 	public virtual void Deconstruct()
 	{
-		if(position != Vector2Int.zero)													// Do not allow to remove the Command Module
+		spacecraft.UpdateModuleMass(transform.localPosition, 0.0f, mass);
+
+		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
 		{
-			foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
-			{
-				spacecraft.RemoveModule(bufferedReservedPosition);
-			}
-
-			GameObject.Destroy(gameObject, 0.02f);
-
-			spacecraft.RemoveUpdateListener(this);
-			spacecraft.RemoveFixedUpdateListener(this);
+			spacecraft.RemoveModule(bufferedReservedPosition);
 		}
+
+		GameObject.Destroy(gameObject, 0.02f);
+
+		spacecraft.RemoveUpdateListener(this);
+		spacecraft.RemoveFixedUpdateListener(this);
 	}
 
 	public void Rotate(int direction)
