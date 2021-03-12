@@ -82,7 +82,10 @@ public class BuildingController : MonoBehaviour
 				new Vector3(moduleButtonRectTransform.anchoredPosition.x, -(moduleButtonRectTransform.rect.height * 0.5f + moduleButtonRectTransform.rect.height * i));
 			moduleButton.GetComponentInChildren<Text>().text = moduleNames[i];
 			int localI = i;
-			moduleButton.onClick.AddListener(delegate { SelectModule(localI); });                                                                                               // Seems to pass-by-reference
+			moduleButton.onClick.AddListener(delegate
+			{
+				SelectModule(localI);
+			});                                                                                               // Seems to pass-by-reference
 		}
 
 		inverseBuildingGridSize = 1.0f / buildingGridSize;
@@ -97,82 +100,85 @@ public class BuildingController : MonoBehaviour
 
 	private void Update()
 	{
-		if(currentModule.index >= 0)
+		if(buildingMenu.gameObject.activeSelf)
 		{
-			currentModule.transform.position = camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z));
-			Vector2Int gridPosition = (Vector2Int)Vector3Int.RoundToInt(currentModule.transform.localPosition * inverseBuildingGridSize);
-			currentModule.transform.localPosition = (Vector2)gridPosition * buildingGridSize;
-
-			Vector2Int[] reservedPositions = currentModule.module.GetReservedPositions(gridPosition);
-			for(int i = 0; i < reservedPositions.Length || i < activeReservedZones; ++i)
+			if(currentModule.index >= 0)
 			{
-				if(i < reservedPositions.Length)
+				currentModule.transform.position = camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z));
+				Vector2Int gridPosition = (Vector2Int)Vector3Int.RoundToInt(currentModule.transform.localPosition * inverseBuildingGridSize);
+				currentModule.transform.localPosition = (Vector2)gridPosition * buildingGridSize;
+
+				Vector2Int[] reservedPositions = currentModule.module.GetReservedPositions(gridPosition);
+				for(int i = 0; i < reservedPositions.Length || i < activeReservedZones; ++i)
 				{
-					if(i >= reservedZoneTransforms.Count)
+					if(i < reservedPositions.Length)
 					{
-						reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, transform));
-						reservedZoneTransforms.Add(reservedZoneRenderers[i].GetComponent<Transform>());
+						if(i >= reservedZoneTransforms.Count)
+						{
+							reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, transform));
+							reservedZoneTransforms.Add(reservedZoneRenderers[i].GetComponent<Transform>());
+						}
+						else
+						{
+							reservedZoneTransforms[i].gameObject.SetActive(true);
+						}
+
+						reservedZoneTransforms[i].localPosition = (Vector2)reservedPositions[i] * buildingGridSize;
 					}
-					else
+					else if(i < activeReservedZones)
 					{
-						reservedZoneTransforms[i].gameObject.SetActive(true);
+						reservedZoneTransforms[i].gameObject.SetActive(false);
 					}
-
-					reservedZoneTransforms[i].localPosition = (Vector2)reservedPositions[i] * buildingGridSize;
 				}
-				else if(i < activeReservedZones)
+				activeReservedZones = reservedPositions.Length;
+
+				if(spacecraft.PositionsAvailable(reservedPositions, currentModule.module.GetFirstPositionNeighboursOnly())
+					&& Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z) == null)
 				{
-					reservedZoneTransforms[i].gameObject.SetActive(false);
+					currentModule.buildable = true;
+					currentModule.meshRenderer.material = blueprintMaterial;
+					for(int i = 0; i < activeReservedZones; ++i)
+					{
+						reservedZoneRenderers[i].material = zoneBlueprintMaterial;
+					}
 				}
-			}
-			activeReservedZones = reservedPositions.Length;
-
-			if(spacecraft.PositionsAvailable(reservedPositions, currentModule.module.GetFirstPositionNeighboursOnly())
-				&& Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z) == null)
-			{
-				currentModule.buildable = true;
-				currentModule.meshRenderer.material = blueprintMaterial;
-				for(int i = 0; i < activeReservedZones; ++i)
+				else
 				{
-					reservedZoneRenderers[i].material = zoneBlueprintMaterial;
+					currentModule.buildable = false;
+					currentModule.meshRenderer.material = invalidMaterial;
+					for(int i = 0; i < activeReservedZones; ++i)
+					{
+						reservedZoneRenderers[i].material = zoneInvalidMaterial;
+					}
 				}
-			}
-			else
-			{
-				currentModule.buildable = false;
-				currentModule.meshRenderer.material = invalidMaterial;
-				for(int i = 0; i < activeReservedZones; ++i)
+
+				if(Input.GetButtonUp("Rotate Left"))
 				{
-					reservedZoneRenderers[i].material = zoneInvalidMaterial;
+					rotation = ((rotation - 1) + 4) % 4;
+					currentModule.module.Rotate(rotation);
+				}
+				if(Input.GetButtonUp("Rotate Right"))
+				{
+					rotation = (rotation + 1) % 4;
+					currentModule.module.Rotate(rotation);
+				}
+				if(Input.GetButtonUp("Place Module") && currentModule.buildable && !EventSystem.current.IsPointerOverGameObject())
+				{
+					currentModule.module.Build(gridPosition);
+					currentModule.collider.enabled = true;
+					currentModule.meshRenderer.material = moduleMaterial;
+					currentModule.transform.localScale = currentModule.scale;
+
+					SpawnBlueprint(currentModule.index);
 				}
 			}
 
-			if(Input.GetButtonUp("Rotate Left"))
+			if(Input.GetButtonUp("Remove Module") && !EventSystem.current.IsPointerOverGameObject())
 			{
-				rotation = ((rotation - 1) + 4) % 4;
-				currentModule.module.Rotate(rotation);
+				Vector2Int gridPosition = (Vector2Int)Vector3Int.RoundToInt(
+					transform.InverseTransformPoint(camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z))) * inverseBuildingGridSize);
+				spacecraft.GetModule(gridPosition)?.Deconstruct();
 			}
-			if(Input.GetButtonUp("Rotate Right"))
-			{
-				rotation = (rotation + 1) % 4;
-				currentModule.module.Rotate(rotation);
-			}
-			if(Input.GetButtonUp("Place Module") && currentModule.buildable && !EventSystem.current.IsPointerOverGameObject())
-			{
-				currentModule.module.Build(gridPosition);
-				currentModule.collider.enabled = true;
-				currentModule.meshRenderer.material = moduleMaterial;
-				currentModule.transform.localScale = currentModule.scale;
-
-				SpawnBlueprint(currentModule.index);
-			}
-		}
-
-		if(Input.GetButtonUp("Remove Module") && !EventSystem.current.IsPointerOverGameObject())
-		{
-			Vector2Int gridPosition = (Vector2Int)Vector3Int.RoundToInt(
-				transform.InverseTransformPoint(camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z))) * inverseBuildingGridSize);
-			spacecraft.GetModule(gridPosition)?.Deconstruct();
 		}
 	}
 
