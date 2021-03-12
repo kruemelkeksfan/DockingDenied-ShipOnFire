@@ -49,7 +49,7 @@ public class Module : MonoBehaviour
 
 	public virtual void Deconstruct()
 	{
-		spacecraft.UpdateModuleMass(transform.localPosition, 0.0f, mass);
+		spacecraft.UpdateModuleMass(transform.localPosition, -mass);
 
 		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
 		{

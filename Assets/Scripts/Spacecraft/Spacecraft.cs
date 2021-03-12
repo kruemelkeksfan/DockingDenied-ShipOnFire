@@ -116,18 +116,17 @@ public class Spacecraft : MonoBehaviour
 		return false;
 	}
 
-	public void UpdateModuleMass(Vector2 position, float newMass, float oldMass = 0.0f)
+	public void UpdateModuleMass(Vector2 position, float massDifference)
 	{
 		if(rigidbody.mass < 0.0002f)		// Set Rigidbody Mass when updating for the first Time
 		{
 			rigidbody.centerOfMass = position;
-			rigidbody.mass = newMass;
+			rigidbody.mass = massDifference;
 		}
 		else
 		{
-			float deltaMass = newMass - oldMass;
-			rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (deltaMass / (rigidbody.mass + deltaMass));
-			rigidbody.mass += deltaMass;
+			rigidbody.mass += massDifference;
+			rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass));
 		}
 
 		centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
