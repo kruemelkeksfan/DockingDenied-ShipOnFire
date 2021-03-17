@@ -522,9 +522,11 @@ MonoBehaviour:
   moduleNames:
   - Command Module
   - Thruster
+  - Construction Module
   modulePrefabs:
   - {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193, type: 3}
   - {fileID: 9191871534577045455, guid: 39b80cf02a8186247930968442a2b2a5, type: 3}
+  - {fileID: 6033598934764924008, guid: d79625a9fa7875744b399f9a17a614db, type: 3}
   blueprintMaterial: {fileID: 2100000, guid: 8a8114a196b0a50459ee13a3fed5232b, type: 2}
   invalidMaterial: {fileID: 2100000, guid: 5f41256e2b813fe47b3998b062d4ba53, type: 2}
   moduleMaterial: {fileID: 2100000, guid: 227b28b9a4209d64cb0db76ed25d8e59, type: 2}
@@ -570,7 +572,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 602146988}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: fd9a49a73d7381d49825f79961a8e26a, type: 3}
   m_Name: 

@@ -150,7 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a65f09f63bcc1540983b64339a4f9c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mass: 1
+  mass: 60
   hp: 100
   reservedPositions:
   - {x: 0, y: 0}
