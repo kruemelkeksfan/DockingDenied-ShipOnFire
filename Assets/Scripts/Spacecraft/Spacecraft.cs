@@ -16,28 +16,42 @@ public class Spacecraft : MonoBehaviour
 		all
 	};
 
+	[SerializeField] private Module[] essentialModules = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
 	private Dictionary<Vector2Int, Module> modules = null;
 	private HashSet<Module> updateListeners = null;
 	private HashSet<Module> fixedUpdateListeners = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
+	private BuildingController buildingController = null;
 	private HashSet<ThrusterModule>[] thrusters = null;
 
 	private void Awake()
 	{
 		modules = new Dictionary<Vector2Int, Module>();
-		modules.Add(Vector2Int.zero, gameObject.GetComponentInChildren<Module>());
 		updateListeners = new HashSet<Module>();
 		fixedUpdateListeners = new HashSet<Module>();
 		transform = gameObject.GetComponent<Transform>();
 		rigidbody = gameObject.GetComponentInChildren<Rigidbody2D>();
+		buildingController = gameObject.GetComponent<BuildingController>();
+
 		thrusters = new HashSet<ThrusterModule>[Enum.GetValues(typeof(ThrusterGroup)).Length];
 		for(int i = 0; i < thrusters.Length; ++i)
 		{
 			thrusters[i] = new HashSet<ThrusterModule>();
 		}
+
 		rigidbody.centerOfMass = Vector2.zero;
+	}
+
+	private void Start()
+	{
+		Vector2Int position = Vector2Int.zero;
+		for(int i = 0; i < essentialModules.Length; ++i)
+		{
+			GameObject.Instantiate<Module>(essentialModules[i], transform).Build(position);
+			position += Vector2Int.down;
+		}
 	}
 
 	private void Update()
@@ -54,6 +68,25 @@ public class Spacecraft : MonoBehaviour
 		{
 			module.FixedUpdateNotify();
 		}
+	}
+
+	public void SaveBlueprint(string blueprintFolderName, string blueprintName)
+	{
+		SpacecraftBlueprintController.SaveBlueprint(blueprintFolderName, blueprintName, modules);
+	}
+
+	public void LoadBlueprint(string blueprintPath, Dictionary<string, Module> modulePrefabDictionary)
+	{
+		List<Vector2Int> moduleKeys = new List<Vector2Int>(modules.Keys);
+		foreach(Vector2Int position in moduleKeys)
+		{
+			if(modules.ContainsKey(position) && modules[position].GetPosition() == position)
+			{
+				modules[position].Deconstruct();
+			}
+		}
+
+		SpacecraftBlueprintController.LoadBlueprint(blueprintPath, modulePrefabDictionary, transform);
 	}
 
 	public void SetThrottles(float horizontal, float vertical, float rotationSpeed)
@@ -252,5 +285,10 @@ public class Spacecraft : MonoBehaviour
 		{
 			thrusterGroup.Remove(thruster);
 		}
+	}
+
+	public BuildingController GetBuildingController()
+	{
+		return buildingController;
 	}
 }

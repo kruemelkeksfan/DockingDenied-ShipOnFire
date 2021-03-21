@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Module : MonoBehaviour
 {
+	[SerializeField] protected string moduleName = "Module";
 	[SerializeField] protected int mass = 1;
 	[SerializeField] protected int hp = 100;
 	[SerializeField] private Vector2Int[] reservedPositions = { Vector2Int.zero };
@@ -20,17 +21,23 @@ public class Module : MonoBehaviour
 		bufferedReservedPositions = reservedPositions;
 	}
 
-	protected virtual void Start()
+	protected virtual void OnEnable()
 	{
 		spacecraft = gameObject.GetComponentInParent<Spacecraft>();
 	}
 
+	protected virtual void Start()
+	{
+
+	}
+
 	public virtual void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
-		constructed = true;
 		this.position = position;
-		UpdateBuffer(position);
+		transform.localPosition = spacecraft.GetBuildingController().IntToLocalPosition(position);
+		UpdateReservedPositionBuffer(position);
 		spacecraft.UpdateModuleMass(transform.localPosition, mass);
+		constructed = true;
 
 		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
 		{
@@ -64,7 +71,19 @@ public class Module : MonoBehaviour
 
 	public void Rotate(int direction)
 	{
-		transform.localRotation = Quaternion.Euler(0.0f, 0.0f, direction * -90.0f);
+		Rotate(direction * -90.0f);
+	}
+
+	public void Rotate(float angle)
+	{
+		if(angle % 90.0f == 0.0f)
+		{
+			transform.localRotation = Quaternion.Euler(0.0f, 0.0f, angle);
+		}
+		else
+		{
+			Debug.LogWarning("Trying to rotate Module " + this + " by " + angle + "Degrees which is not a Multiple of 90.0 Degrees!");
+		}
 	}
 
 	public virtual void UpdateNotify()
@@ -77,7 +96,7 @@ public class Module : MonoBehaviour
 
 	}
 
-	private void UpdateBuffer(Vector2Int position)
+	private void UpdateReservedPositionBuffer(Vector2Int position)
 	{
 		if(!constructed)
 		{
@@ -89,14 +108,24 @@ public class Module : MonoBehaviour
 		}
 	}
 
+	public string GetModuleName()
+	{
+		return moduleName;
+	}
+
 	public Vector2Int GetPosition()
 	{
 		return position;
 	}
 
+	public Transform GetTransform()
+	{
+		return transform;
+	}
+
 	public Vector2Int[] GetReservedPositions(Vector2Int position)
 	{
-		UpdateBuffer(position);
+		UpdateReservedPositionBuffer(position);
 
 		return bufferedReservedPositions;
 	}

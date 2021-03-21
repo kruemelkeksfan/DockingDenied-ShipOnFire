@@ -170,7 +170,7 @@ GameObject:
   - component: {fileID: 7047531361189772316}
   - component: {fileID: 6033598934764924008}
   m_Layer: 0
-  m_Name: ConstructionModule
+  m_Name: Constructor
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -233,6 +233,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e336cfa811144bb4d803e405642e25f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moduleName: Constructor
   mass: 60
   hp: 100
   reservedPositions:

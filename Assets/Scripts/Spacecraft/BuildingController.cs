@@ -1,8 +1,10 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.EventSystems;
+using System.IO;
 
 // TODO: What happens to attached Modules when link is severed? Maybe implement Shift LeftClick to make Selection and select the severed Modules automatically for easy Movement/Reattachment
 
@@ -44,15 +46,21 @@ public class BuildingController : MonoBehaviour
 	[SerializeField] private float maxPlacementDistance = 1.0f;
 	[SerializeField] private float buildingGridSize = 1.0f;
 	[SerializeField] private Button moduleButtonPrefab = null;
+	[SerializeField] private Button blueprintButtonPrefab = null;
 	[SerializeField] private Transform buildingMenu = null;
-	[SerializeField] private string[] moduleNames = null;
+	[SerializeField] private GameObject blueprintMenu = null;
+	[SerializeField] private GameObject saveConfirmationPanel = null;
+	[SerializeField] private Text blueprintNameField = null;
+	[SerializeField] private RectTransform blueprintContentPane = null;
+	[SerializeField] private GameObject loadConfirmationPanel = null;
 	[SerializeField] private Module[] modulePrefabs = null;
-	[SerializeField] private Material blueprintMaterial = null;
+	[SerializeField] private Material validMaterial = null;
 	[SerializeField] private Material invalidMaterial = null;
 	[SerializeField] private Material moduleMaterial = null;
 	[SerializeField] private MeshRenderer reservedZonePrefab = null;
-	[SerializeField] private Material zoneBlueprintMaterial = null;
+	[SerializeField] private Material zoneValidMaterial = null;
 	[SerializeField] private Material zoneInvalidMaterial = null;
+	[SerializeField] private string blueprintFolder = "Blueprints";
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
 	private int rotation = Directions.UP;
@@ -60,6 +68,8 @@ public class BuildingController : MonoBehaviour
 	private List<Transform> reservedZoneTransforms = null;
 	private List<MeshRenderer> reservedZoneRenderers = null;
 	private int activeReservedZones = 0;
+	private string selectedBlueprintPath = null;
+	private Dictionary<string, Module> modulePrefabDictionary = null;
 	private Spacecraft spacecraft = null;
 	private new Transform transform = null;
 	private new Camera camera = null;
@@ -67,31 +77,31 @@ public class BuildingController : MonoBehaviour
 
 	private void Start()
 	{
-		if(moduleNames.Length != modulePrefabs.Length)
+		for(int i = 0; i < modulePrefabs.Length; ++i)
 		{
-			Debug.LogError("Number of Module Names and Prefabs in BuildingController does not match!");
-			return;
-		}
-
-		for(int i = 0; i < moduleNames.Length; ++i)
-		{
-			Button moduleButton = GameObject.Instantiate<Button>(moduleButtonPrefab);
-			moduleButton.transform.SetParent(buildingMenu, false);
+			Button moduleButton = GameObject.Instantiate<Button>(moduleButtonPrefab, buildingMenu);
 			RectTransform moduleButtonRectTransform = moduleButton.GetComponent<RectTransform>();
 			moduleButtonRectTransform.anchoredPosition =
 				new Vector3(moduleButtonRectTransform.anchoredPosition.x, -(moduleButtonRectTransform.rect.height * 0.5f + moduleButtonRectTransform.rect.height * i));
-			moduleButton.GetComponentInChildren<Text>().text = moduleNames[i];
+			moduleButton.GetComponentInChildren<Text>().text = modulePrefabs[i].GetModuleName();
 			int localI = i;
 			moduleButton.onClick.AddListener(delegate
 			{
-				SelectModule(localI);
-			});                                                                                               // Seems to pass-by-reference
+				SelectModule(localI);                                                                         // Seems to pass-by-reference
+			});                      
 		}
 
 		inverseBuildingGridSize = 1.0f / buildingGridSize;
 		buildingGridSizeVector = new Vector2(buildingGridSize, buildingGridSize);
 		reservedZoneTransforms = new List<Transform>();
 		reservedZoneRenderers = new List<MeshRenderer>();
+
+		modulePrefabDictionary = new Dictionary<string, Module>(modulePrefabs.Length);
+		foreach(Module module in modulePrefabs)
+		{
+			modulePrefabDictionary[module.GetModuleName()] = module;
+		}
+
 		spacecraft = gameObject.GetComponent<Spacecraft>();
 		transform = gameObject.GetComponent<Transform>();
 		camera = Camera.main;
@@ -136,10 +146,10 @@ public class BuildingController : MonoBehaviour
 					&& Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z) == null)
 				{
 					currentModule.buildable = true;
-					currentModule.meshRenderer.material = blueprintMaterial;
+					currentModule.meshRenderer.material = validMaterial;
 					for(int i = 0; i < activeReservedZones; ++i)
 					{
-						reservedZoneRenderers[i].material = zoneBlueprintMaterial;
+						reservedZoneRenderers[i].material = zoneValidMaterial;
 					}
 				}
 				else
@@ -169,7 +179,7 @@ public class BuildingController : MonoBehaviour
 					currentModule.meshRenderer.material = moduleMaterial;
 					currentModule.transform.localScale = currentModule.scale;
 
-					SpawnBlueprint(currentModule.index);
+					SpawnModule(currentModule.index);
 				}
 			}
 
@@ -177,15 +187,43 @@ public class BuildingController : MonoBehaviour
 			{
 				Vector2Int gridPosition = (Vector2Int)Vector3Int.RoundToInt(
 					transform.InverseTransformPoint(camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z))) * inverseBuildingGridSize);
-				spacecraft.GetModule(gridPosition)?.Deconstruct();
+				Module module = spacecraft.GetModule(gridPosition);
+				if(module != null && module.GetModuleName() != "Command Module")
+				{
+					module.Deconstruct();
+				}
 			}
 		}
 	}
 
 	public void ToggleBuildingMenu()
 	{
+		RefreshBlueprintList();
 		buildingMenu.gameObject.SetActive(!buildingMenu.gameObject.activeSelf);
+		blueprintMenu.gameObject.SetActive(!blueprintMenu.gameObject.activeSelf);
 		SelectModule(-1);
+	}
+
+	private void RefreshBlueprintList()
+	{
+		Rect blueprintContentPaneRect = blueprintContentPane.rect;
+		string[] blueprintPaths = SpacecraftBlueprintController.GetBlueprintPaths(blueprintFolder);
+		for(int i = 0; i < blueprintPaths.Length; ++i)
+		{
+			Button blueprintButton = GameObject.Instantiate<Button>(blueprintButtonPrefab, blueprintContentPane);
+			RectTransform blueprintButtonRectTransform = blueprintButton.GetComponent<RectTransform>();
+			blueprintContentPaneRect.height += blueprintButtonRectTransform.rect.height;
+			blueprintButtonRectTransform.anchoredPosition =
+				new Vector3(blueprintButtonRectTransform.anchoredPosition.x, -(blueprintButtonRectTransform.rect.height * 0.5f + blueprintButtonRectTransform.rect.height * i));
+			int startIndex = blueprintPaths[i].LastIndexOf(Path.DirectorySeparatorChar) + 1;
+			int endIndex = blueprintPaths[i].LastIndexOf(".");
+			blueprintButton.GetComponentInChildren<Text>().text = blueprintPaths[i].Substring(startIndex, endIndex - startIndex);
+			string localBlueprintPath = blueprintPaths[i];
+			blueprintButton.onClick.AddListener(delegate
+			{
+				SelectBlueprint(localBlueprintPath);
+			});                      
+		}
 	}
 
 	public void SelectModule(int moduleIndex)
@@ -197,7 +235,7 @@ public class BuildingController : MonoBehaviour
 
 		if(moduleIndex >= 0 && moduleIndex != currentModule.index)
 		{
-			SpawnBlueprint(moduleIndex);
+			SpawnModule(moduleIndex);
 		}
 		else
 		{
@@ -205,14 +243,50 @@ public class BuildingController : MonoBehaviour
 		}
 	}
 
-	private void SpawnBlueprint(int moduleIndex)
+	public void ToggleBlueprintSavePanel()
 	{
-		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex]));
-		currentModule.transform.SetParent(transform, false);
+		saveConfirmationPanel.SetActive(!saveConfirmationPanel.activeSelf);
+	}
+
+	public void SaveBlueprint()
+	{
+		if(blueprintNameField.text == null || blueprintNameField.text == "")
+		{
+			blueprintNameField.text = "X" + DateTime.Now.ToString("ddMMyyyyHHmmss");
+		}
+
+		spacecraft.SaveBlueprint(blueprintFolder, blueprintNameField.text);
+		RefreshBlueprintList();
+		saveConfirmationPanel.SetActive(false);
+	}
+
+	public void ToggleBlueprintConfirmationPanel()
+	{
+		loadConfirmationPanel.SetActive(!loadConfirmationPanel.activeSelf);
+	}
+
+	public void SelectBlueprint(string blueprintPath)
+	{
+		selectedBlueprintPath = blueprintPath;
+		ToggleBlueprintConfirmationPanel();
+	}
+
+	public void ConfirmBlueprint()
+	{
+		if(selectedBlueprintPath != null)
+		{
+			spacecraft.LoadBlueprint(selectedBlueprintPath, modulePrefabDictionary);
+			selectedBlueprintPath = null;
+		}
+	}
+
+	private void SpawnModule(int moduleIndex)
+	{
+		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], transform));
 		currentModule.transform.localScale *= 1.02f;
 		currentModule.module.Rotate(rotation);
 		currentModule.collider.enabled = false;
-		currentModule.meshRenderer.material = blueprintMaterial;
+		currentModule.meshRenderer.material = validMaterial;
 	}
 
 	private void UnselectModule()
@@ -223,5 +297,10 @@ public class BuildingController : MonoBehaviour
 			reservedZoneTransforms[i].gameObject.SetActive(false);
 		}
 		activeReservedZones = 0;
+	}
+
+	public Vector3 IntToLocalPosition(Vector2Int position)
+	{
+		return ((Vector2) position) * buildingGridSize;
 	}
 }

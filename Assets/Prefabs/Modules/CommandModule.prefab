@@ -150,6 +150,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 6a65f09f63bcc1540983b64339a4f9c3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moduleName: Command Module
   mass: 60
   hp: 100
   reservedPositions:

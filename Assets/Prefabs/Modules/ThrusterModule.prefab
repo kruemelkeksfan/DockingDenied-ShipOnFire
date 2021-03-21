@@ -4883,6 +4883,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 810648b13535bf7458b2d40e428c48bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  moduleName: Thruster
   mass: 60
   hp: 100
   reservedPositions:
