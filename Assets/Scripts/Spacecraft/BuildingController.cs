@@ -206,13 +206,11 @@ public class BuildingController : MonoBehaviour
 
 	private void RefreshBlueprintList()
 	{
-		Rect blueprintContentPaneRect = blueprintContentPane.rect;
 		string[] blueprintPaths = SpacecraftBlueprintController.GetBlueprintPaths(blueprintFolder);
 		for(int i = 0; i < blueprintPaths.Length; ++i)
 		{
 			Button blueprintButton = GameObject.Instantiate<Button>(blueprintButtonPrefab, blueprintContentPane);
 			RectTransform blueprintButtonRectTransform = blueprintButton.GetComponent<RectTransform>();
-			blueprintContentPaneRect.height += blueprintButtonRectTransform.rect.height;
 			blueprintButtonRectTransform.anchoredPosition =
 				new Vector3(blueprintButtonRectTransform.anchoredPosition.x, -(blueprintButtonRectTransform.rect.height * 0.5f + blueprintButtonRectTransform.rect.height * i));
 			int startIndex = blueprintPaths[i].LastIndexOf(Path.DirectorySeparatorChar) + 1;

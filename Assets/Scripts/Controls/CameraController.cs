@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
 public class CameraController : MonoBehaviour
 {
@@ -47,7 +48,7 @@ public class CameraController : MonoBehaviour
 				direction += transform.right;
 			}
 
-			float directionMultiplier = Vector3.Dot(transform.rotation * Vector3.forward, Vector3.forward) * 1.2f - 0.2f;												// Turn Camera slower when looking at a flatter Angle
+			float directionMultiplier = Vector3.Dot(transform.rotation * Vector3.forward, Vector3.forward) * 1.2f - 0.2f;                                               // Turn Camera slower when looking at a flatter Angle
 			transform.RotateAround(spacecraftTransform.position, transform.right, -Input.GetAxis("Mouse Y") * rotationSpeed * directionMultiplier);
 			transform.RotateAround(spacecraftTransform.position, transform.up, Input.GetAxis("Mouse X") * rotationSpeed * directionMultiplier);
 			transform.position += direction * movementSpeed;
@@ -64,10 +65,13 @@ public class CameraController : MonoBehaviour
 			transform.localRotation = startRotation;
 		}
 
-		transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
-		if(transform.position.z > maxZHeight)
+		if(!EventSystem.current.IsPointerOverGameObject())
 		{
-			transform.position = new Vector3(transform.position.x, transform.position.y, maxZHeight);
+			transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
+			if(transform.position.z > maxZHeight)
+			{
+				transform.position = new Vector3(transform.position.x, transform.position.y, maxZHeight);
+			}
 		}
 	}
 }
