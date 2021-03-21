@@ -9,15 +9,14 @@ public class CameraController : MonoBehaviour
 	[SerializeField] private float rotationSpeed = 1.0f;
 	[SerializeField] private float zoomSpeed = 1.0f;
 	[SerializeField] private float maxZHeight = -0.04f;
+	[SerializeField] private Transform spacecraftTransform = null;
 	private new Transform transform = null;
-	private Transform spacecraftTransform = null;
 	private Vector3 startPosition = Vector3.zero;
 	private Quaternion startRotation = Quaternion.identity;
 
 	private void Start()
 	{
 		transform = gameObject.GetComponent<Transform>();
-		spacecraftTransform = gameObject.GetComponentInParent<Spacecraft>().transform;
 
 		startPosition = transform.localPosition;
 		startRotation = transform.localRotation;

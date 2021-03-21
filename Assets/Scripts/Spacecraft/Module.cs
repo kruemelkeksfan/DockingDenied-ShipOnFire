@@ -23,7 +23,7 @@ public class Module : MonoBehaviour
 
 	protected virtual void OnEnable()
 	{
-		spacecraft = gameObject.GetComponentInParent<Spacecraft>();
+		
 	}
 
 	protected virtual void Start()
@@ -33,6 +33,8 @@ public class Module : MonoBehaviour
 
 	public virtual void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
+		spacecraft = gameObject.GetComponentInParent<Spacecraft>();
+
 		this.position = position;
 		transform.localPosition = spacecraft.IntToLocalPosition(position);
 		UpdateReservedPositionBuffer(position);

@@ -4,14 +4,8 @@ using UnityEngine;
 
 public class KeyboardInputController : MonoBehaviour
 {
+    [SerializeField] private Spacecraft spacecraft = null;
     [SerializeField] private GameObject buildingMenu = null;
-    private Spacecraft spacecraft = null;
-
-    private void Awake()
-    {
-        spacecraft = gameObject.GetComponent<Spacecraft>();
-    }
-
 
     private void Update()
     {

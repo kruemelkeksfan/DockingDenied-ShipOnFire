@@ -911,6 +911,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9d450cd5fdd2b1444a462dbf51d4fba5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  spacecraft: {fileID: 602146991}
   buildingMenu: {fileID: 2000540775}
 --- !u!224 &642273805 stripped
 RectTransform:
@@ -1699,6 +1700,7 @@ MonoBehaviour:
   rotationSpeed: 1
   zoomSpeed: 0.2
   maxZHeight: -0.04
+  spacecraftTransform: {fileID: 602146990}
 --- !u!1 &971735205
 GameObject:
   m_ObjectHideFlags: 0

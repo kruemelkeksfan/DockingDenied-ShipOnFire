@@ -19,7 +19,6 @@ public class ThrusterModule : Module
 	{
 		base.Start();
 
-		spacecraftTransform = spacecraft.transform;
 		rigidbody = gameObject.GetComponentInParent<Rigidbody2D>();
 		thrustParticles = gameObject.GetComponentInChildren<ParticleSystem>();
 		thrustParticlesSizeX = thrustParticles.main.startSizeX;
@@ -57,6 +56,7 @@ public class ThrusterModule : Module
 	{
 		base.Build(position, false, true);
 
+		spacecraftTransform = spacecraft.transform;
 		thrustVector = (transform.localRotation * Vector2.up) * thrust;
 		spacecraft.AddThruster(this);
 	}
