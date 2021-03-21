@@ -392,7 +392,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 602146989}
+      objectReference: {fileID: 602146991}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -802,7 +802,6 @@ GameObject:
   - component: {fileID: 602146993}
   - component: {fileID: 602146992}
   - component: {fileID: 602146991}
-  - component: {fileID: 602146989}
   - component: {fileID: 602146994}
   m_Layer: 0
   m_Name: Spacecraft
@@ -811,42 +810,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &602146989
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 602146988}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b35810b74e5877843b34954125a4e8ee, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  maxPlacementDistance: 1
-  buildingGridSize: 0.01
-  moduleButtonPrefab: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
-    type: 3}
-  blueprintButtonPrefab: {fileID: 4945649087749988764, guid: 1d504f26479cdd34197b68bc8a40fad6,
-    type: 3}
-  buildingMenu: {fileID: 2000540776}
-  blueprintMenu: {fileID: 1309728543}
-  saveConfirmationPanel: {fileID: 971735205}
-  blueprintNameField: {fileID: 546708804}
-  blueprintContentPane: {fileID: 452516121}
-  loadConfirmationPanel: {fileID: 986459331}
-  modulePrefabs:
-  - {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193, type: 3}
-  - {fileID: 9191871534577045455, guid: 39b80cf02a8186247930968442a2b2a5, type: 3}
-  - {fileID: 6033598934764924008, guid: d79625a9fa7875744b399f9a17a614db, type: 3}
-  validMaterial: {fileID: 2100000, guid: 8a8114a196b0a50459ee13a3fed5232b, type: 2}
-  invalidMaterial: {fileID: 2100000, guid: 5f41256e2b813fe47b3998b062d4ba53, type: 2}
-  moduleMaterial: {fileID: 2100000, guid: 227b28b9a4209d64cb0db76ed25d8e59, type: 2}
-  reservedZonePrefab: {fileID: 8223917137543656114, guid: d4b17ac56ae6b0c4aaee533ffc7f68e9,
-    type: 3}
-  zoneValidMaterial: {fileID: 2100000, guid: 6798cdb6f00365040892dc6057e11cb5, type: 2}
-  zoneInvalidMaterial: {fileID: 2100000, guid: b9bf4012bf512bb4396df1611d20910c, type: 2}
-  blueprintFolder: Blueprints
 --- !u!4 &602146990
 Transform:
   m_ObjectHideFlags: 0
@@ -879,6 +842,30 @@ MonoBehaviour:
   - {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193, type: 3}
   - {fileID: 6033598934764924008, guid: d79625a9fa7875744b399f9a17a614db, type: 3}
   centerOfMassIndicator: {fileID: 722942929}
+  maxPlacementDistance: 1
+  buildingGridSize: 0.01
+  moduleButtonPrefab: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  blueprintButtonPrefab: {fileID: 4945649087749988764, guid: 1d504f26479cdd34197b68bc8a40fad6,
+    type: 3}
+  buildingMenu: {fileID: 2000540776}
+  blueprintMenu: {fileID: 1309728543}
+  saveConfirmationPanel: {fileID: 971735205}
+  blueprintNameField: {fileID: 546708804}
+  blueprintContentPane: {fileID: 452516121}
+  loadConfirmationPanel: {fileID: 986459331}
+  modulePrefabs:
+  - {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193, type: 3}
+  - {fileID: 6033598934764924008, guid: d79625a9fa7875744b399f9a17a614db, type: 3}
+  - {fileID: 9191871534577045455, guid: 39b80cf02a8186247930968442a2b2a5, type: 3}
+  validMaterial: {fileID: 2100000, guid: 8a8114a196b0a50459ee13a3fed5232b, type: 2}
+  invalidMaterial: {fileID: 2100000, guid: 5f41256e2b813fe47b3998b062d4ba53, type: 2}
+  moduleMaterial: {fileID: 2100000, guid: 227b28b9a4209d64cb0db76ed25d8e59, type: 2}
+  reservedZonePrefab: {fileID: 8223917137543656114, guid: d4b17ac56ae6b0c4aaee533ffc7f68e9,
+    type: 3}
+  zoneValidMaterial: {fileID: 2100000, guid: 6798cdb6f00365040892dc6057e11cb5, type: 2}
+  zoneInvalidMaterial: {fileID: 2100000, guid: b9bf4012bf512bb4396df1611d20910c, type: 2}
+  blueprintFolder: Blueprints
 --- !u!114 &602146992
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1210,7 +1197,7 @@ PrefabInstance:
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -1226,12 +1213,12 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 602146989}
+      objectReference: {fileID: 602146991}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
-      objectReference: {fileID: 602146989}
+      objectReference: {fileID: 602146991}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -1245,12 +1232,12 @@ PrefabInstance:
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ToggleBlueprintSavePanel
+      value: SaveBlueprint
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: SaveBlueprint
+      value: ToggleBlueprintSavePanel
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -1478,7 +1465,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 602146989}
+      objectReference: {fileID: 602146991}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -1971,7 +1958,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 602146989}
+      objectReference: {fileID: 602146991}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -2343,7 +2330,7 @@ PrefabInstance:
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -2359,12 +2346,12 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 602146989}
+      objectReference: {fileID: 602146991}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
       value: 
-      objectReference: {fileID: 602146989}
+      objectReference: {fileID: 602146991}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -2378,12 +2365,12 @@ PrefabInstance:
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ToggleBlueprintConfirmationPanel
+      value: ConfirmBlueprint
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_MethodName
-      value: ConfirmBlueprint
+      value: ToggleBlueprintConfirmationPanel
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -3406,7 +3393,7 @@ PrefabInstance:
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 602146989}
+      objectReference: {fileID: 602146991}
     - target: {fileID: 8466474887764416743, guid: 9595c6b144392064daf476eb9f4ae3d8,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState

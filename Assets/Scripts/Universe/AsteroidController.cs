@@ -115,6 +115,6 @@ public class AsteroidController : MonoBehaviour
 		}
 
 		--AsteroidSpawner.AsteroidCount;
-		GameObject.Destroy(gameObject, 0.02f);
+		GameObject.Destroy(gameObject);
 	}
 }

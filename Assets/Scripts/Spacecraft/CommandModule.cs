@@ -4,8 +4,5 @@ using UnityEngine;
 
 public class CommandModule : Module
 {
-	protected override void Start()
-	{
-		base.Start();
-	}
+
 }

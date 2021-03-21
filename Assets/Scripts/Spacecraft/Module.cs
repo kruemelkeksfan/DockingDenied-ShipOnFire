@@ -34,7 +34,7 @@ public class Module : MonoBehaviour
 	public virtual void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		this.position = position;
-		transform.localPosition = spacecraft.GetBuildingController().IntToLocalPosition(position);
+		transform.localPosition = spacecraft.IntToLocalPosition(position);
 		UpdateReservedPositionBuffer(position);
 		spacecraft.UpdateModuleMass(transform.localPosition, mass);
 		constructed = true;
@@ -63,7 +63,7 @@ public class Module : MonoBehaviour
 			spacecraft.RemoveModule(bufferedReservedPosition);
 		}
 
-		GameObject.Destroy(gameObject, 0.02f);
+		GameObject.Destroy(gameObject);
 
 		spacecraft.RemoveUpdateListener(this);
 		spacecraft.RemoveFixedUpdateListener(this);
