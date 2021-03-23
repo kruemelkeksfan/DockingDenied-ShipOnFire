@@ -36,7 +36,7 @@ public class Module : MonoBehaviour
 		spacecraft = gameObject.GetComponentInParent<Spacecraft>();
 
 		this.position = position;
-		transform.localPosition = spacecraft.IntToLocalPosition(position);
+		transform.localPosition = BuildingMenu.GetInstance().GridToLocalPosition(position);
 		UpdateReservedPositionBuffer(position);
 		spacecraft.UpdateModuleMass(transform.localPosition, mass);
 		constructed = true;

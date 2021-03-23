@@ -6,22 +6,9 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-// TODO: What happens to attached Modules when link is severed? Maybe implement Shift LeftClick to make Selection and select the severed Modules automatically for easy Movement/Reattachment
-
-public class Spacecraft : MonoBehaviour
+public class BuildingMenu : MonoBehaviour
 {
-	private enum ThrusterGroup
-	{
-		down,
-		left,
-		up,
-		right,
-		turnLeft,
-		turnRight,
-		all
-	};
-
-	private struct CurrentModule
+    private struct CurrentModule
 	{
 		public bool buildable;
 		public int index;
@@ -54,13 +41,12 @@ public class Spacecraft : MonoBehaviour
 		}
 	}
 
-	[SerializeField] private Module[] essentialModules = null;
-	[SerializeField] private Transform centerOfMassIndicator = null;
+	private static BuildingMenu instance = null;
+
 	[SerializeField] private float maxPlacementDistance = 1.0f;
 	[SerializeField] private float buildingGridSize = 1.0f;
 	[SerializeField] private Button moduleButtonPrefab = null;
 	[SerializeField] private Button blueprintButtonPrefab = null;
-	[SerializeField] private Transform buildingMenu = null;
 	[SerializeField] private GameObject blueprintMenu = null;
 	[SerializeField] private GameObject saveConfirmationPanel = null;
 	[SerializeField] private Text blueprintNameField = null;
@@ -74,12 +60,7 @@ public class Spacecraft : MonoBehaviour
 	[SerializeField] private Material zoneValidMaterial = null;
 	[SerializeField] private Material zoneInvalidMaterial = null;
 	[SerializeField] private string blueprintFolder = "Blueprints";
-	private Dictionary<Vector2Int, Module> modules = null;
-	private HashSet<Module> updateListeners = null;
-	private HashSet<Module> fixedUpdateListeners = null;
-	private new Transform transform = null;
-	private new Rigidbody2D rigidbody = null;
-	private HashSet<Thruster>[] thrusters = null;
+	[SerializeField] private Spacecraft spacecraft = null;
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
 	private int rotation = Directions.UP;
@@ -89,49 +70,17 @@ public class Spacecraft : MonoBehaviour
 	private int activeReservedZones = 0;
 	private string selectedBlueprintPath = null;
 	private Dictionary<string, Module> modulePrefabDictionary = null;
+	private Transform spacecraftTransform = null;
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
 
-	private void Awake()
+	public static BuildingMenu GetInstance()
 	{
-		modules = new Dictionary<Vector2Int, Module>();
-		updateListeners = new HashSet<Module>();
-		fixedUpdateListeners = new HashSet<Module>();
-		transform = gameObject.GetComponent<Transform>();
-		rigidbody = gameObject.GetComponentInChildren<Rigidbody2D>();
-
-		thrusters = new HashSet<Thruster>[Enum.GetValues(typeof(ThrusterGroup)).Length];
-		for(int i = 0; i < thrusters.Length; ++i)
-		{
-			thrusters[i] = new HashSet<Thruster>();
-		}
-
-		rigidbody.centerOfMass = Vector2.zero;
+		return instance;
 	}
 
-	private void Start()
+	private void Awake()
 	{
-		Vector2Int position = Vector2Int.zero;
-		for(int i = 0; i < essentialModules.Length; ++i)
-		{
-			GameObject.Instantiate<Module>(essentialModules[i], transform).Build(position);
-			position += Vector2Int.down;
-		}
-
-		for(int i = 1; i < modulePrefabs.Length; ++i)																// Skip Command Module
-		{
-			Button moduleButton = GameObject.Instantiate<Button>(moduleButtonPrefab, buildingMenu);
-			RectTransform moduleButtonRectTransform = moduleButton.GetComponent<RectTransform>();
-			moduleButtonRectTransform.anchoredPosition =
-				new Vector3(moduleButtonRectTransform.anchoredPosition.x, -(moduleButtonRectTransform.rect.height * 0.5f + moduleButtonRectTransform.rect.height * (i - 1)));
-			moduleButton.GetComponentInChildren<Text>().text = modulePrefabs[i].GetModuleName();
-			int localI = i;
-			moduleButton.onClick.AddListener(delegate
-				{
-					SelectModule(localI);                                                                           // Seems to pass-by-reference
-				});
-		}
-
 		inverseBuildingGridSize = 1.0f / buildingGridSize;
 		buildingGridSizeVector = new Vector2(buildingGridSize, buildingGridSize);
 		reservedZoneTransforms = new List<Transform>();
@@ -143,24 +92,40 @@ public class Spacecraft : MonoBehaviour
 			modulePrefabDictionary[module.GetModuleName()] = module;
 		}
 
-		transform = gameObject.GetComponent<Transform>();
+		instance = this;
+	}
+
+	private void Start()
+	{
+		Transform transform = GetComponent<Transform>();
+		for(int i = 1; i < modulePrefabs.Length; ++i)																// Skip Command Module
+		{
+			Button moduleButton = GameObject.Instantiate<Button>(moduleButtonPrefab, transform);
+			RectTransform moduleButtonRectTransform = moduleButton.GetComponent<RectTransform>();
+			moduleButtonRectTransform.anchoredPosition =
+				new Vector3(moduleButtonRectTransform.anchoredPosition.x, -(moduleButtonRectTransform.rect.height * 0.5f + moduleButtonRectTransform.rect.height * (i - 1)));
+			moduleButton.GetComponentInChildren<Text>().text = modulePrefabs[i].GetModuleName();
+			int localI = i;
+			moduleButton.onClick.AddListener(delegate
+				{
+					SelectModule(localI);                                                                           // Seems to pass-by-reference
+				});
+		}
+
+		spacecraftTransform = spacecraft.GetTransform();
 		camera = Camera.main;
 		cameraTransform = camera.GetComponent<Transform>();
+
+		blueprintMenu.gameObject.SetActive(false);
+		gameObject.SetActive(false);
 	}
 
 	private void Update()
 	{
-		foreach(Module module in updateListeners)
-		{
-			module.UpdateNotify();
-		}
-
-		if(buildingMenu.gameObject.activeSelf)
-		{
 			if(currentModule.index >= 0)
 			{
 				currentModule.transform.position = camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z));
-				Vector2Int gridPosition = (Vector2Int)Vector3Int.RoundToInt(currentModule.transform.localPosition * inverseBuildingGridSize);
+				Vector2Int gridPosition = LocalToGridPosition(currentModule.transform.localPosition);
 				currentModule.transform.localPosition = (Vector2)gridPosition * buildingGridSize;
 
 				Vector2Int[] reservedPositions = currentModule.module.GetReservedPositions(gridPosition);
@@ -187,7 +152,7 @@ public class Spacecraft : MonoBehaviour
 				}
 				activeReservedZones = reservedPositions.Length;
 
-				if(PositionsAvailable(reservedPositions, currentModule.module.GetFirstPositionNeighboursOnly())
+				if(spacecraft.PositionsAvailable(reservedPositions, currentModule.module.GetFirstPositionNeighboursOnly())
 					&& Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z) == null)
 				{
 					currentModule.buildable = true;
@@ -230,227 +195,18 @@ public class Spacecraft : MonoBehaviour
 
 			if(Input.GetButtonUp("Remove Module") && !EventSystem.current.IsPointerOverGameObject())
 			{
-				Vector2Int gridPosition = (Vector2Int)Vector3Int.RoundToInt(
-					transform.InverseTransformPoint(camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z))) * inverseBuildingGridSize);
-				Module module = GetModule(gridPosition);
+				Module module = spacecraft.GetModule(WorldToGridPosition(camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z))));
 				if(module != null && module.GetModuleName() != "Command Module")
 				{
 					module.Deconstruct();
 				}
 			}
-		}
-	}
-
-	private void FixedUpdate()
-	{
-		foreach(Module module in fixedUpdateListeners)
-		{
-			module.FixedUpdateNotify();
-		}
-	}
-
-	public void SetThrottles(float horizontal, float vertical, float rotationSpeed)
-	{
-		HashSet<Thruster> inactiveThrusters = new HashSet<Thruster>(thrusters[(int)ThrusterGroup.all]);
-
-		if(vertical > 0.0f)
-		{
-			SetThrusterGroupThrottle(ThrusterGroup.up, vertical, inactiveThrusters);
-		}
-		else if(vertical < 0.0f)
-		{
-			SetThrusterGroupThrottle(ThrusterGroup.down, -vertical, inactiveThrusters);
-		}
-
-		if(horizontal < 0.0f)
-		{
-			SetThrusterGroupThrottle(ThrusterGroup.left, -horizontal, inactiveThrusters);
-		}
-		else if(horizontal > 0.0f)
-		{
-			SetThrusterGroupThrottle(ThrusterGroup.right, horizontal, inactiveThrusters);
-		}
-
-		if(rotationSpeed < 0.0f)
-		{
-			SetThrusterGroupThrottle(ThrusterGroup.turnLeft, -rotationSpeed, inactiveThrusters);
-		}
-		else if(rotationSpeed > 0.0f)
-		{
-			SetThrusterGroupThrottle(ThrusterGroup.turnRight, rotationSpeed, inactiveThrusters);
-		}
-
-		foreach(Thruster thruster in inactiveThrusters)
-		{
-			thruster.SetThrottle(0.0f);
-		}
-	}
-
-	private void SetThrusterGroupThrottle(ThrusterGroup thrusterGroup, float throttle, HashSet<Thruster> inactiveThrusters)
-	{
-		foreach(Thruster thruster in thrusters[(int)thrusterGroup])
-		{
-			thruster.SetThrottle(throttle);
-			inactiveThrusters.Remove(thruster);
-		}
-	}
-
-	private bool PositionHasNeighbour(Vector2Int position)
-	{
-		foreach(Vector2Int direction in Directions.VECTORS)
-		{
-			Vector2Int neighbour = position + direction;
-			if(modules.ContainsKey(neighbour) && (!modules[neighbour].GetFirstPositionNeighboursOnly() || neighbour == modules[neighbour].GetPosition()))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	public void UpdateModuleMass(Vector2 position, float massDifference)
-	{
-		if(rigidbody.mass < 0.0002f)        // Set Rigidbody Mass when updating for the first Time
-		{
-			rigidbody.centerOfMass = position;
-			rigidbody.mass = massDifference;
-		}
-		else
-		{
-			rigidbody.mass += massDifference;
-			rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass));
-		}
-
-		centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
-	}
-
-	public bool PositionAvailable(Vector2Int position)
-	{
-		return !modules.ContainsKey(position) && PositionHasNeighbour(position);
-	}
-
-	public bool PositionsAvailable(Vector2Int[] positions, bool firstPositionNeighboursOnly)
-	{
-		bool neighbour = false;
-		foreach(Vector2Int position in positions)
-		{
-			if(modules.ContainsKey(position))
-			{
-				return false;
-			}
-
-			if(!neighbour)
-			{
-				if(PositionHasNeighbour(position))
-				{
-					neighbour = true;
-				}
-				else if(firstPositionNeighboursOnly)
-				{
-					return false;
-				}
-			}
-		}
-
-		return neighbour;
-	}
-
-	public Module GetModule(Vector2Int position)
-	{
-		if(modules.ContainsKey(position))
-		{
-			return modules[position];
-		}
-		else
-		{
-			return null;
-		}
-	}
-
-	public void AddModule(Vector2Int position, Module module)
-	{
-		modules[position] = module;
-	}
-
-	public bool RemoveModule(Vector2Int position)
-	{
-		return modules.Remove(position);
-	}
-
-	public void AddUpdateListener(Module module)
-	{
-		updateListeners.Add(module);
-	}
-
-	public void RemoveUpdateListener(Module module)
-	{
-		updateListeners.Remove(module);
-	}
-
-	public void AddFixedUpdateListener(Module module)
-	{
-		fixedUpdateListeners.Add(module);
-	}
-
-	public void RemoveFixedUpdateListener(Module module)
-	{
-		fixedUpdateListeners.Remove(module);
-	}
-
-	// Call this for all Thrusters when building the Ship
-	public void AddThruster(Thruster thruster)
-	{
-		thrusters[(int)ThrusterGroup.all].Add(thruster);
-
-		// Add linear Thrust Group
-		Vector2 thrust = thruster.GetThrustVector();
-		if(thrust.x < -0.0002f)
-		{
-			thrusters[(int)ThrusterGroup.left].Add(thruster);
-		}
-		if(thrust.x > 0.0002f)
-		{
-			thrusters[(int)ThrusterGroup.right].Add(thruster);
-		}
-		if(thrust.y < -0.0002f)
-		{
-			thrusters[(int)ThrusterGroup.down].Add(thruster);
-		}
-		if(thrust.y > 0.0002f)
-		{
-			thrusters[(int)ThrusterGroup.up].Add(thruster);
-		}
-
-		// Add rotational Thrust Group
-		// M = r x F
-		// M - Torque
-		// r - Lever
-		// F - Thrust
-		Vector2 lever = (Vector2)thruster.transform.localPosition - rigidbody.centerOfMass;
-		float torque = Vector3.Cross(lever, thrust).z;
-		if(torque < -0.0002f)
-		{
-			thrusters[(int)ThrusterGroup.turnLeft].Add(thruster);
-		}
-		else if(torque > 0.0002f)
-		{
-			thrusters[(int)ThrusterGroup.turnRight].Add(thruster);
-		}
-	}
-
-	public void RemoveThruster(Thruster thruster)
-	{
-		foreach(HashSet<Thruster> thrusterGroup in thrusters)
-		{
-			thrusterGroup.Remove(thruster);
-		}
 	}
 
 	public void ToggleBuildingMenu()
 	{
 		RefreshBlueprintList();
-		buildingMenu.gameObject.SetActive(!buildingMenu.gameObject.activeSelf);
+		gameObject.SetActive(!gameObject.activeSelf);
 		blueprintMenu.gameObject.SetActive(!blueprintMenu.gameObject.activeSelf);
 		SelectModule(-1);
 	}
@@ -510,7 +266,7 @@ public class Spacecraft : MonoBehaviour
 			name = "X" + DateTime.Now.ToString("ddMMyyyyHHmmss");
 		}
 
-		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder, name, modules);
+		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder, name, spacecraft.GetModules());
 		RefreshBlueprintList();
 		ToggleBlueprintSavePanel();
 	}
@@ -519,7 +275,6 @@ public class Spacecraft : MonoBehaviour
 	{
 		loadConfirmationPanel.SetActive(!loadConfirmationPanel.activeSelf);
 	}
-
 	public void SelectBlueprint(string blueprintPath)
 	{
 		selectedBlueprintPath = blueprintPath;
@@ -530,6 +285,7 @@ public class Spacecraft : MonoBehaviour
 	{
 		if(selectedBlueprintPath != null)
 		{
+			Dictionary<Vector2Int, Module> modules = spacecraft.GetModules();
 			List<Vector2Int> moduleKeys = new List<Vector2Int>(modules.Keys);
 			foreach(Vector2Int position in moduleKeys)
 			{
@@ -538,7 +294,7 @@ public class Spacecraft : MonoBehaviour
 					modules[position].Deconstruct();
 				}
 			}
-			SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, modulePrefabDictionary, transform);
+			SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, modulePrefabDictionary, spacecraftTransform);
 
 			selectedBlueprintPath = null;
 
@@ -548,7 +304,7 @@ public class Spacecraft : MonoBehaviour
 
 	private void SpawnModule(int moduleIndex)
 	{
-		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], transform));
+		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], spacecraftTransform));
 		currentModule.transform.localScale *= 1.02f;
 		currentModule.module.Rotate(rotation);
 		currentModule.collider.enabled = false;
@@ -565,7 +321,17 @@ public class Spacecraft : MonoBehaviour
 		activeReservedZones = 0;
 	}
 
-	public Vector3 IntToLocalPosition(Vector2Int position)
+	public Vector2Int WorldToGridPosition(Vector3 position)
+	{
+		return Vector2Int.RoundToInt(transform.InverseTransformPoint(position) * inverseBuildingGridSize);
+	}
+
+	public Vector2Int LocalToGridPosition(Vector3 position)
+	{
+		return Vector2Int.RoundToInt(position * inverseBuildingGridSize);
+	}
+
+	public Vector3 GridToLocalPosition(Vector2Int position)
 	{
 		return ((Vector2)position) * buildingGridSize;
 	}
