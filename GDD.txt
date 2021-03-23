@@ -1,0 +1,6 @@
+Future Modules:
+Fuel Cells for Electric Energy
+Hydrolysis Module (Hydrogen-/Oxygen Generator)
+(Thermo-) Nuclear Reactors for Electric Energy
+Battery
+Rocket Thruster

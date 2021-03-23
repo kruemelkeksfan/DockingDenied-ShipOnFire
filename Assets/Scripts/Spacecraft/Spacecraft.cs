@@ -79,7 +79,7 @@ public class Spacecraft : MonoBehaviour
 	private HashSet<Module> fixedUpdateListeners = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
-	private HashSet<ThrusterModule>[] thrusters = null;
+	private HashSet<Thruster>[] thrusters = null;
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
 	private int rotation = Directions.UP;
@@ -89,7 +89,6 @@ public class Spacecraft : MonoBehaviour
 	private int activeReservedZones = 0;
 	private string selectedBlueprintPath = null;
 	private Dictionary<string, Module> modulePrefabDictionary = null;
-	private Spacecraft spacecraft = null;
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
 
@@ -101,10 +100,10 @@ public class Spacecraft : MonoBehaviour
 		transform = gameObject.GetComponent<Transform>();
 		rigidbody = gameObject.GetComponentInChildren<Rigidbody2D>();
 
-		thrusters = new HashSet<ThrusterModule>[Enum.GetValues(typeof(ThrusterGroup)).Length];
+		thrusters = new HashSet<Thruster>[Enum.GetValues(typeof(ThrusterGroup)).Length];
 		for(int i = 0; i < thrusters.Length; ++i)
 		{
-			thrusters[i] = new HashSet<ThrusterModule>();
+			thrusters[i] = new HashSet<Thruster>();
 		}
 
 		rigidbody.centerOfMass = Vector2.zero;
@@ -119,18 +118,18 @@ public class Spacecraft : MonoBehaviour
 			position += Vector2Int.down;
 		}
 
-		for(int i = 0; i < modulePrefabs.Length; ++i)
+		for(int i = 1; i < modulePrefabs.Length; ++i)																// Skip Command Module
 		{
 			Button moduleButton = GameObject.Instantiate<Button>(moduleButtonPrefab, buildingMenu);
 			RectTransform moduleButtonRectTransform = moduleButton.GetComponent<RectTransform>();
 			moduleButtonRectTransform.anchoredPosition =
-				new Vector3(moduleButtonRectTransform.anchoredPosition.x, -(moduleButtonRectTransform.rect.height * 0.5f + moduleButtonRectTransform.rect.height * i));
+				new Vector3(moduleButtonRectTransform.anchoredPosition.x, -(moduleButtonRectTransform.rect.height * 0.5f + moduleButtonRectTransform.rect.height * (i - 1)));
 			moduleButton.GetComponentInChildren<Text>().text = modulePrefabs[i].GetModuleName();
 			int localI = i;
 			moduleButton.onClick.AddListener(delegate
-			{
-				SelectModule(localI);                                                                         // Seems to pass-by-reference
-			});
+				{
+					SelectModule(localI);                                                                           // Seems to pass-by-reference
+				});
 		}
 
 		inverseBuildingGridSize = 1.0f / buildingGridSize;
@@ -144,7 +143,6 @@ public class Spacecraft : MonoBehaviour
 			modulePrefabDictionary[module.GetModuleName()] = module;
 		}
 
-		spacecraft = gameObject.GetComponent<Spacecraft>();
 		transform = gameObject.GetComponent<Transform>();
 		camera = Camera.main;
 		cameraTransform = camera.GetComponent<Transform>();
@@ -189,7 +187,7 @@ public class Spacecraft : MonoBehaviour
 				}
 				activeReservedZones = reservedPositions.Length;
 
-				if(spacecraft.PositionsAvailable(reservedPositions, currentModule.module.GetFirstPositionNeighboursOnly())
+				if(PositionsAvailable(reservedPositions, currentModule.module.GetFirstPositionNeighboursOnly())
 					&& Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z) == null)
 				{
 					currentModule.buildable = true;
@@ -234,7 +232,7 @@ public class Spacecraft : MonoBehaviour
 			{
 				Vector2Int gridPosition = (Vector2Int)Vector3Int.RoundToInt(
 					transform.InverseTransformPoint(camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z))) * inverseBuildingGridSize);
-				Module module = spacecraft.GetModule(gridPosition);
+				Module module = GetModule(gridPosition);
 				if(module != null && module.GetModuleName() != "Command Module")
 				{
 					module.Deconstruct();
@@ -253,7 +251,7 @@ public class Spacecraft : MonoBehaviour
 
 	public void SetThrottles(float horizontal, float vertical, float rotationSpeed)
 	{
-		HashSet<ThrusterModule> inactiveThrusters = new HashSet<ThrusterModule>(thrusters[(int)ThrusterGroup.all]);
+		HashSet<Thruster> inactiveThrusters = new HashSet<Thruster>(thrusters[(int)ThrusterGroup.all]);
 
 		if(vertical > 0.0f)
 		{
@@ -282,15 +280,15 @@ public class Spacecraft : MonoBehaviour
 			SetThrusterGroupThrottle(ThrusterGroup.turnRight, rotationSpeed, inactiveThrusters);
 		}
 
-		foreach(ThrusterModule thruster in inactiveThrusters)
+		foreach(Thruster thruster in inactiveThrusters)
 		{
 			thruster.SetThrottle(0.0f);
 		}
 	}
 
-	private void SetThrusterGroupThrottle(ThrusterGroup thrusterGroup, float throttle, HashSet<ThrusterModule> inactiveThrusters)
+	private void SetThrusterGroupThrottle(ThrusterGroup thrusterGroup, float throttle, HashSet<Thruster> inactiveThrusters)
 	{
-		foreach(ThrusterModule thruster in thrusters[(int)thrusterGroup])
+		foreach(Thruster thruster in thrusters[(int)thrusterGroup])
 		{
 			thruster.SetThrottle(throttle);
 			inactiveThrusters.Remove(thruster);
@@ -401,7 +399,7 @@ public class Spacecraft : MonoBehaviour
 	}
 
 	// Call this for all Thrusters when building the Ship
-	public void AddThruster(ThrusterModule thruster)
+	public void AddThruster(Thruster thruster)
 	{
 		thrusters[(int)ThrusterGroup.all].Add(thruster);
 
@@ -441,9 +439,9 @@ public class Spacecraft : MonoBehaviour
 		}
 	}
 
-	public void RemoveThruster(ThrusterModule thruster)
+	public void RemoveThruster(Thruster thruster)
 	{
-		foreach(HashSet<ThrusterModule> thrusterGroup in thrusters)
+		foreach(HashSet<Thruster> thrusterGroup in thrusters)
 		{
 			thrusterGroup.Remove(thruster);
 		}
@@ -507,12 +505,12 @@ public class Spacecraft : MonoBehaviour
 	public void SaveBlueprint()
 	{
 		string name = blueprintNameField.text;
-		if( name == null ||  name == "")
+		if(name == null || name == "")
 		{
-			 name = "X" + DateTime.Now.ToString("ddMMyyyyHHmmss");
+			name = "X" + DateTime.Now.ToString("ddMMyyyyHHmmss");
 		}
 
-		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder,  name, modules);
+		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder, name, modules);
 		RefreshBlueprintList();
 		ToggleBlueprintSavePanel();
 	}

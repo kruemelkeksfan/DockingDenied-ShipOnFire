@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ThrusterModule : Module
+public class Thruster : Module
 {
 	[SerializeField] private float thrust = 1.0f;
 	private Transform spacecraftTransform = null;

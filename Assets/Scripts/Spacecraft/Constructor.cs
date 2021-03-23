@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ConstructionModule : Module
+public class Constructor : Module
 {
 	private static readonly WaitForEndOfFrame waitForEndOfFrame = new WaitForEndOfFrame();
 
