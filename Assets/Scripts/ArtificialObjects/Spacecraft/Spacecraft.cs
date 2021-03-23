@@ -118,20 +118,6 @@ public class Spacecraft : MonoBehaviour
 		}
 	}
 
-	private bool PositionHasNeighbour(Vector2Int position)
-	{
-		foreach(Vector2Int direction in Directions.VECTORS)
-		{
-			Vector2Int neighbour = position + direction;
-			if(modules.ContainsKey(neighbour) && (!modules[neighbour].GetFirstPositionNeighboursOnly() || neighbour == modules[neighbour].GetPosition()))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	public void UpdateModuleMass(Vector2 position, float massDifference)
 	{
 		if(rigidbody.mass < 0.0002f)        // Set Rigidbody Mass when updating for the first Time
@@ -148,28 +134,34 @@ public class Spacecraft : MonoBehaviour
 		centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
 	}
 
-	public bool PositionAvailable(Vector2Int position)
-	{
-		return !modules.ContainsKey(position) && PositionHasNeighbour(position);
-	}
-
-	public bool PositionsAvailable(Vector2Int[] positions, bool firstPositionNeighboursOnly)
+	public bool PositionsAvailable(Vector2Int[] positions, bool HasAttachableReservePositions, bool HasOverlappingReservePositions)
 	{
 		bool neighbour = false;
-		foreach(Vector2Int position in positions)
+		for(int i = 0; i < positions.Length; ++i)
 		{
-			if(modules.ContainsKey(position))
+			if(modules.ContainsKey(positions[i])																											// Position is already in Use
+				&& (i == 0 || positions[i] == modules[positions[i]].GetPosition()																			// Either Requester or current Position User have their Main Position on this Position
+				|| !HasOverlappingReservePositions || !modules[positions[i]].HasOverlappingReservePositions()))												// Either Requester or current Position User do not allow overlapping Reserve Positions
 			{
 				return false;
 			}
 
 			if(!neighbour)
 			{
-				if(PositionHasNeighbour(position))
+
+				foreach(Vector2Int direction in Directions.VECTORS)
 				{
-					neighbour = true;
+					Vector2Int neighbourPosition = positions[i] + direction;
+					if(modules.ContainsKey(neighbourPosition)																								// Position has a Neighbour
+						&& (i == 0 || HasAttachableReservePositions)																						// Requester either neighbours with his Main Position or allows attachable Reserve Positions
+						&& (neighbourPosition == modules[neighbourPosition].GetPosition() || modules[neighbourPosition].HasAttachableReservePositions()))	// Neighbour either neighbours with his Main Position or allows attachable Reserve Positions
+					{
+						neighbour = true;
+						break;
+					}
 				}
-				else if(firstPositionNeighboursOnly)
+
+				if(!neighbour && !HasAttachableReservePositions)
 				{
 					return false;
 				}

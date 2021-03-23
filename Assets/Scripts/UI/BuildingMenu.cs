@@ -15,7 +15,6 @@ public class BuildingMenu : MonoBehaviour
 		public Module module;
 		public Transform transform;
 		public Collider2D collider;
-		public MeshRenderer meshRenderer;
 		public Vector3 scale;
 
 		public CurrentModule(int index, Module module)
@@ -28,14 +27,12 @@ public class BuildingMenu : MonoBehaviour
 			{
 				transform = module.transform;
 				collider = module.GetComponentInChildren<Collider2D>();
-				meshRenderer = module.GetComponentInChildren<MeshRenderer>();
 				scale = transform.localScale;
 			}
 			else
 			{
 				transform = null;
 				collider = null;
-				meshRenderer = null;
 				scale = Vector3.one;
 			}
 		}
@@ -53,9 +50,6 @@ public class BuildingMenu : MonoBehaviour
 	[SerializeField] private RectTransform blueprintContentPane = null;
 	[SerializeField] private GameObject loadConfirmationPanel = null;
 	[SerializeField] private Module[] modulePrefabs = null;
-	[SerializeField] private Material validMaterial = null;
-	[SerializeField] private Material invalidMaterial = null;
-	[SerializeField] private Material moduleMaterial = null;
 	[SerializeField] private MeshRenderer reservedZonePrefab = null;
 	[SerializeField] private Material zoneValidMaterial = null;
 	[SerializeField] private Material zoneInvalidMaterial = null;
@@ -82,7 +76,7 @@ public class BuildingMenu : MonoBehaviour
 	private void Awake()
 	{
 		inverseBuildingGridSize = 1.0f / buildingGridSize;
-		buildingGridSizeVector = new Vector2(buildingGridSize, buildingGridSize);
+		buildingGridSizeVector = new Vector2(buildingGridSize - 0.002f, buildingGridSize - 0.002f);
 		reservedZoneTransforms = new List<Transform>();
 		reservedZoneRenderers = new List<MeshRenderer>();
 
@@ -135,7 +129,7 @@ public class BuildingMenu : MonoBehaviour
 					{
 						if(i >= reservedZoneTransforms.Count)
 						{
-							reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, transform));
+							reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));
 							reservedZoneTransforms.Add(reservedZoneRenderers[i].GetComponent<Transform>());
 						}
 						else
@@ -143,7 +137,7 @@ public class BuildingMenu : MonoBehaviour
 							reservedZoneTransforms[i].gameObject.SetActive(true);
 						}
 
-						reservedZoneTransforms[i].localPosition = (Vector2)reservedPositions[i] * buildingGridSize;
+						reservedZoneTransforms[i].localPosition = (Vector3)((Vector2)reservedPositions[i] * buildingGridSize) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[i].localPosition.z);
 					}
 					else if(i < activeReservedZones)
 					{
@@ -152,11 +146,10 @@ public class BuildingMenu : MonoBehaviour
 				}
 				activeReservedZones = reservedPositions.Length;
 
-				if(spacecraft.PositionsAvailable(reservedPositions, currentModule.module.GetFirstPositionNeighboursOnly())
+				if(spacecraft.PositionsAvailable(reservedPositions, currentModule.module.HasAttachableReservePositions(), currentModule.module.HasOverlappingReservePositions())
 					&& Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z) == null)
 				{
 					currentModule.buildable = true;
-					currentModule.meshRenderer.material = validMaterial;
 					for(int i = 0; i < activeReservedZones; ++i)
 					{
 						reservedZoneRenderers[i].material = zoneValidMaterial;
@@ -165,7 +158,6 @@ public class BuildingMenu : MonoBehaviour
 				else
 				{
 					currentModule.buildable = false;
-					currentModule.meshRenderer.material = invalidMaterial;
 					for(int i = 0; i < activeReservedZones; ++i)
 					{
 						reservedZoneRenderers[i].material = zoneInvalidMaterial;
@@ -186,7 +178,6 @@ public class BuildingMenu : MonoBehaviour
 				{
 					currentModule.module.Build(gridPosition);
 					currentModule.collider.enabled = true;
-					currentModule.meshRenderer.material = moduleMaterial;
 					currentModule.transform.localScale = currentModule.scale;
 
 					SpawnModule(currentModule.index);
@@ -294,7 +285,7 @@ public class BuildingMenu : MonoBehaviour
 					modules[position].Deconstruct();
 				}
 			}
-			SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, modulePrefabDictionary, spacecraftTransform);
+			SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, spacecraftTransform);
 
 			selectedBlueprintPath = null;
 
@@ -308,7 +299,6 @@ public class BuildingMenu : MonoBehaviour
 		currentModule.transform.localScale *= 1.02f;
 		currentModule.module.Rotate(rotation);
 		currentModule.collider.enabled = false;
-		currentModule.meshRenderer.material = validMaterial;
 	}
 
 	private void UnselectModule()
@@ -323,7 +313,7 @@ public class BuildingMenu : MonoBehaviour
 
 	public Vector2Int WorldToGridPosition(Vector3 position)
 	{
-		return Vector2Int.RoundToInt(transform.InverseTransformPoint(position) * inverseBuildingGridSize);
+		return Vector2Int.RoundToInt(spacecraftTransform.InverseTransformPoint(position) * inverseBuildingGridSize);
 	}
 
 	public Vector2Int LocalToGridPosition(Vector3 position)
@@ -334,5 +324,10 @@ public class BuildingMenu : MonoBehaviour
 	public Vector3 GridToLocalPosition(Vector2Int position)
 	{
 		return ((Vector2)position) * buildingGridSize;
+	}
+
+	public Dictionary<string, Module> GetModulePrefabDictionary()
+	{
+		return modulePrefabDictionary;
 	}
 }

@@ -8,7 +8,10 @@ public class Module : MonoBehaviour
 	[SerializeField] protected int mass = 1;
 	[SerializeField] protected int hp = 100;
 	[SerializeField] private Vector2Int[] reservedPositions = { Vector2Int.zero };
-	[SerializeField] private bool firstPositionNeighboursOnly = false;
+	[Tooltip("Whether all reserved Positions after the First still provide valid Attachment Points.")]
+	[SerializeField] private bool attachableReservePositions = false;
+	[Tooltip("Whether all reserved Positions after the First can overlap with other reserved Positions which have this Flag enabled.")]
+	[SerializeField] private bool overlappingReservePositions = false;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
 	protected new Transform transform = null;
@@ -132,8 +135,13 @@ public class Module : MonoBehaviour
 		return bufferedReservedPositions;
 	}
 
-	public bool GetFirstPositionNeighboursOnly()
+	public bool HasAttachableReservePositions()
 	{
-		return firstPositionNeighboursOnly;
+		return attachableReservePositions;
+	}
+
+	public bool HasOverlappingReservePositions()
+	{
+		return overlappingReservePositions;
 	}
 }

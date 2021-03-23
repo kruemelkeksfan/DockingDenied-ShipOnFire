@@ -1,0 +1,372 @@
+{
+    "moduleData": [
+        {
+            "moduleName": "Command Module",
+            "position": {
+                "x": 0,
+                "y": 0
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Constructor",
+            "position": {
+                "x": 0,
+                "y": -1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": 1,
+                "y": 0
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": 1,
+                "y": -1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": -1,
+                "y": 0
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": -1,
+                "y": -1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": -2,
+                "y": 0
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": -2,
+                "y": -1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": 2,
+                "y": 0
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": 2,
+                "y": -1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": -2,
+                "y": 1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": -1,
+                "y": 1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": 0,
+                "y": 1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": 1,
+                "y": 1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": 2,
+                "y": 1
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": 2,
+                "y": -2
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": 1,
+                "y": -2
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": 0,
+                "y": -2
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": -2,
+                "y": -2
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solid Container",
+            "position": {
+                "x": -1,
+                "y": -2
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Thruster",
+            "position": {
+                "x": -2,
+                "y": -3
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Thruster",
+            "position": {
+                "x": 2,
+                "y": -3
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Thruster",
+            "position": {
+                "x": -2,
+                "y": 2
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Thruster",
+            "position": {
+                "x": 2,
+                "y": 2
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Thruster",
+            "position": {
+                "x": 3,
+                "y": 1
+            },
+            "rotation": 90.0
+        },
+        {
+            "moduleName": "Thruster",
+            "position": {
+                "x": 3,
+                "y": -2
+            },
+            "rotation": 90.0
+        },
+        {
+            "moduleName": "Thruster",
+            "position": {
+                "x": -3,
+                "y": -2
+            },
+            "rotation": 270.0
+        },
+        {
+            "moduleName": "Thruster",
+            "position": {
+                "x": -3,
+                "y": 1
+            },
+            "rotation": 270.0
+        },
+        {
+            "moduleName": "Docking Port",
+            "position": {
+                "x": 3,
+                "y": -3
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Docking Port",
+            "position": {
+                "x": -3,
+                "y": -3
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Docking Port",
+            "position": {
+                "x": -3,
+                "y": 2
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Docking Port",
+            "position": {
+                "x": 3,
+                "y": 2
+            },
+            "rotation": 0.0
+        },
+        {
+            "moduleName": "Solar Module",
+            "position": {
+                "x": 3,
+                "y": -1
+            },
+            "rotation": 270.0
+        },
+        {
+            "moduleName": "Solar Module",
+            "position": {
+                "x": 3,
+                "y": 0
+            },
+            "rotation": 270.0
+        },
+        {
+            "moduleName": "Solar Module",
+            "position": {
+                "x": -3,
+                "y": 0
+            },
+            "rotation": 90.0
+        },
+        {
+            "moduleName": "Solar Module",
+            "position": {
+                "x": -3,
+                "y": -1
+            },
+            "rotation": 90.0
+        },
+        {
+            "moduleName": "Shield Generator",
+            "position": {
+                "x": 0,
+                "y": 2
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Solar Module",
+            "position": {
+                "x": 4,
+                "y": -3
+            },
+            "rotation": 270.0
+        },
+        {
+            "moduleName": "Shield Generator",
+            "position": {
+                "x": 0,
+                "y": -3
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Solar Module",
+            "position": {
+                "x": 4,
+                "y": 2
+            },
+            "rotation": 270.0
+        },
+        {
+            "moduleName": "Solar Module",
+            "position": {
+                "x": -4,
+                "y": 2
+            },
+            "rotation": 90.0
+        },
+        {
+            "moduleName": "Solar Module",
+            "position": {
+                "x": -4,
+                "y": -3
+            },
+            "rotation": 90.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": -1,
+                "y": -3
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": 1,
+                "y": -3
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": -1,
+                "y": 2
+            },
+            "rotation": 180.0
+        },
+        {
+            "moduleName": "Fluid Container",
+            "position": {
+                "x": 1,
+                "y": 2
+            },
+            "rotation": 180.0
+        }
+    ]
+}
