@@ -54,6 +54,7 @@ public class Spacecraft : MonoBehaviour
 		}
 
 		transform = gameObject.GetComponent<Transform>();
+		ToggleController.GetInstance().AddToggleObject(3, centerOfMassIndicator.gameObject);
 	}
 
 	private void Update()

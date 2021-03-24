@@ -244,11 +244,6 @@ public class BuildingMenu : MonoBehaviour
 		}
 	}
 
-	public void ToggleBlueprintSavePanel()
-	{
-		saveConfirmationPanel.SetActive(!saveConfirmationPanel.activeSelf);
-	}
-
 	public void SaveBlueprint()
 	{
 		string name = blueprintNameField.text;
@@ -259,17 +254,13 @@ public class BuildingMenu : MonoBehaviour
 
 		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder, name, spacecraft.GetModules());
 		RefreshBlueprintList();
-		ToggleBlueprintSavePanel();
+		ToggleController.GetInstance().ToggleGroup(0);
 	}
 
-	public void ToggleBlueprintConfirmationPanel()
-	{
-		loadConfirmationPanel.SetActive(!loadConfirmationPanel.activeSelf);
-	}
 	public void SelectBlueprint(string blueprintPath)
 	{
 		selectedBlueprintPath = blueprintPath;
-		ToggleBlueprintConfirmationPanel();
+		ToggleController.GetInstance().ToggleGroup(1);
 	}
 
 	public void ConfirmBlueprint()
@@ -289,7 +280,7 @@ public class BuildingMenu : MonoBehaviour
 
 			selectedBlueprintPath = null;
 
-			ToggleBlueprintConfirmationPanel();
+			ToggleController.GetInstance().ToggleGroup(1);
 		}
 	}
 

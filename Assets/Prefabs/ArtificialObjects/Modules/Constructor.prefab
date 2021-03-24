@@ -238,7 +238,8 @@ MonoBehaviour:
   hp: 100
   reservedPositions:
   - {x: 0, y: 0}
-  firstPositionNeighboursOnly: 0
+  attachableReservePositions: 0
+  overlappingReservePositions: 0
   constructionRange: 0.1
   doorOpeningSpeed: 1
   constructionAreaIndicator: {fileID: 6883182764642151313}
@@ -263,7 +264,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &6883182764642151313
 Transform:
   m_ObjectHideFlags: 0
