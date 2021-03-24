@@ -8,7 +8,7 @@ using UnityEngine.UI;
 
 public class BuildingMenu : MonoBehaviour
 {
-    private struct CurrentModule
+	private struct CurrentModule
 	{
 		public bool buildable;
 		public int index;
@@ -40,7 +40,6 @@ public class BuildingMenu : MonoBehaviour
 
 	private static BuildingMenu instance = null;
 
-	[SerializeField] private float maxPlacementDistance = 1.0f;
 	[SerializeField] private float buildingGridSize = 1.0f;
 	[SerializeField] private Button moduleButtonPrefab = null;
 	[SerializeField] private Button blueprintButtonPrefab = null;
@@ -57,11 +56,13 @@ public class BuildingMenu : MonoBehaviour
 	[SerializeField] private Spacecraft spacecraft = null;
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
+	private Plane buildingPlane = new Plane(Vector3.back, 0.0f);
 	private int rotation = Directions.UP;
 	private CurrentModule currentModule = new CurrentModule(-1, null);
 	private List<Transform> reservedZoneTransforms = null;
 	private List<MeshRenderer> reservedZoneRenderers = null;
 	private int activeReservedZones = 0;
+	private bool erase = false;
 	private string selectedBlueprintPath = null;
 	private Dictionary<string, Module> modulePrefabDictionary = null;
 	private Transform spacecraftTransform = null;
@@ -92,7 +93,7 @@ public class BuildingMenu : MonoBehaviour
 	private void Start()
 	{
 		Transform transform = GetComponent<Transform>();
-		for(int i = 1; i < modulePrefabs.Length; ++i)																// Skip Command Module
+		for(int i = 1; i < modulePrefabs.Length; ++i)                                                                   // Skip Command Module
 		{
 			Button moduleButton = GameObject.Instantiate<Button>(moduleButtonPrefab, transform);
 			RectTransform moduleButtonRectTransform = moduleButton.GetComponent<RectTransform>();
@@ -102,7 +103,7 @@ public class BuildingMenu : MonoBehaviour
 			int localI = i;
 			moduleButton.onClick.AddListener(delegate
 				{
-					SelectModule(localI);                                                                           // Seems to pass-by-reference
+					SelectModule(localI);                                                                               // Seems to pass-by-reference
 				});
 		}
 
@@ -110,17 +111,24 @@ public class BuildingMenu : MonoBehaviour
 		camera = Camera.main;
 		cameraTransform = camera.GetComponent<Transform>();
 
+		reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));       // Add one Reserve Zone for Erase Highlighting
+		reservedZoneTransforms.Add(reservedZoneRenderers[0].GetComponent<Transform>());
+		reservedZoneTransforms[0].gameObject.SetActive(false);
+
 		blueprintMenu.gameObject.SetActive(false);
 		gameObject.SetActive(false);
 	}
 
 	private void Update()
 	{
+		Ray lookDirection = camera.ScreenPointToRay(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z));
+		float enter;
+		if(buildingPlane.Raycast(lookDirection, out enter))
+		{
+			Vector2Int gridPosition = LocalToGridPosition(spacecraftTransform.InverseTransformPoint(lookDirection.GetPoint(enter)));
 			if(currentModule.index >= 0)
 			{
-				currentModule.transform.position = camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z));
-				Vector2Int gridPosition = LocalToGridPosition(currentModule.transform.localPosition);
-				currentModule.transform.localPosition = (Vector2)gridPosition * buildingGridSize;
+				currentModule.transform.localPosition = GridToLocalPosition(gridPosition);
 
 				Vector2Int[] reservedPositions = currentModule.module.GetReservedPositions(gridPosition);
 				for(int i = 0; i < reservedPositions.Length || i < activeReservedZones; ++i)
@@ -137,7 +145,7 @@ public class BuildingMenu : MonoBehaviour
 							reservedZoneTransforms[i].gameObject.SetActive(true);
 						}
 
-						reservedZoneTransforms[i].localPosition = (Vector3)((Vector2)reservedPositions[i] * buildingGridSize) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[i].localPosition.z);
+						reservedZoneTransforms[i].localPosition = GridToLocalPosition(reservedPositions[i]) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[i].localPosition.z);
 					}
 					else if(i < activeReservedZones)
 					{
@@ -184,14 +192,19 @@ public class BuildingMenu : MonoBehaviour
 				}
 			}
 
-			if(Input.GetButtonUp("Remove Module") && !EventSystem.current.IsPointerOverGameObject())
+			if(erase)
 			{
-				Module module = spacecraft.GetModule(WorldToGridPosition(camera.ScreenToWorldPoint(new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z))));
-				if(module != null && module.GetModuleName() != "Command Module")
+				reservedZoneTransforms[0].localPosition = GridToLocalPosition(gridPosition) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[0].localPosition.z);
+				if(Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
 				{
-					module.Deconstruct();
+					Module module = spacecraft.GetModule(gridPosition);
+					if(module != null && module.GetModuleName() != "Command Module")
+					{
+						module.Deconstruct();
+					}
 				}
 			}
+		}
 	}
 
 	public void ToggleBuildingMenu()
@@ -200,6 +213,49 @@ public class BuildingMenu : MonoBehaviour
 		gameObject.SetActive(!gameObject.activeSelf);
 		blueprintMenu.gameObject.SetActive(!blueprintMenu.gameObject.activeSelf);
 		SelectModule(-1);
+		erase = false;
+	}
+
+	public void SelectModule(int moduleIndex)
+	{
+		if(currentModule.index >= 0 && currentModule.module != null)
+		{
+			GameObject.Destroy(currentModule.module.gameObject);
+		}
+
+		if(moduleIndex >= 0 && moduleIndex != currentModule.index)
+		{
+			erase = false;
+			SpawnModule(moduleIndex);
+		}
+		else
+		{
+			currentModule.index = -1;
+			for(int i = 0; i < activeReservedZones; ++i)
+			{
+				reservedZoneTransforms[i].gameObject.SetActive(false);
+			}
+			activeReservedZones = 0;
+		}
+	}
+	private void SpawnModule(int moduleIndex)
+	{
+		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], spacecraftTransform));
+		currentModule.transform.localScale *= 1.02f;
+		currentModule.module.Rotate(rotation);
+		currentModule.collider.enabled = false;
+	}
+
+	public void ToggleErase()
+	{
+		SelectModule(-1);
+		erase = !erase;
+
+		if(erase)
+		{
+			reservedZoneRenderers[0].material = zoneInvalidMaterial;
+			reservedZoneTransforms[0].gameObject.SetActive(true);
+		}
 	}
 
 	private void RefreshBlueprintList()
@@ -224,23 +280,6 @@ public class BuildingMenu : MonoBehaviour
 			{
 				SelectBlueprint(localBlueprintPath);
 			});
-		}
-	}
-
-	public void SelectModule(int moduleIndex)
-	{
-		if(currentModule.index >= 0 && currentModule.module != null)
-		{
-			GameObject.Destroy(currentModule.module.gameObject);
-		}
-
-		if(moduleIndex >= 0 && moduleIndex != currentModule.index)
-		{
-			SpawnModule(moduleIndex);
-		}
-		else
-		{
-			UnselectModule();
 		}
 	}
 
@@ -282,24 +321,6 @@ public class BuildingMenu : MonoBehaviour
 
 			ToggleController.GetInstance().ToggleGroup(1);
 		}
-	}
-
-	private void SpawnModule(int moduleIndex)
-	{
-		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], spacecraftTransform));
-		currentModule.transform.localScale *= 1.02f;
-		currentModule.module.Rotate(rotation);
-		currentModule.collider.enabled = false;
-	}
-
-	private void UnselectModule()
-	{
-		currentModule.index = -1;
-		for(int i = 0; i < activeReservedZones; ++i)
-		{
-			reservedZoneTransforms[i].gameObject.SetActive(false);
-		}
-		activeReservedZones = 0;
 	}
 
 	public Vector2Int WorldToGridPosition(Vector3 position)

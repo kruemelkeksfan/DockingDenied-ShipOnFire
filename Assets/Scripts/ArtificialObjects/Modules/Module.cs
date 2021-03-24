@@ -24,11 +24,6 @@ public class Module : MonoBehaviour
 		bufferedReservedPositions = reservedPositions;
 	}
 
-	protected virtual void OnEnable()
-	{
-		
-	}
-
 	protected virtual void Start()
 	{
 
