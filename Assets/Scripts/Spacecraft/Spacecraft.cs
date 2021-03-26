@@ -21,8 +21,8 @@ public class Spacecraft : MonoBehaviour
 	[SerializeField] private Module[] essentialModules = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
 	private Dictionary<Vector2Int, Module> modules = null;
-	private HashSet<Module> updateListeners = null;
-	private HashSet<Module> fixedUpdateListeners = null;
+	private HashSet<IUpdateListener> updateListeners = null;
+	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
 	private HashSet<Thruster>[] thrusters = null;
@@ -30,8 +30,8 @@ public class Spacecraft : MonoBehaviour
 	private void Awake()
 	{
 		modules = new Dictionary<Vector2Int, Module>();
-		updateListeners = new HashSet<Module>();
-		fixedUpdateListeners = new HashSet<Module>();
+		updateListeners = new HashSet<IUpdateListener>();
+		fixedUpdateListeners = new HashSet<IFixedUpdateListener>();
 		transform = gameObject.GetComponent<Transform>();
 		rigidbody = gameObject.GetComponentInChildren<Rigidbody2D>();
 
@@ -59,17 +59,17 @@ public class Spacecraft : MonoBehaviour
 
 	private void Update()
 	{
-		foreach(Module module in updateListeners)
+		foreach(IUpdateListener listener in updateListeners)
 		{
-			module.UpdateNotify();
+			listener.UpdateNotify();
 		}
 	}
 
 	private void FixedUpdate()
 	{
-		foreach(Module module in fixedUpdateListeners)
+		foreach(IFixedUpdateListener listener in fixedUpdateListeners)
 		{
-			module.FixedUpdateNotify();
+			listener.FixedUpdateNotify();
 		}
 	}
 
@@ -194,24 +194,24 @@ public class Spacecraft : MonoBehaviour
 		return modules.Remove(position);
 	}
 
-	public void AddUpdateListener(Module module)
+	public void AddUpdateListener(IUpdateListener listener)
 	{
-		updateListeners.Add(module);
+		updateListeners.Add(listener);
 	}
 
-	public void RemoveUpdateListener(Module module)
+	public void RemoveUpdateListener(IUpdateListener listener)
 	{
-		updateListeners.Remove(module);
+		updateListeners.Remove(listener);
 	}
 
-	public void AddFixedUpdateListener(Module module)
+	public void AddFixedUpdateListener(IFixedUpdateListener listener)
 	{
-		fixedUpdateListeners.Add(module);
+		fixedUpdateListeners.Add(listener);
 	}
 
-	public void RemoveFixedUpdateListener(Module module)
+	public void RemoveFixedUpdateListener(IFixedUpdateListener listener)
 	{
-		fixedUpdateListeners.Remove(module);
+		fixedUpdateListeners.Remove(listener);
 	}
 
 	// Call this for all Thrusters when building the Ship

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Module : MonoBehaviour
+public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 {
 	[SerializeField] protected string moduleName = "Module";
 	[SerializeField] protected int mass = 1;

@@ -44,10 +44,8 @@ public class BuildingMenu : MonoBehaviour
 	[SerializeField] private Button moduleButtonPrefab = null;
 	[SerializeField] private Button blueprintButtonPrefab = null;
 	[SerializeField] private GameObject blueprintMenu = null;
-	[SerializeField] private GameObject saveConfirmationPanel = null;
 	[SerializeField] private Text blueprintNameField = null;
 	[SerializeField] private RectTransform blueprintContentPane = null;
-	[SerializeField] private GameObject loadConfirmationPanel = null;
 	[SerializeField] private Module[] modulePrefabs = null;
 	[SerializeField] private MeshRenderer reservedZonePrefab = null;
 	[SerializeField] private Material zoneValidMaterial = null;
@@ -63,6 +61,7 @@ public class BuildingMenu : MonoBehaviour
 	private List<MeshRenderer> reservedZoneRenderers = null;
 	private int activeReservedZones = 0;
 	private bool erase = false;
+	private HotkeyModule activeModuleSettings = null;
 	private string selectedBlueprintPath = null;
 	private Dictionary<string, Module> modulePrefabDictionary = null;
 	private Transform spacecraftTransform = null;
@@ -126,6 +125,7 @@ public class BuildingMenu : MonoBehaviour
 		if(buildingPlane.Raycast(lookDirection, out enter))
 		{
 			Vector2Int gridPosition = LocalToGridPosition(spacecraftTransform.InverseTransformPoint(lookDirection.GetPoint(enter)));
+
 			if(currentModule.index >= 0)
 			{
 				currentModule.transform.localPosition = GridToLocalPosition(gridPosition);
@@ -191,8 +191,7 @@ public class BuildingMenu : MonoBehaviour
 					SpawnModule(currentModule.index);
 				}
 			}
-
-			if(erase)
+			else if(erase)
 			{
 				reservedZoneTransforms[0].localPosition = GridToLocalPosition(gridPosition) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[0].localPosition.z);
 				if(Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
@@ -201,6 +200,26 @@ public class BuildingMenu : MonoBehaviour
 					if(module != null && module.GetModuleName() != "Command Module")
 					{
 						module.Deconstruct();
+					}
+				}
+			}
+			else
+			{
+				if(Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
+				{
+					Module module = spacecraft.GetModule(gridPosition);
+					if(module != null)
+					{
+						HotkeyModule moduleSettings = module as HotkeyModule;
+						if(moduleSettings != null)
+						{
+							if(activeModuleSettings != null && moduleSettings != activeModuleSettings)
+							{
+								activeModuleSettings.ToggleModuleSettingMenu(true);
+							}
+							moduleSettings.ToggleModuleSettingMenu();
+							activeModuleSettings = moduleSettings;
+						}
 					}
 				}
 			}
@@ -218,6 +237,11 @@ public class BuildingMenu : MonoBehaviour
 
 	public void SelectModule(int moduleIndex)
 	{
+		if(activeModuleSettings != null)
+		{
+			activeModuleSettings.ToggleModuleSettingMenu(true);
+		}
+
 		if(currentModule.index >= 0 && currentModule.module != null)
 		{
 			GameObject.Destroy(currentModule.module.gameObject);
