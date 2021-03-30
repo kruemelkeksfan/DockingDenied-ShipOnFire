@@ -9,6 +9,7 @@ public class CameraController : MonoBehaviour
 	[SerializeField] private float rotationSpeed = 1.0f;
 	[SerializeField] private float zoomSpeed = 1.0f;
 	[SerializeField] private float maxZHeight = -0.04f;
+	[SerializeField] private float minZHeight = -2000.0f;
 	[SerializeField] private Transform spacecraftTransform = null;
 	private new Transform transform = null;
 	private Vector3 startPosition = Vector3.zero;
@@ -50,7 +51,7 @@ public class CameraController : MonoBehaviour
 			float directionMultiplier = Vector3.Dot(transform.rotation * Vector3.forward, Vector3.forward) * 1.2f - 0.2f;                                               // Turn Camera slower when looking at a flatter Angle
 			transform.RotateAround(spacecraftTransform.position, transform.right, -Input.GetAxis("Mouse Y") * rotationSpeed * directionMultiplier);
 			transform.RotateAround(spacecraftTransform.position, transform.up, Input.GetAxis("Mouse X") * rotationSpeed * directionMultiplier);
-			transform.position += direction * movementSpeed;
+			transform.position += direction * movementSpeed * -transform.position.z;
 		}
 		else
 		{
@@ -66,10 +67,14 @@ public class CameraController : MonoBehaviour
 
 		if(!EventSystem.current.IsPointerOverGameObject())
 		{
-			transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * zoomSpeed;
+			transform.position += transform.forward * Input.GetAxis("Mouse ScrollWheel") * zoomSpeed * -transform.position.z;
 			if(transform.position.z > maxZHeight)
 			{
 				transform.position = new Vector3(transform.position.x, transform.position.y, maxZHeight);
+			}
+			else if(transform.position.z < minZHeight)
+			{
+				transform.position = new Vector3(transform.position.x, transform.position.y, minZHeight);
 			}
 		}
 	}

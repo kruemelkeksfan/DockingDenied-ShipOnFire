@@ -1430,7 +1430,7 @@ Camera:
     width: 1
     height: 1
   near clip plane: 0.02
-  far clip plane: 2000
+  far clip plane: 4000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -1475,10 +1475,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2d52a1a394ea3d4795c73c19867b6a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 0.0002
+  movementSpeed: 0.002
   rotationSpeed: 1
-  zoomSpeed: 0.2
+  zoomSpeed: 4
   maxZHeight: -0.04
+  minZHeight: -2000
   spacecraftTransform: {fileID: 1360578271}
 --- !u!1 &971735205
 GameObject:
