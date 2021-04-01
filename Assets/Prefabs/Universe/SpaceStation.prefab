@@ -97,7 +97,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hotkeyCount: 10
-  spacecraft: {fileID: 0}
 --- !u!1 &5754137889756671904
 GameObject:
   m_ObjectHideFlags: 0

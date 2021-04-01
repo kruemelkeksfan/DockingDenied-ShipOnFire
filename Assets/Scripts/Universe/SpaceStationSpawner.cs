@@ -11,5 +11,9 @@ public class SpaceStationSpawner : MonoBehaviour
 	{
 		Spacecraft spaceStation = GameObject.Instantiate<Spacecraft>(spacecraftPrefab, new Vector3(500.0f, 0.2f, 0.0f), Quaternion.identity);
 		SpacecraftBlueprintController.LoadBlueprint(stationBlueprints[Random.Range(0, stationBlueprints.Length - 1)], spaceStation.GetTransform());
+		foreach(DockingPort port in spaceStation.GetComponentsInChildren<DockingPort>())
+		{
+			port.HotkeyPressed();
+		}
 	}
 }
