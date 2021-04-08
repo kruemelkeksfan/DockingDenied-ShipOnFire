@@ -3,14 +3,13 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class HotkeyModule : Module
+public class HotkeyModule : Module, IHotkeyListener
 {
     [SerializeField] private GameObject moduleSettingMenu = null;
 	[SerializeField] private Text actionName = null;
 	[SerializeField] private Dropdown hotkeySelection = null;
     private InputController inputController = null;
     private int hotkey = 0;
-    private int hotkeyID = -1;
 
     public void ToggleModuleSettingMenu(bool deactivate = false)
 	{
@@ -34,22 +33,31 @@ public class HotkeyModule : Module
         HotkeyChanged();
     }
 
+	public override void Deconstruct()
+	{
+		inputController.RemoveHotkey(hotkey, this);
+
+		base.Deconstruct();
+	}
+
     public void ActionNameChanged()
 	{
-        (inputController as KeyboardInputController)?.UpdateActionName(hotkey, hotkeyID, actionName.text);
+        (inputController as KeyboardInputController)?.UpdateActionName(hotkey, this, actionName.text);
 	}
 
 	public void HotkeyChanged()
 	{
-        if(hotkeyID >= 0)
-		{
-            inputController.RemoveHotkey(hotkey, hotkeyID);
-		}
+        inputController.RemoveHotkey(hotkey, this);
         hotkey = hotkeySelection.value;
-        hotkeyID = inputController.AddHotkey(hotkey, delegate { HotkeyPressed(); }, (actionName.text != string.Empty ? actionName.text : "Docking Port") );
+        inputController.AddHotkey(hotkey, this, (actionName.text != string.Empty ? actionName.text : moduleName) );
 	}
 
-    public virtual void HotkeyPressed()
+    public virtual void HotkeyDown()
+	{
+
+	}
+
+	public virtual void HotkeyUp()
 	{
 
 	}

@@ -21,7 +21,14 @@ public class Constructor : Module
 		constructionAreaIndicator.localScale = new Vector3(constructionRange, constructionRange, constructionAreaIndicator.localScale.z);
 		particles = new ParticleSystem.Particle[nanobotParticles.emission.GetBurst(0).maxCount];
 
-		ToggleController.GetInstance().AddToggleObject(2, constructionAreaIndicator.gameObject);
+		ToggleController.GetInstance().AddToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
+	}
+
+	public override void Deconstruct()
+	{
+		ToggleController.GetInstance().RemoveToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
+
+		base.Deconstruct();
 	}
 
 	public bool PositionInRange(Vector2 position)

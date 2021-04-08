@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,53 +7,60 @@ public class ToggleController : MonoBehaviour
 	[Serializable]
 	private struct InitToggleObject
 	{
-		public int groupIndex;
+		public string groupName;
 		public GameObject toggleObject;
 
-		public InitToggleObject(int groupIndex, GameObject toggleObject)
+		public InitToggleObject(string groupName, GameObject toggleObject)
 		{
-			this.groupIndex = groupIndex;
+			this.groupName = groupName;
 			this.toggleObject = toggleObject;
 		}
 	}
 
 	private static ToggleController instance = null;
 
-    [SerializeField] private int groupCount = 1;
 	[SerializeField] private InitToggleObject[] initToggleObjects = { };
-    private List<GameObject>[] toggleObjects = null;
-
-	private void Awake()
-	{
-		toggleObjects = new List<GameObject>[groupCount];
-		for(int i = 0; i < toggleObjects.Length; ++i)
-		{
-			toggleObjects[i] = new List<GameObject>(1);
-		}
-
-		foreach(InitToggleObject toggleObject in initToggleObjects)
-		{
-			toggleObjects[toggleObject.groupIndex].Add(toggleObject.toggleObject);
-		}
-
-		instance = this;
-	}
+	private Dictionary<string, List<GameObject>> toggleObjects = null;
 
 	public static ToggleController GetInstance()
 	{
 		return instance;
 	}
 
-	public void ToggleGroup(int groupIndex)
+	private void Awake()
 	{
-		foreach(GameObject toggleObject in toggleObjects[groupIndex])
+		toggleObjects = new Dictionary<string, List<GameObject>>();
+
+		foreach(InitToggleObject toggleObject in initToggleObjects)
+		{
+			AddToggleObject(toggleObject.groupName, toggleObject.toggleObject);
+		}
+
+		instance = this;
+	}
+
+	public void ToggleGroup(string groupName)
+	{
+		foreach(GameObject toggleObject in toggleObjects[groupName])
 		{
 			toggleObject.SetActive(!toggleObject.activeSelf);
 		}
 	}
 
-	public void AddToggleObject(int groupIndex, GameObject toggleObject)
+	public void AddToggleObject(string groupName, GameObject toggleObject)
 	{
-		toggleObjects[groupIndex].Add(toggleObject);
+		if(!toggleObjects.ContainsKey(groupName))
+		{
+			toggleObjects.Add(groupName, new List<GameObject>());
+		}
+		toggleObjects[groupName].Add(toggleObject);
+	}
+
+	public void RemoveToggleObject(string groupName, GameObject toggleObject)
+	{
+		if(toggleObjects.ContainsKey(groupName))
+		{
+			toggleObjects[groupName].Remove(toggleObject);
+		}
 	}
 }

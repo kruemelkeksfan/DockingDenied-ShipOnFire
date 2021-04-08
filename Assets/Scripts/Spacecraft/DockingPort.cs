@@ -17,6 +17,7 @@ public class DockingPort : HotkeyModule
 	private bool docking = false;
 	private DockingPort connectedPort = null;
 	private FixedJoint2D joint = null;
+	private IDockingListener dockingListener = null;
 	private new Rigidbody2D rigidbody = null;
 
 	protected override void Awake()
@@ -43,7 +44,7 @@ public class DockingPort : HotkeyModule
 		}
 	}
 
-	public override void HotkeyPressed()
+	public override void HotkeyDown()
 	{
 		active = !active;
 
@@ -56,6 +57,9 @@ public class DockingPort : HotkeyModule
 
 			Component.Destroy(joint);
 			joint = null;
+
+			dockingListener?.Undocked(this);
+			otherPort.dockingListener?.Undocked(otherPort);
 
 			otherPort.ToggleParticles();
 		}
@@ -120,6 +124,8 @@ public class DockingPort : HotkeyModule
 						connectedPort = otherPort;
 						otherPort.connectedPort = this;
 						docking = false;
+						dockingListener?.Docked(this);
+						otherPort.dockingListener?.Docked(otherPort);
 						ToggleParticles();
 						otherPort.ToggleParticles();
 					}
@@ -131,5 +137,10 @@ public class DockingPort : HotkeyModule
 				}
 			}
 		}
+	}
+
+	public void AddDockingListener(IDockingListener listener)
+	{
+		dockingListener = listener;
 	}
 }

@@ -317,33 +317,22 @@ public class BuildingMenu : MonoBehaviour
 
 		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder, name, spacecraft.GetModules());
 		RefreshBlueprintList();
-		ToggleController.GetInstance().ToggleGroup(0);
+		ToggleController.GetInstance().ToggleGroup("SaveBlueprint");
 	}
 
 	public void SelectBlueprint(string blueprintPath)
 	{
 		selectedBlueprintPath = blueprintPath;
-		ToggleController.GetInstance().ToggleGroup(1);
+		ToggleController.GetInstance().ToggleGroup("LoadBlueprint");
 	}
 
 	public void ConfirmBlueprint()
 	{
 		if(selectedBlueprintPath != null)
 		{
-			Dictionary<Vector2Int, Module> modules = spacecraft.GetModules();
-			List<Vector2Int> moduleKeys = new List<Vector2Int>(modules.Keys);
-			foreach(Vector2Int position in moduleKeys)
-			{
-				if(modules.ContainsKey(position) && modules[position].GetPosition() == position)
-				{
-					modules[position].Deconstruct();
-				}
-			}
-			SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, spacecraftTransform);
-
+			SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, spacecraft, spacecraftTransform);
 			selectedBlueprintPath = null;
-
-			ToggleController.GetInstance().ToggleGroup(1);
+			ToggleController.GetInstance().ToggleGroup("LoadBlueprint");
 		}
 	}
 

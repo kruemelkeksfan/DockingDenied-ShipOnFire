@@ -46,15 +46,23 @@ public class Spacecraft : MonoBehaviour
 
 	private void Start()
 	{
-		Vector2Int position = Vector2Int.zero;
-		for(int i = 0; i < essentialModules.Length; ++i)
+		if(modules.Count <= 0)                                                                      // If no Blueprint was loaded during Awake()
 		{
-			GameObject.Instantiate<Module>(essentialModules[i], transform).Build(position);
-			position += Vector2Int.down;
+			Vector2Int position = Vector2Int.zero;
+			for(int i = 0; i < essentialModules.Length; ++i)
+			{
+				GameObject.Instantiate<Module>(essentialModules[i], transform).Build(position);
+				position += Vector2Int.down;
+			}
 		}
 
 		transform = gameObject.GetComponent<Transform>();
-		ToggleController.GetInstance().AddToggleObject(3, centerOfMassIndicator.gameObject);
+		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+	}
+
+	private void OnDestroy()
+	{
+		ToggleController.GetInstance().RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 	}
 
 	private void Update()
@@ -140,9 +148,9 @@ public class Spacecraft : MonoBehaviour
 		bool neighbour = false;
 		for(int i = 0; i < positions.Length; ++i)
 		{
-			if(modules.ContainsKey(positions[i])																											// Position is already in Use
-				&& (i == 0 || positions[i] == modules[positions[i]].GetPosition()																			// Either Requester or current Position User have their Main Position on this Position
-				|| !HasOverlappingReservePositions || !modules[positions[i]].HasOverlappingReservePositions()))												// Either Requester or current Position User do not allow overlapping Reserve Positions
+			if(modules.ContainsKey(positions[i])                                                                                                            // Position is already in Use
+				&& (i == 0 || positions[i] == modules[positions[i]].GetPosition()                                                                           // Either Requester or current Position User have their Main Position on this Position
+				|| !HasOverlappingReservePositions || !modules[positions[i]].HasOverlappingReservePositions()))                                             // Either Requester or current Position User do not allow overlapping Reserve Positions
 			{
 				return false;
 			}
@@ -153,9 +161,9 @@ public class Spacecraft : MonoBehaviour
 				foreach(Vector2Int direction in Directions.VECTORS)
 				{
 					Vector2Int neighbourPosition = positions[i] + direction;
-					if(modules.ContainsKey(neighbourPosition)																								// Position has a Neighbour
-						&& (i == 0 || HasAttachableReservePositions)																						// Requester either neighbours with his Main Position or allows attachable Reserve Positions
-						&& (neighbourPosition == modules[neighbourPosition].GetPosition() || modules[neighbourPosition].HasAttachableReservePositions()))	// Neighbour either neighbours with his Main Position or allows attachable Reserve Positions
+					if(modules.ContainsKey(neighbourPosition)                                                                                               // Position has a Neighbour
+						&& (i == 0 || HasAttachableReservePositions)                                                                                        // Requester either neighbours with his Main Position or allows attachable Reserve Positions
+						&& (neighbourPosition == modules[neighbourPosition].GetPosition() || modules[neighbourPosition].HasAttachableReservePositions()))   // Neighbour either neighbours with his Main Position or allows attachable Reserve Positions
 					{
 						neighbour = true;
 						break;
@@ -170,6 +178,18 @@ public class Spacecraft : MonoBehaviour
 		}
 
 		return neighbour;
+	}
+
+	public void DeconstructModules()
+	{
+		List<Vector2Int> moduleKeys = new List<Vector2Int>(modules.Keys);						// Avoid concurrent Modification
+		foreach(Vector2Int position in moduleKeys)
+		{
+			if(modules.ContainsKey(position) && modules[position].GetPosition() == position)	// Check if Module has already been deleted first
+			{
+				modules[position].Deconstruct();
+			}
+		}
 	}
 
 	public Module GetModule(Vector2Int position)

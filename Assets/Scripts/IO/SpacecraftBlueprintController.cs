@@ -66,21 +66,23 @@ public class SpacecraftBlueprintController
 		}
 	}
 
-	public static void LoadBlueprint(string blueprintPath, Transform spacecraftTransform)
+	public static void LoadBlueprint(string blueprintPath, Spacecraft spacecraft, Transform spacecraftTransform)
 	{
 		using(StreamReader reader = new StreamReader(blueprintPath))
 		{
-			InstantiateModules(JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd()), spacecraftTransform);
+			InstantiateModules(JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd()), spacecraft, spacecraftTransform);
 		}
 	}
 
-	public static void LoadBlueprint(TextAsset blueprint, Transform spacecraftTransform)
+	public static void LoadBlueprint(TextAsset blueprint, Spacecraft spacecraft, Transform spacecraftTransform)
 	{
-		InstantiateModules(JsonUtility.FromJson<SpacecraftData>(blueprint.text), spacecraftTransform);
+		InstantiateModules(JsonUtility.FromJson<SpacecraftData>(blueprint.text), spacecraft, spacecraftTransform);
 	}
 
-	private static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)
+	private static void InstantiateModules(SpacecraftData spacecraftData, Spacecraft spacecraft, Transform spacecraftTransform)
 	{
+		spacecraft.DeconstructModules();
+
 		Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)
 		{

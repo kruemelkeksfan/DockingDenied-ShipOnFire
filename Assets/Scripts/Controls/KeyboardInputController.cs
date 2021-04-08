@@ -4,15 +4,27 @@ using UnityEngine;
 
 public class KeyboardInputController : InputController
 {
+	private struct HotkeyKey
+	{
+		public int hotkey;
+		public IHotkeyListener listener;
+
+		public HotkeyKey(int hotkey, IHotkeyListener listener)
+		{
+			this.hotkey = hotkey;
+			this.listener = listener;
+		}
+	}
+
 	[SerializeField] private GameObject buildingMenu = null;
 	private ControlHintController controlHintController = null;
-	private Dictionary<Vector2Int, string> actionNames = null;
+	private Dictionary<HotkeyKey, string> actionNames = null;
 
 	protected override void Awake()
 	{
 		base.Awake();
 
-		actionNames = new Dictionary<Vector2Int, string>();
+		actionNames = new Dictionary<HotkeyKey, string>();
 	}
 
 	protected override void Start()
@@ -26,7 +38,7 @@ public class KeyboardInputController : InputController
 	{
 		base.UpdateNotify();
 
-		if(!buildingMenu.activeSelf)
+		if(!buildingMenu.activeSelf && !Input.GetButton("Rotate Camera"))
 		{
 			spacecraft.SetThrottles(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), Input.GetAxis("Rotate"));
 
@@ -34,36 +46,40 @@ public class KeyboardInputController : InputController
 			{
 				if(Input.GetButtonDown("Hotkey " + (i + 1)))
 				{
-					foreach(Action action in hotkeys[i].Values)
+					foreach(IHotkeyListener listener in hotkeys[i])
 					{
-						action();
+						listener.HotkeyDown();
+					}
+				}
+				if(Input.GetButtonUp("Hotkey " + (i + 1)))
+				{
+					foreach(IHotkeyListener listener in hotkeys[i])
+					{
+						listener.HotkeyUp();
 					}
 				}
 			}
 		}
 	}
 
-	public void UpdateActionName(int hotkey, int actionID, string actionName)
+	public void UpdateActionName(int hotkey, IHotkeyListener listener, string actionName)
 	{
-		actionNames[new Vector2Int(hotkey, actionID)] = actionName;
+		actionNames[new HotkeyKey(hotkey, listener)] = actionName;
 		GenerateControlHint();
 	}
 
-	public override int AddHotkey(int hotkey, Action action, string actionName)
+	public override void AddHotkey(int hotkey, IHotkeyListener listener, string actionName)
 	{
-		int hotkeyID = base.AddHotkey(hotkey, action, actionName);
-		if(hotkeyID >= 0)
-		{
-			actionNames.Add(new Vector2Int(hotkey, hotkeyID), actionName);
-			GenerateControlHint();
-		}
-		return hotkeyID;
+		base.AddHotkey(hotkey, listener, actionName);
+
+		actionNames.Add(new HotkeyKey(hotkey, listener), actionName);
+		GenerateControlHint();
 	}
 
-	public override void RemoveHotkey(int hotkey, int actionID)
+	public override void RemoveHotkey(int hotkey, IHotkeyListener listener)
 	{
-		base.RemoveHotkey(hotkey, actionID);
-		actionNames.Remove(new Vector2Int(hotkey, actionID));
+		base.RemoveHotkey(hotkey, listener);
+		actionNames.Remove(new HotkeyKey(hotkey, listener));
 		GenerateControlHint();
 	}
 
@@ -74,9 +90,9 @@ public class KeyboardInputController : InputController
 		{
 			string[] actions = new string[hotkeys[hotkey].Count];
 			int i = 0;
-			foreach(int actionID in hotkeys[hotkey].Keys)
+			foreach(IHotkeyListener listener in hotkeys[hotkey])
 			{
-				actions[i] = actionNames[new Vector2Int(hotkey, actionID)];
+				actions[i] = actionNames[new HotkeyKey(hotkey, listener)];
 				++i;
 			}
 			keyBindings.Add((hotkey + 1).ToString(), actions);

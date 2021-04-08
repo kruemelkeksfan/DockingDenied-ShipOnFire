@@ -52,7 +52,7 @@ public class AsteroidController : MonoBehaviour
 		transform = gameObject.GetComponent<Transform>();
 		rigidbody = gameObject.GetComponent<Rigidbody2D>();
 
-		rigidbody.mass *= densities[Random.Range(0, densities.Length - 1)];
+		rigidbody.mass *= densities[Random.Range(0, densities.Length)];
 
 		atmossphereEntryHeight *= atmossphereEntryHeight;																											// Square to avoid Mathf.sqrt() later on
 		destructionHeight *= destructionHeight;																														// Square to avoid Mathf.sqrt() later on
