@@ -12,8 +12,6 @@ public class SpaceStationSpawner : MonoBehaviour
 	[SerializeField] private float numberSuffixChance = 0.1f;
 	[SerializeField] private Spacecraft spacecraftPrefab = null;
 	[SerializeField] private TextAsset[] stationBlueprints = { };
-	[SerializeField] private Transform playerSpacecraftTransform = null;
-	private HashSet<SpaceStationController> spaceStations = null;
 
 	public static SpaceStationSpawner GetInstance()
 	{
@@ -22,8 +20,6 @@ public class SpaceStationSpawner : MonoBehaviour
 
 	private void Awake()
 	{
-		spaceStations = new HashSet<SpaceStationController>();
-
 		instance = this;
 	}
 
@@ -61,17 +57,5 @@ public class SpaceStationSpawner : MonoBehaviour
 
 		}
 		namePrefixes.RemoveAt(prefixIndex);
-
-		spaceStations.Add(spaceStation);
-
-		SetPlayerSpacecraft(playerSpacecraftTransform);													// Make sure this is called after every Space Station Spawning and after Ship is actually set
-	}
-
-	public void SetPlayerSpacecraft(Transform playerSpacecraftTransform)
-	{
-		foreach(SpaceStationController spaceStation in spaceStations)
-		{
-			spaceStation.SetPlayerSpacecraft(playerSpacecraftTransform);
-		}
 	}
 }

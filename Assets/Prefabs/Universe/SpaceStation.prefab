@@ -468,6 +468,7 @@ MonoBehaviour:
   mapMarkerName: {fileID: 5744938669810061117}
   mapMarkerDistance: {fileID: 2062814746558342297}
   decimalDigitThreshold: 100
+  maxApproachDistance: 1
   stationMenu: {fileID: 5970724854725968034}
   menuName: {fileID: 4008756096673375156}
 --- !u!114 &399397975410466322
@@ -783,6 +784,36 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Text
       value: Request Docking
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 4700186673942838639}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: RequestDocking
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519970, guid: d739d2c748e404e4488852f095a58554,
         type: 3}

@@ -4,6 +4,6 @@ using UnityEngine;
 
 public interface IDockingListener
 {
-    void Docked(DockingPort port);
-    void Undocked(DockingPort port);
+    void Docked(DockingPort port, DockingPort otherPort);
+    void Undocked(DockingPort port, DockingPort otherPort);
 }

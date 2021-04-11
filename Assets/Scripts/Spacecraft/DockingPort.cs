@@ -58,8 +58,8 @@ public class DockingPort : HotkeyModule
 			Component.Destroy(joint);
 			joint = null;
 
-			dockingListener?.Undocked(this);
-			otherPort.dockingListener?.Undocked(otherPort);
+			dockingListener?.Undocked(this, otherPort);
+			otherPort.dockingListener?.Undocked(otherPort, this);
 
 			otherPort.ToggleParticles();
 		}
@@ -123,11 +123,14 @@ public class DockingPort : HotkeyModule
 
 						connectedPort = otherPort;
 						otherPort.connectedPort = this;
+						otherPort.joint = joint;
 						docking = false;
-						dockingListener?.Docked(this);
-						otherPort.dockingListener?.Docked(otherPort);
+						dockingListener?.Docked(this, otherPort);
+						otherPort.dockingListener?.Docked(otherPort, this);
 						ToggleParticles();
 						otherPort.ToggleParticles();
+
+						break;																																	// Break in case the Connection gets seperated again by a DockingListener
 					}
 					else
 					{
@@ -142,5 +145,15 @@ public class DockingPort : HotkeyModule
 	public void AddDockingListener(IDockingListener listener)
 	{
 		dockingListener = listener;
+	}
+
+	public bool IsActive()
+	{
+		return active;
+	}
+
+	public bool IsFree()
+	{
+		return !docking && connectedPort == null;
 	}
 }
