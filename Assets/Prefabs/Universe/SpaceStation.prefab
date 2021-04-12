@@ -469,6 +469,7 @@ MonoBehaviour:
   mapMarkerDistance: {fileID: 2062814746558342297}
   decimalDigitThreshold: 100
   maxApproachDistance: 1
+  dockingTimeout: 600
   stationMenu: {fileID: 5970724854725968034}
   menuName: {fileID: 4008756096673375156}
 --- !u!114 &399397975410466322

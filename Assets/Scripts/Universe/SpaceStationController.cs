@@ -14,7 +14,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[Tooltip("Maximum Distance from which a Docking Permission can be granted")]
 	[SerializeField] private float maxApproachDistance = 1.0f;
 	[Tooltip("Maximum Time in Seconds before Docking Permission expires")]
-	[SerializeField] private float dockingTimeout = 120.0f;
+	[SerializeField] private float dockingTimeout = 600.0f;
 	[SerializeField] private GameObject stationMenu = null;
 	[SerializeField] private Text menuName = null;
 	private Spacecraft spacecraft = null;
@@ -23,6 +23,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private new Camera camera = null;
 	private DockingPort[] dockingPorts = null;
 	private Dictionary<DockingPort, Spacecraft> expectedDockings = null;
+	private HashSet<Spacecraft> dockedSpacecraft = null;
 	private WaitForSeconds dockingTimeoutWaitForSeconds = null;
 
 	private void Start()
@@ -39,6 +40,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			port.AddDockingListener(this);
 		}
 		expectedDockings = new Dictionary<DockingPort, Spacecraft>();
+		dockedSpacecraft = new HashSet<Spacecraft>();
 		dockingTimeoutWaitForSeconds = new WaitForSeconds(dockingTimeout);
 
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
@@ -78,12 +80,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			if(expectedDockings[port] == otherSpacecraft)
 			{
 				expectedDockings.Remove(port);
+				dockedSpacecraft.Add(otherSpacecraft);
 			}
 			else
 			{
 				if(otherSpacecraft == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
 				{
-					// Print uneligible
+					MessageController.GetInstance().AddMessage("You have no Docking Permission for this Docking Port!");
 				}
 				port.HotkeyDown();
 			}
@@ -92,6 +95,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
 	{
+		dockedSpacecraft.Remove(otherPort.GetComponentInParent<Spacecraft>());
+
 		if(port.IsActive())
 		{
 			port.HotkeyDown();
@@ -99,6 +104,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		if(otherPort.GetComponentInParent<Spacecraft>() == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
 		{
 			stationMenu.SetActive(false);
+			MessageController.GetInstance().AddMessage("Undocking successful, good Flight!");
 		}
 	}
 
@@ -107,7 +113,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		localPlayerSpacecraftTransform = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetTransform();
 	}
 
-	public void ToggleStationMenu()							// ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
+	public void ToggleStationMenu()                         // ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
 	{
 		stationMenu.SetActive(!stationMenu.activeSelf);
 	}
@@ -116,49 +122,73 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	{
 		// TODO: Check if Ship is on Fire etc.
 		Spacecraft requester = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
-		if((requester.GetTransform().position - transform.position).sqrMagnitude <= maxApproachDistance)
+		if(!dockedSpacecraft.Contains(requester))
 		{
-			float maxAngle = float.MinValue;
-			DockingPort alignedPort = null;
-			foreach(DockingPort port in dockingPorts)
+			if(!expectedDockings.ContainsValue(requester))
 			{
-				if(!port.IsActive() && port.IsFree())
+				if((requester.GetTransform().position - transform.position).sqrMagnitude <= maxApproachDistance)
 				{
-					Vector2 approachVector = (requester.GetTransform().position - port.GetTransform().position).normalized;
-					float dot = Vector2.Dot(port.GetTransform().up, approachVector);
-					if(dot > maxAngle)
+					float maxAngle = float.MinValue;
+					DockingPort alignedPort = null;
+					foreach(DockingPort port in dockingPorts)
 					{
-						maxAngle = dot;
-						alignedPort = port;
+						if(!port.IsActive() && port.IsFree())
+						{
+							Vector2 approachVector = (requester.GetTransform().position - port.GetTransform().position).normalized;
+							float dot = Vector2.Dot(port.GetTransform().up, approachVector);
+							if(dot > maxAngle)
+							{
+								maxAngle = dot;
+								alignedPort = port;
+							}
+						}
+					}
+
+					if(alignedPort != null)
+					{
+						expectedDockings.Add(alignedPort, requester);
+						alignedPort.HotkeyDown();
+						StartCoroutine(DockingTimeout(alignedPort, requester));
+
+						if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+						{
+							MessageController.GetInstance().AddMessage("Docking Permission granted for Docking Port L1!");
+						}
+					}
+					else if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+					{
+						MessageController.GetInstance().AddMessage("No free Docking Ports available!");
 					}
 				}
-			}
-
-			if(alignedPort != null)
-			{
-				expectedDockings.Add(alignedPort, requester);
-				// Print Success
-				alignedPort.HotkeyDown();
-				StartCoroutine(DockingTimeout(alignedPort));
+				else if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+				{
+					MessageController.GetInstance().AddMessage("You are too far away to request Docking Permission!");
+				}
 			}
 			else
 			{
-				// No Port Available
+				MessageController.GetInstance().AddMessage("You already have an active Docking Permission for this Station!");
 			}
 		}
 		else
 		{
-			// Too far
+			MessageController.GetInstance().AddMessage("You are already docked at this Station!");
 		}
 	}
 
-	private IEnumerator DockingTimeout(DockingPort port)
+	private IEnumerator DockingTimeout(DockingPort port, Spacecraft requester)
 	{
 		yield return dockingTimeoutWaitForSeconds;
 
 		if(port.IsActive() && port.IsFree())
 		{
 			port.HotkeyDown();
+			expectedDockings.Remove(port);
+
+			if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+			{
+				MessageController.GetInstance().AddMessage("Docking Permission expired!");
+			}
 		}
 	}
 
