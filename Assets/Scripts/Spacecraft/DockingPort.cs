@@ -12,6 +12,7 @@ public class DockingPort : HotkeyModule
 	[SerializeField] private float dockingRotationSpeed = 0.8f;
 	[SerializeField] private float dockingPositionThreshold = 0.00002f;
 	[SerializeField] private float dockingRotationThreshold = 0.2f;
+	[SerializeField] private Text portNameField = null;
 	private ParticleSystem magnetParticles = null;
 	private bool active = false;
 	private bool docking = false;
@@ -26,6 +27,14 @@ public class DockingPort : HotkeyModule
 
 		magnetParticles = gameObject.GetComponentInChildren<ParticleSystem>();
 		rigidbody = gameObject.GetComponentInParent<Rigidbody2D>();
+
+		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
+	}
+
+	public override void Deconstruct()
+	{
+		ToggleController.GetInstance().RemoveToggleObject("PortNameplates", portNameField.gameObject);
+		base.Deconstruct();
 	}
 
 	private void OnTriggerEnter2D(Collider2D other)
@@ -65,6 +74,12 @@ public class DockingPort : HotkeyModule
 		}
 
 		ToggleParticles();
+	}
+
+	public override void SetActionName(string actionName)
+	{
+		base.SetActionName(actionName);
+		portNameField.text = actionName;
 	}
 
 	private void ToggleParticles()

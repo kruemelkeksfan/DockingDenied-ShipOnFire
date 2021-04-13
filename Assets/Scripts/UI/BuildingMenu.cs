@@ -154,8 +154,9 @@ public class BuildingMenu : MonoBehaviour
 				}
 				activeReservedZones = reservedPositions.Length;
 
+				Collider2D overlap;
 				if(spacecraft.PositionsAvailable(reservedPositions, currentModule.module.HasAttachableReservePositions(), currentModule.module.HasOverlappingReservePositions())
-					&& Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z) == null)
+					&& ((overlap = Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z)) == null || overlap.isTrigger))
 				{
 					currentModule.buildable = true;
 					for(int i = 0; i < activeReservedZones; ++i)

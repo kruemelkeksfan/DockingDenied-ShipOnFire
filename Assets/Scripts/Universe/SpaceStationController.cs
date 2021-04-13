@@ -152,7 +152,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 						if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
 						{
-							MessageController.GetInstance().AddMessage("Docking Permission granted for Docking Port L1!");
+							MessageController.GetInstance().AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetActionName() + "!");
 						}
 					}
 					else if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())

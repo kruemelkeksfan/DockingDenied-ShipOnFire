@@ -20,15 +20,19 @@ public class SpacecraftBlueprintController
 	[Serializable]
 	public struct ModuleData
 	{
-		public string moduleName;
+		public string type;
 		public Vector2Int position;
 		public float rotation;
+		public string actionName;
+		public int hotkey;
 
-		public ModuleData(string moduleName, Vector2Int position, float rotation)
+		public ModuleData(string type, Vector2Int position, float rotation, string actionName = "", int hotkey = -1)
 		{
-			this.moduleName = moduleName;
+			this.type = type;
 			this.position = position;
 			this.rotation = rotation;
+			this.actionName = actionName;
+			this.hotkey = hotkey;
 		}
 	}
 
@@ -55,7 +59,15 @@ public class SpacecraftBlueprintController
 		{
 			if(modules[position].GetPosition() == position)
 			{
-				moduleData.Add(new ModuleData(modules[position].GetModuleName(), modules[position].GetPosition(), modules[position].GetTransform().localRotation.eulerAngles.z));
+				if(modules[position] is HotkeyModule)
+				{
+					HotkeyModule hotkeyModule = (HotkeyModule) modules[position];
+					moduleData.Add(new ModuleData(hotkeyModule.GetActionName(), hotkeyModule.GetPosition(), hotkeyModule.GetTransform().localRotation.eulerAngles.z, hotkeyModule.GetActionName(), hotkeyModule.GetHotkey()));
+				}
+				else
+				{
+					moduleData.Add(new ModuleData(modules[position].GetModuleName(), modules[position].GetPosition(), modules[position].GetTransform().localRotation.eulerAngles.z));
+				}
 			}
 		}
 		SpacecraftData spacecraftData = new SpacecraftData(moduleData);
@@ -86,9 +98,22 @@ public class SpacecraftBlueprintController
 		Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)
 		{
-			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.moduleName], spacecraftTransform);
+			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type], spacecraftTransform);
 			module.Rotate(moduleData.rotation);
 			module.Build(moduleData.position);
+
+			if(moduleData.hotkey >= 0 || !string.IsNullOrEmpty(moduleData.actionName))
+			{
+				HotkeyModule hotkeyModule = module.GetComponent<HotkeyModule>();
+				if(!string.IsNullOrEmpty(moduleData.actionName))
+				{
+					hotkeyModule.SetActionName(moduleData.actionName);
+				}
+				if(moduleData.hotkey >= 0)
+				{
+					hotkeyModule.SetHotkey(moduleData.hotkey);
+				}
+			}
 		}
 	}
 }

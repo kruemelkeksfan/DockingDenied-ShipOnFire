@@ -5,13 +5,14 @@ using UnityEngine.UI;
 
 public class HotkeyModule : Module, IHotkeyListener
 {
-    [SerializeField] private GameObject moduleSettingMenu = null;
-	[SerializeField] private Text actionName = null;
+	[SerializeField] private GameObject moduleSettingMenu = null;
+	[SerializeField] private InputField actionNameField = null;
 	[SerializeField] private Dropdown hotkeySelection = null;
-    private InputController inputController = null;
-    private int hotkey = 0;
+	private InputController inputController = null;
+	private string actionName = null;
+	private int hotkey = 0;
 
-    public void ToggleModuleSettingMenu(bool deactivate = false)
+	public void ToggleModuleSettingMenu(bool deactivate = false)
 	{
 		if(moduleSettingMenu != null)
 		{
@@ -26,12 +27,13 @@ public class HotkeyModule : Module, IHotkeyListener
 		}
 	}
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
-    {
-        base.Build(position);
+	{
+		base.Build(position);
 
-        inputController = spacecraft.gameObject.GetComponent<InputController>();
-        HotkeyChanged();
-    }
+		inputController = spacecraft.gameObject.GetComponent<InputController>();
+		ActionNameChanged();
+		HotkeyChanged();
+	}
 
 	public override void Deconstruct()
 	{
@@ -40,19 +42,17 @@ public class HotkeyModule : Module, IHotkeyListener
 		base.Deconstruct();
 	}
 
-    public void ActionNameChanged()
+	public void ActionNameChanged()
 	{
-        (inputController as KeyboardInputController)?.UpdateActionName(hotkey, this, actionName.text);
+		SetActionName(actionNameField.text);
 	}
 
 	public void HotkeyChanged()
 	{
-        inputController.RemoveHotkey(hotkey, this);
-        hotkey = hotkeySelection.value;
-        inputController.AddHotkey(hotkey, this, (actionName.text != string.Empty ? actionName.text : moduleName) );
+		SetHotkey(hotkeySelection.value);
 	}
 
-    public virtual void HotkeyDown()
+	public virtual void HotkeyDown()
 	{
 
 	}
@@ -60,5 +60,31 @@ public class HotkeyModule : Module, IHotkeyListener
 	public virtual void HotkeyUp()
 	{
 
+	}
+
+	public string GetActionName()
+	{
+		return actionName;
+	}
+
+	public int GetHotkey()
+	{
+		return hotkey;
+	}
+
+	public virtual void SetActionName(string actionName)
+	{
+		this.actionName = (!string.IsNullOrEmpty(actionName) ? actionName : moduleName);
+		(inputController as KeyboardInputController)?.UpdateActionName(hotkey, this, actionName);
+		actionNameField.text = actionName;
+		actionNameField.placeholder.enabled = false;
+	}
+
+	public void SetHotkey(int hotkey)
+	{
+		inputController.RemoveHotkey(this.hotkey, this);
+		this.hotkey = hotkey;
+		inputController.AddHotkey(hotkey, this, actionName);
+		hotkeySelection.value = hotkey;
 	}
 }
