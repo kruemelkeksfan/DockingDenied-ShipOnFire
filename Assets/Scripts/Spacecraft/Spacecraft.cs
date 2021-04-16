@@ -56,8 +56,9 @@ public class Spacecraft : MonoBehaviour
 			}
 		}
 
-		transform = gameObject.GetComponent<Transform>();
 		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+
+		GetComponent<GravityController>().SetOptimalOrbitalVelocity();
 	}
 
 	private void OnDestroy()

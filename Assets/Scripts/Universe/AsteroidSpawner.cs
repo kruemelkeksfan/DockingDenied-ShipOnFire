@@ -85,7 +85,7 @@ public class AsteroidSpawner : MonoBehaviour
 		GravityController asteroid = GameObject.Instantiate<GravityController>(asteroidPrefabs[Random.Range(0, asteroidPrefabs.Length - 1)],
 			new Vector3(position.x, position.y, -spawnHeight), Quaternion.identity);
 		asteroid.GetComponent<AsteroidController>().HeightConstraints = asteroidBeltHeights[asteroidBeltIndex];
-		asteroid.GetComponent<Rigidbody2D>().velocity = asteroid.CalculateOptimalOrbitalVelocity();											// GetComponent(), because Start() has not yet been called on Asteroid
+		asteroid.SetOptimalOrbitalVelocity();
 
 		Transform asteroidTransform = asteroid.transform;
 		float asteroidExtents = asteroidTransform.GetComponent<Collider2D>().bounds.extents.x;

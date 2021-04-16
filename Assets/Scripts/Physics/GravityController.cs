@@ -60,4 +60,9 @@ public class GravityController : MonoBehaviour
 		// https://www.quora.com/How-do-I-calculate-the-semi-minor-axis-of-an-orbit?share=1
 		// https://answers.unity.com/questions/631201/draw-an-ellipse-in-unity-3d.html
 	}
+
+	public void SetOptimalOrbitalVelocity()
+	{
+		rigidbody.velocity = CalculateOptimalOrbitalVelocity();
+	}
 }
