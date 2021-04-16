@@ -7,6 +7,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] protected string moduleName = "Module";
 	[SerializeField] protected int mass = 1;
 	[SerializeField] protected int hp = 100;
+	[SerializeField] protected bool pressurized = true;
 	[SerializeField] private Vector2Int[] reservedPositions = { Vector2Int.zero };
 	[Tooltip("Whether all reserved Positions after the First still provide valid Attachment Points.")]
 	[SerializeField] private bool attachableReservePositions = false;
