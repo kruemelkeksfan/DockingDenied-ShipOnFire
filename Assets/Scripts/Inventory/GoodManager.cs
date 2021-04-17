@@ -29,8 +29,14 @@ public class GoodManager : MonoBehaviour
     public struct Item
 	{
 		public string type;
-		public string[] attributeNames;
-		public float[] attributeValues;
+		public Attribute[] attributes;
+	}
+
+	[Serializable]
+    public struct Attribute
+	{
+		public string attributeName;
+		public float value;
 	}
 
 	private static GoodManager instance = null;

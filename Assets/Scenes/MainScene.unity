@@ -121,6 +121,18 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!114 &3713293 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  m_PrefabInstance: {fileID: 1828318943}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &43884901 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
@@ -236,13 +248,14 @@ RectTransform:
   - {fileID: 43884901}
   - {fileID: 2067074312}
   - {fileID: 1847178693}
+  - {fileID: 1688743197}
   m_Father: {fileID: 1056010594}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
   m_AnchoredPosition: {x: 0, y: -10}
-  m_SizeDelta: {x: 400, y: 20}
+  m_SizeDelta: {x: 500, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &211880116
 PrefabInstance:
@@ -1068,7 +1081,7 @@ PrefabInstance:
     - target: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_Text
-      value: 'Show
+      value: 'Hide
 
         Stations'
       objectReference: {fileID: 0}
@@ -1703,7 +1716,7 @@ GameObject:
   - component: {fileID: 926687709}
   - component: {fileID: 926687708}
   m_Layer: 0
-  m_Name: CargoManager
+  m_Name: GoodManager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1730,8 +1743,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Bauxite Ore
     decription: Bauxite contains lots of aluminium which can be extracted.
     state: 0
@@ -1740,8 +1752,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Copper Ore
     decription: Raw copper ore which can be refined into copper.
     state: 0
@@ -1750,8 +1761,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Gold Ore
     decription: Raw gold ore which can be refined into gold.
     state: 0
@@ -1760,8 +1770,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Silicate Minerals
     decription: Various rocks which can be refined into silicon.
     state: 0
@@ -1770,8 +1779,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Steel
     decription: Common construction and engineering resource.
     state: 0
@@ -1780,8 +1788,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Aluminium
     decription: Lightweight construction resource, especially suited for spaceship
       hulls.
@@ -1791,8 +1798,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Copper
     decription: Important metal for electrics and cables.
     state: 0
@@ -1801,8 +1807,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Gold
     decription: A rare metal which has numerous uses in electronics.
     state: 0
@@ -1811,8 +1816,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Silicon
     decription: A semiconductor which is invaluable for the production of microchips.
     state: 0
@@ -1821,8 +1825,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Steel Ingredients
     decription: Various ingredients other than iron ore which are necessary for steel
       production. Mostly carbon, chromium, nickel, manganese and molybdenum.
@@ -1832,8 +1835,7 @@ MonoBehaviour:
     flammability: 0.02
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Water
     decription: Water is necessary to support human life and can be processed into
       oxygen and hydrogen.
@@ -1843,8 +1845,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Hydrogen
     decription: Easily available and cheap rocket fuel.
     state: 1
@@ -1853,8 +1854,7 @@ MonoBehaviour:
     flammability: 2
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Oxygen
     decription: Oxidizer for rocket fuel combustion and also necessary for the operation
       of life support systems.
@@ -1864,8 +1864,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Xenon
     decription: A noble gas which is useful to operate ion engines.
     state: 1
@@ -1874,8 +1873,7 @@ MonoBehaviour:
     flammability: 0
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Food
     decription: Organic whole-grain products only.
     state: 0
@@ -1884,8 +1882,7 @@ MonoBehaviour:
     flammability: 0.6
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Medicine
     decription: Medical equipment, bandages and antibiotics.
     state: 0
@@ -1894,8 +1891,7 @@ MonoBehaviour:
     flammability: 1
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Sanitary Products
     decription: Soap, aftershave, toothpaste and a lot of other stuff which seems
       optional during lockdown.
@@ -1905,8 +1901,7 @@ MonoBehaviour:
     flammability: 0.2
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
   - goodName: Drugs
     decription: Alcohol, chocolate and ... others. Can serve as valuable commodity.
     state: 0
@@ -1915,8 +1910,7 @@ MonoBehaviour:
     flammability: 1.2
     item:
       type: 
-      attributeNames: []
-      attributeValues: []
+      attributes: []
 --- !u!4 &926687709
 Transform:
   m_ObjectHideFlags: 0
@@ -2940,6 +2934,17 @@ MonoBehaviour:
     toggleObject: {fileID: 971735205}
   - groupName: LoadBlueprint
     toggleObject: {fileID: 986459331}
+  initToggleTexts:
+  - groupName: BuildAreaIndicators
+    text: {fileID: 1466514765}
+  - groupName: COMIndicators
+    text: {fileID: 1745880928}
+  - groupName: StationMarkers
+    text: {fileID: 1930214034}
+  - groupName: PortNameplates
+    text: {fileID: 1571141922}
+  - groupName: InventoryPanel
+    text: {fileID: 3713293}
 --- !u!4 &1461398741
 Transform:
   m_ObjectHideFlags: 0
@@ -2954,6 +2959,30 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 4
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1466514765 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  m_PrefabInstance: {fileID: 1671144794}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &1571141922 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  m_PrefabInstance: {fileID: 211880116}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1590906104
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3381,6 +3410,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d739d2c748e404e4488852f095a58554, type: 3}
+--- !u!1 &1688743196 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 8633029733610519970, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  m_PrefabInstance: {fileID: 1828318943}
+  m_PrefabAsset: {fileID: 0}
+--- !u!224 &1688743197 stripped
+RectTransform:
+  m_CorrespondingSourceObject: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  m_PrefabInstance: {fileID: 1828318943}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1693526532
 GameObject:
   m_ObjectHideFlags: 0
@@ -3511,6 +3552,18 @@ RectTransform:
     type: 3}
   m_PrefabInstance: {fileID: 1671144794}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1745880928 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  m_PrefabInstance: {fileID: 1863102579}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &1764455746
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3804,6 +3857,192 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 9595c6b144392064daf476eb9f4ae3d8, type: 3}
+--- !u!1001 &1828318943
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 95326581}
+    m_Modifications:
+    - target: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_Text
+      value: 'Show
+
+        Inventory'
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_Colors.m_PressedColor.r
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Mode
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
+      value: 
+      objectReference: {fileID: 1461398740}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_Target
+      value: 
+      objectReference: {fileID: 1688743196}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[1].m_CallState
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
+      value: ToggleGroup
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
+      value: null
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_ObjectArgumentAssemblyTypeName
+      value: UnityEngine.Object, UnityEngine
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519970, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_Name
+      value: ShowInventory
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_Pivot.x
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_Pivot.y
+      value: 0.5
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_AnchorMin.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 100
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 450
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -10
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: d739d2c748e404e4488852f095a58554, type: 3}
 --- !u!224 &1847178693 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
@@ -4172,6 +4411,18 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1915218124}
   m_CullTransparentMesh: 0
+--- !u!114 &1930214034 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  m_PrefabInstance: {fileID: 543324521}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 5f7201a12d95ffc409449d95f23cf332, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1 &2000540775
 GameObject:
   m_ObjectHideFlags: 0
