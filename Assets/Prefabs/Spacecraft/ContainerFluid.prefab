@@ -89,7 +89,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5380353103309319201}
   - component: {fileID: 6344212048888014121}
-  - component: {fileID: 5582716761120108640}
+  - component: {fileID: 5519130266305016477}
   m_Layer: 0
   m_Name: ContainerFluid
   m_TagString: Untagged
@@ -138,7 +138,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.01, y: 0.01}
   m_EdgeRadius: 0
---- !u!114 &5582716761120108640
+--- !u!114 &5519130266305016477
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -147,12 +147,16 @@ MonoBehaviour:
   m_GameObject: {fileID: 9003121702170451506}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d05e6f1869c62a4e86915473fbba17d, type: 3}
+  m_Script: {fileID: 11500000, guid: 4ef913dd945e2474abc0eb02964704e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   moduleName: Fluid Container
   mass: 60
   hp: 100
+  pressurized: 0
   reservedPositions:
   - {x: 0, y: 0}
-  firstPositionNeighboursOnly: 0
+  attachableReservePositions: 0
+  overlappingReservePositions: 0
+  state: 1
+  capacity: 160

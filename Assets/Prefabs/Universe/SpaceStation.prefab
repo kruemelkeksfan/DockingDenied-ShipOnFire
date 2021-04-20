@@ -378,6 +378,7 @@ GameObject:
   - component: {fileID: 5754137889621204160}
   - component: {fileID: 5754137889621204191}
   - component: {fileID: 4700186673942838639}
+  - component: {fileID: 4923210577861097889}
   - component: {fileID: 399397975410466322}
   m_Layer: 0
   m_Name: SpaceStation
@@ -472,6 +473,19 @@ MonoBehaviour:
   dockingTimeout: 600
   stationMenu: {fileID: 5970724854725968034}
   menuName: {fileID: 4008756096673375156}
+--- !u!114 &4923210577861097889
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5754137889621204188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 165e09ca6aec0cd4197fa188f4169e39, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  startingMoney: 2000
 --- !u!114 &399397975410466322
 MonoBehaviour:
   m_ObjectHideFlags: 0

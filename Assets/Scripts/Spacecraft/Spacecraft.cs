@@ -57,7 +57,6 @@ public class Spacecraft : MonoBehaviour
 		}
 
 		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
-
 		GetComponent<GravityController>().SetOptimalOrbitalVelocity();
 	}
 

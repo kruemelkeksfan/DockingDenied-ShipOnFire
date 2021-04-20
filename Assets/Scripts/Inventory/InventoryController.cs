@@ -12,15 +12,18 @@ public class InventoryController : MonoBehaviour
 
 	private void Awake()
 	{
+		money = startingMoney;
+
 		containers = new Dictionary<GoodManager.State, List<Container>>();
 		containers[GoodManager.State.solid] = new List<Container>();
 		containers[GoodManager.State.fluid] = new List<Container>();
+
+		rigidbody = GetComponent<Rigidbody2D>();
 	}
 
 	private void Start()
 	{
 		goodManager = GoodManager.GetInstance();
-		rigidbody = GetComponent<Rigidbody2D>();
 	}
 
 	public bool Deposit(string goodName, uint amount)
@@ -107,6 +110,18 @@ public class InventoryController : MonoBehaviour
 		}
 	}
 
+	public uint GetGoodAmount(string goodName)
+	{
+		GoodManager.State state = goodManager.GetGood(goodName).state;
+		uint sum = 0;
+		foreach(Container container in containers[state])
+		{
+			sum += container.GetGoodAmount(goodName);
+		}
+
+		return sum;
+	}
+
 	public void AddContainer(Container container)
 	{
 		containers[container.GetState()].Add(container);
@@ -119,5 +134,29 @@ public class InventoryController : MonoBehaviour
 	public void RemoveContainer(Container container)
 	{
 		containers[container.GetState()].Remove(container);
+	}
+
+	public Dictionary<string, uint> GetInventoryContents()
+	{
+		Dictionary<string, uint> inventoryContents = new Dictionary<string, uint>();
+		foreach(List<Container> containerList in containers.Values)
+		{
+			foreach(Container container in containerList)
+			{
+				foreach(KeyValuePair<string, uint> goodAmount in container.GetLoads())
+				{
+					if(!inventoryContents.ContainsKey(goodAmount.Key))
+					{
+						inventoryContents[goodAmount.Key] = goodAmount.Value;
+					}
+					else
+					{
+						inventoryContents[goodAmount.Key] += goodAmount.Value;
+					}
+				}
+			}
+		}
+
+		return inventoryContents;
 	}
 }

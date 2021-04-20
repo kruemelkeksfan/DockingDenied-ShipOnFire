@@ -4,18 +4,19 @@ using UnityEngine;
 
 public class Container : Module
 {
-    [SerializeField] private GoodManager.State state = GoodManager.State.solid;
+    [SerializeField] protected GoodManager.State state = GoodManager.State.solid;
     [Tooltip("Capacity in m^3.")]
-    [SerializeField] private uint capacity = 200;
-	private Dictionary<string, uint> loads = null;
-	private uint freeCapacity = 0;
-	private GoodManager goodManager = null;
-	private InventoryController inventoryController = null;
+    [SerializeField] protected uint capacity = 200;
+	protected Dictionary<string, uint> loads = null;
+	protected uint freeCapacity = 0;
+	protected GoodManager goodManager = null;
+	protected InventoryController inventoryController = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
 
+		loads = new Dictionary<string, uint>(1);
 		freeCapacity = capacity;
 
 		goodManager = GoodManager.GetInstance();
@@ -29,7 +30,7 @@ public class Container : Module
 		base.Deconstruct();
 	}
 
-	public bool Deposit(string goodName, uint amount)
+	public virtual bool Deposit(string goodName, uint amount)
 	{
 		amount *= (uint) Mathf.CeilToInt(goodManager.GetGood(goodName).volume);
 
@@ -73,6 +74,11 @@ public class Container : Module
 			loads[goodName] -= amount;
 			freeCapacity += amount;
 
+			if(loads[goodName] <= 0)
+			{
+				loads.Remove(goodName);
+			}
+
 			return true;
 		}
 		else
@@ -101,5 +107,10 @@ public class Container : Module
 		{
 			return 0;
 		}
+	}
+
+	public Dictionary<string, uint> GetLoads()
+	{
+		return loads;
 	}
 }

@@ -44,7 +44,7 @@ public class BuildingMenu : MonoBehaviour
 	[SerializeField] private Button moduleButtonPrefab = null;
 	[SerializeField] private Button blueprintButtonPrefab = null;
 	[SerializeField] private GameObject blueprintMenu = null;
-	[SerializeField] private Text blueprintNameField = null;
+	[SerializeField] private InputField blueprintNameField = null;
 	[SerializeField] private RectTransform blueprintContentPane = null;
 	[SerializeField] private Module[] modulePrefabs = null;
 	[SerializeField] private MeshRenderer reservedZonePrefab = null;
