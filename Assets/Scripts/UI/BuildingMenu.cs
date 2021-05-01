@@ -234,6 +234,7 @@ public class BuildingMenu : MonoBehaviour
 		blueprintMenu.gameObject.SetActive(!blueprintMenu.gameObject.activeSelf);
 		SelectModule(-1);
 		erase = false;
+		InputController.SetFlightControls(!gameObject.activeSelf);
 	}
 
 	public void SelectModule(int moduleIndex)

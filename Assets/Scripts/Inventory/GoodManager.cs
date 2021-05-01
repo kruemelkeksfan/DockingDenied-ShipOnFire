@@ -21,6 +21,10 @@ public class GoodManager : MonoBehaviour
 		public int volume;
 		[Tooltip("Factor by which this Cargo contributes to Fires in its Compartment.")]
 		public float flammability;
+		[Tooltip("The Amount of this Good which is used on Average per Station per Economy Update.")]
+		public int consumption;
+		[Tooltip("Base Price of this Good.")]
+		public int price;
 		[Tooltip("Associated Item Component, should have an empty Type Field for Goods which are no Items.")]
 		public Item item;
 	}
@@ -63,5 +67,10 @@ public class GoodManager : MonoBehaviour
 	public Good GetGood(string goodName)
 	{
 		return goodDictionary[goodName];
+	}
+
+	public Dictionary<string, Good> GetGoodDictionary()
+	{
+		return goodDictionary;
 	}
 }

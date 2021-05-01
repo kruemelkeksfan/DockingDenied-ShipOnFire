@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -10,26 +9,35 @@ public class InventoryScreenController : MonoBehaviour, IListener
 	[SerializeField] private GameObject inventoryEntryPrefab = null;
 	[SerializeField] private RectTransform inventoryContentPane = null;
 	[SerializeField] private GameObject emptyListIndicator = null;
-	private SpacecraftManager spacecraftManager = null;
 	private InventoryController localPlayerMainInventory = null;
 
 	public void Notify()
 	{
-		localPlayerMainInventory = spacecraftManager.GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
+		localPlayerMainInventory = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
+	}
+
+	public void ToggleInventoryMenu()
+	{
+		UpdateInventory();
+		gameObject.SetActive(!gameObject.activeSelf);
+		InputController.SetFlightControls(!gameObject.activeSelf);
 	}
 
 	public void UpdateInventory()
 	{
 		if(localPlayerMainInventory == null)
 		{
-			spacecraftManager = SpacecraftManager.GetInstance();
+			SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
 			localPlayerMainInventory = spacecraftManager.GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
 			spacecraftManager.AddSpacecraftChangeListener(this);
 		}
 
-		for(int i = 1; i < inventoryContentPane.childCount; ++i)
+		Dictionary<string, string> amountSettings = new Dictionary<string, string>(inventoryContentPane.childCount - 1);
+		for(int i = 2; i < inventoryContentPane.childCount; ++i)
 		{
-			GameObject.Destroy(inventoryContentPane.GetChild(i).gameObject);
+			Transform child = inventoryContentPane.GetChild(i);
+			amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(2).GetComponent<InputField>().text;
+			GameObject.Destroy(child.gameObject);
 		}
 
 		Dictionary<string, uint> inventoryContents = localPlayerMainInventory.GetInventoryContents();
@@ -40,21 +48,25 @@ public class InventoryScreenController : MonoBehaviour, IListener
 			GameObject inventoryEntry = GameObject.Instantiate<GameObject>(inventoryEntryPrefab, inventoryContentPane);
 			RectTransform inventoryEntryRectTransform = inventoryEntry.GetComponent<RectTransform>();
 			inventoryEntryRectTransform.anchoredPosition =
-				new Vector3(inventoryEntryRectTransform.anchoredPosition.x, -(inventoryEntryRectTransform.rect.height * 0.5f + 5.0f + inventoryEntryRectTransform.rect.height * j));
+				new Vector3(inventoryEntryRectTransform.anchoredPosition.x, -(inventoryEntryRectTransform.rect.height * 0.5f + 20.0f + inventoryEntryRectTransform.rect.height * j));
 
 			inventoryEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodName;
 			inventoryEntryRectTransform.GetChild(1).GetComponent<Text>().text = inventoryContents[goodName].ToString();
 			string localGoodName = goodName;
 			InputField localAmountField = inventoryEntryRectTransform.GetChild(2).GetComponent<InputField>();
+			if(amountSettings.ContainsKey(goodName))
+			{
+				localAmountField.text = amountSettings[goodName];
+			}
 			inventoryEntryRectTransform.GetChild(3).GetComponent<Button>().onClick.AddListener(delegate
 			{
-				DumpGoods(localGoodName, localAmountField);
+				Dump(localGoodName, localAmountField);
 			});
 
 			++j;
 		}
 
-		if(inventoryContentPane.childCount <= 1)
+		if(inventoryContentPane.childCount <= 2)
 		{
 			emptyListIndicator.SetActive(true);
 		}
@@ -64,7 +76,7 @@ public class InventoryScreenController : MonoBehaviour, IListener
 		}
 	}
 
-	public void DumpGoods(string goodName, InputField amountField)
+	public void Dump(string goodName, InputField amountField)
 	{
 		if(amountField.text.StartsWith("-"))
 		{

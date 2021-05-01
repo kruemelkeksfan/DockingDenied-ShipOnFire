@@ -17,7 +17,8 @@ public class KeyboardInputController : InputController
 	}
 
 	[SerializeField] private GameObject buildingMenu = null;
-	private ControlHintController controlHintController = null;
+	[SerializeField] private GameObject inventoryMenu = null;
+	private InfoController infoController = null;
 	private Dictionary<HotkeyKey, string> actionNames = null;
 
 	protected override void Awake()
@@ -31,14 +32,14 @@ public class KeyboardInputController : InputController
 	{
 		base.Start();
 
-		controlHintController = ControlHintController.GetInstance();
+		infoController = InfoController.GetInstance();
 	}
 
 	public override void UpdateNotify()
 	{
 		base.UpdateNotify();
 
-		if(!buildingMenu.activeSelf && !Input.GetButton("Rotate Camera"))
+		if(flightControls >= 0 && !Input.GetButton("Rotate Camera"))
 		{
 			spacecraft.SetThrottles(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), Input.GetAxis("Rotate"));
 
@@ -98,6 +99,6 @@ public class KeyboardInputController : InputController
 			keyBindings.Add((hotkey + 1).ToString(), actions);
 		}
 		
-		controlHintController.UpdateControlHint(keyBindings);
+		infoController.UpdateControlHint(keyBindings);
 	}
 }

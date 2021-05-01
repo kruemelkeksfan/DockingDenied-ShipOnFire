@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class InventoryController : MonoBehaviour
+public class InventoryController : MonoBehaviour, IListener
 {
 	[SerializeField] private int startingMoney = 200;
 	private int money = 0;
 	private Dictionary<GoodManager.State, List<Container>> containers = null;
+	private InfoController resourceDisplayController = null;
 	private GoodManager goodManager = null;
 	private new Rigidbody2D rigidbody = null;
 
@@ -24,10 +25,42 @@ public class InventoryController : MonoBehaviour
 	private void Start()
 	{
 		goodManager = GoodManager.GetInstance();
+
+		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
+		resourceDisplayController = spacecraftManager.GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
+		spacecraftManager.AddSpacecraftChangeListener(this);
+
+		resourceDisplayController?.UpdateResourceDisplays(this);
+	}
+
+	public void Notify()
+	{
+		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
+		resourceDisplayController?.UpdateResourceDisplays(this);
+	}
+
+	public bool TransferMoney(int money)
+	{
+		if(this.money + money >= 0)
+		{
+			this.money += money;
+
+			resourceDisplayController?.UpdateResourceDisplays(this);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
 	public bool Deposit(string goodName, uint amount)
 	{
+		if(goodManager == null)
+		{
+			goodManager = GoodManager.GetInstance();
+		}
+
 		GoodManager.State state = goodManager.GetGood(goodName).state;
 		uint freeCapacity = 0;
 
@@ -35,6 +68,7 @@ public class InventoryController : MonoBehaviour
 		{
 			if(container.Deposit(goodName, amount))
 			{
+				resourceDisplayController?.UpdateResourceDisplays(this);
 				return true;
 			}
 			else
@@ -43,11 +77,11 @@ public class InventoryController : MonoBehaviour
 			}
 		}
 
-		if(freeCapacity >= amount * (uint) Mathf.CeilToInt(goodManager.GetGood(goodName).volume))
+		if(freeCapacity >= amount * (uint)Mathf.CeilToInt(goodManager.GetGood(goodName).volume))
 		{
 			foreach(Container container in containers[state])
 			{
-				uint partialAmount = (uint) Mathf.Min((int) container.GetFreeCapacity(), (int) (amount * (uint) Mathf.CeilToInt(goodManager.GetGood(goodName).volume)));
+				uint partialAmount = (uint)Mathf.Min((int)container.GetFreeCapacity(), (int)(amount * (uint)Mathf.CeilToInt(goodManager.GetGood(goodName).volume)));
 				if(partialAmount > 0 && container.Deposit(goodName, partialAmount))
 				{
 					amount -= partialAmount;
@@ -55,6 +89,7 @@ public class InventoryController : MonoBehaviour
 
 				if(amount <= 0)
 				{
+					resourceDisplayController?.UpdateResourceDisplays(this);
 					return true;
 				}
 			}
@@ -70,6 +105,11 @@ public class InventoryController : MonoBehaviour
 
 	public bool Withdraw(string goodName, uint amount)
 	{
+		if(goodManager == null)
+		{
+			goodManager = GoodManager.GetInstance();
+		}
+
 		GoodManager.State state = goodManager.GetGood(goodName).state;
 		uint availableAmount = 0;
 
@@ -77,6 +117,7 @@ public class InventoryController : MonoBehaviour
 		{
 			if(container.Withdraw(goodName, amount))
 			{
+				resourceDisplayController?.UpdateResourceDisplays(this);
 				return true;
 			}
 			else
@@ -89,7 +130,7 @@ public class InventoryController : MonoBehaviour
 		{
 			foreach(Container container in containers[state])
 			{
-				uint partialAmount = (uint) Mathf.Min((int) container.GetGoodAmount(goodName), (int) amount);
+				uint partialAmount = (uint)Mathf.Min((int)container.GetGoodAmount(goodName), (int)amount);
 				if(amount > 0 && container.Withdraw(goodName, partialAmount))
 				{
 					amount -= partialAmount;
@@ -97,6 +138,7 @@ public class InventoryController : MonoBehaviour
 
 				if(amount <= 0)
 				{
+					resourceDisplayController?.UpdateResourceDisplays(this);
 					return true;
 				}
 			}
@@ -110,8 +152,28 @@ public class InventoryController : MonoBehaviour
 		}
 	}
 
+	public int GetMoney()
+	{
+		return money;
+	}
+
+	public uint GetFreeCapacity(GoodManager.State state)
+	{
+		uint capacity = 0;
+		foreach(Container container in containers[state])
+		{
+			capacity += container.GetFreeCapacity();
+		}
+		return capacity;
+	}
+
 	public uint GetGoodAmount(string goodName)
 	{
+		if(goodManager == null)
+		{
+			goodManager = GoodManager.GetInstance();
+		}
+
 		GoodManager.State state = goodManager.GetGood(goodName).state;
 		uint sum = 0;
 		foreach(Container container in containers[state])
@@ -129,11 +191,13 @@ public class InventoryController : MonoBehaviour
 		{
 			return (((Vector2)x.GetTransform().localPosition) - rigidbody.centerOfMass).sqrMagnitude - (((Vector2)y.GetTransform().localPosition) - rigidbody.centerOfMass).sqrMagnitude >= 0 ? 1 : -1;
 		});
+		resourceDisplayController?.UpdateResourceDisplays(this);
 	}
 
 	public void RemoveContainer(Container container)
 	{
 		containers[container.GetState()].Remove(container);
+		resourceDisplayController?.UpdateResourceDisplays(this);
 	}
 
 	public Dictionary<string, uint> GetInventoryContents()

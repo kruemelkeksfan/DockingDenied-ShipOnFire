@@ -4,9 +4,23 @@ using UnityEngine;
 
 public class InputController : MonoBehaviour, IUpdateListener
 {
+	protected static int flightControls = 0;
+
 	[SerializeField] protected int hotkeyCount = 10;
 	protected Dictionary<int, HashSet<IHotkeyListener>> hotkeys = null;
 	protected Spacecraft spacecraft = null;
+
+	public static void SetFlightControls(bool flightControls)
+	{
+		if(flightControls)
+		{
+			++InputController.flightControls;
+		}
+		else
+		{
+			--InputController.flightControls;
+		}
+	}
 
 	protected virtual void Awake()
 	{
