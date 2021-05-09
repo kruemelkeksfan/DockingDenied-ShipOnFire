@@ -38,6 +38,7 @@ public class InfoController : MonoBehaviour
 		instance = this;
 	}
 
+	// TODO: Put this into a Method which only gets called when a new Message is added or a Message Timestamp runs out (Coroutine)
 	private void Update()
 	{
 		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < Time.time)

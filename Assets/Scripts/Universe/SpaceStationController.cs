@@ -1,5 +1,7 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -19,7 +21,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private static WaitForSeconds waitForEconomyUpdateInterval = null;
+	private static WaitForSeconds waitForStationUpdateInterval = null;
 	private static WaitForSeconds waitForDockingTimeout = null;
 
 	[SerializeField] private RectTransform uiTransform = null;
@@ -34,7 +36,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private float bulkDiscount = 0.002f;
 	[Tooltip("Maximum Time in Seconds before Docking Permission expires")]
 	[SerializeField] private float dockingTimeout = 600.0f;
-	[SerializeField] private float economyUpdateInterval = 600.0f;
+	[SerializeField] private float stationUpdateInterval = 600.0f;
 	[SerializeField] private int maxGoodStock = 100;
 	[Tooltip("Minimum Money Change of the Station per Economy Update.")]
 	[SerializeField] private int minProfit = -100;
@@ -42,11 +44,15 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private int maxProfit = 200;
 	[SerializeField] private GameObject stationMenu = null;
 	[SerializeField] private Text stationName = null;
+	[SerializeField] private GameObject questMenu = null;
+	[SerializeField] private RectTransform questEntryPrefab = null;
+	[SerializeField] private RectTransform questContentPane = null;
 	[SerializeField] private GameObject tradingMenu = null;
-	[SerializeField] private GameObject tradingEntryPrefab = null;
+	[SerializeField] private RectTransform tradingEntryPrefab = null;
 	[SerializeField] private RectTransform tradingContentPane = null;
 	[SerializeField] private GameObject emptyListIndicator = null;
 	private GoodManager goodManager = null;
+	private QuestManager questManager = null;
 	private Spacecraft spacecraft = null;
 	private new Transform transform = null;
 	private InventoryController inventoryController = null;
@@ -57,12 +63,14 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private DockingPort[] dockingPorts = null;
 	private Dictionary<DockingPort, Spacecraft> expectedDockings = null;
 	private HashSet<Spacecraft> dockedSpacecraft = null;
+	private QuestManager.Quest[] questSelection = null;
+	private bool updateQuestSelection = true;
 
 	private void Start()
 	{
-		if(waitForEconomyUpdateInterval == null || waitForDockingTimeout == null)
+		if(waitForStationUpdateInterval == null || waitForDockingTimeout == null)
 		{
-			waitForEconomyUpdateInterval = new WaitForSeconds(economyUpdateInterval);
+			waitForStationUpdateInterval = new WaitForSeconds(stationUpdateInterval);
 			waitForDockingTimeout = new WaitForSeconds(dockingTimeout);
 		}
 
@@ -82,6 +90,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		dockedSpacecraft = new HashSet<Spacecraft>();
 
 		goodManager = GoodManager.GetInstance();
+		questManager = QuestManager.GetInstance();
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
 		localPlayerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
 		localPlayerSpacecraftTransform = localPlayerSpacecraft.GetTransform();
@@ -90,7 +99,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		spacecraft.AddUpdateListener(this);
 
-		StartCoroutine(CalculateEconomy());
+		StartCoroutine(StationUpdate());
 	}
 
 	private void OnDestroy()
@@ -158,15 +167,24 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		localPlayerMainInventory = localPlayerSpacecraft.GetComponent<InventoryController>();
 	}
 
-	public void ToggleStationMenu()                         // ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
+	public void ToggleStationMenu()										// ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
 	{
 		stationMenu.SetActive(!stationMenu.activeSelf);
 		InputController.SetFlightControls(!stationMenu.activeSelf);
 	}
 
+	public void ToggleQuestMenu()
+	{
+		questMenu.SetActive(!questMenu.activeSelf);
+		InputController.SetFlightControls(!questMenu.activeSelf);
+		ToggleStationMenu();
+	}
+
 	public void ToggleTradingMenu()
 	{
 		tradingMenu.SetActive(!tradingMenu.activeSelf);
+		InputController.SetFlightControls(!tradingMenu.activeSelf);
+		ToggleStationMenu();
 	}
 
 	public void RequestDocking()
@@ -227,6 +245,60 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
+	public void UpdateQuests()
+	{
+		// TODO: Enable/Disable QuestPanels instead of Spawning/Despawning
+		for(int i = 1; i < questContentPane.childCount; ++i)
+		{
+			GameObject.Destroy(questContentPane.GetChild(i).gameObject);
+		}
+
+		QuestManager.Quest? activeQuest = questManager.GetActiveQuest(this);
+		if(activeQuest.HasValue)
+		{
+			questSelection = null;
+
+			RectTransform questPanel = GenerateQuestPanel(activeQuest.Value);
+			Button completeButton = questPanel.GetChild(8).GetComponent<Button>();
+			if(activeQuest.Value.progress < 1.0f)
+			{
+				completeButton.interactable = false;
+				completeButton.GetComponentInChildren<Text>().text = Mathf.FloorToInt(activeQuest.Value.progress * 100.0f) + "%";
+			}
+			else
+			{
+				completeButton.interactable = true;
+				completeButton.GetComponentInChildren<Text>().text = "Complete";
+				completeButton.onClick.AddListener(delegate
+				{
+					questManager.CompleteQuest(this);
+					UpdateQuests();
+				});
+			}	
+		}
+		else
+		{
+			if(questSelection == null || updateQuestSelection)
+			{
+				questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this), questManager.GenerateQuest(this), questManager.GenerateQuest(this) };
+				updateQuestSelection = false;
+			}
+
+			for(int i = -1; i <= 1; ++i)
+			{
+				Button acceptButton = GenerateQuestPanel(questSelection[i + 1], i).GetChild(8).GetComponent<Button>();
+				acceptButton.interactable = true;
+				acceptButton.GetComponentInChildren<Text>().text = "Accept";
+				QuestManager.Quest localQuest = questSelection[i + 1];
+				acceptButton.onClick.AddListener(delegate
+				{
+					questManager.AcceptQuest(localQuest);
+					UpdateQuests();
+				});
+			}
+		}
+	}
+
 	// TODO: Maybe outsource this to TradingScreenController and StationEconomyController Classes
 	public void UpdateTrading()
 	{
@@ -259,8 +331,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		tradingInventoryKeys.Sort();
 		foreach(string goodName in tradingInventoryKeys)
 		{
-			GameObject tradingEntry = GameObject.Instantiate<GameObject>(tradingEntryPrefab, tradingContentPane);
-			RectTransform tradingEntryRectTransform = tradingEntry.GetComponent<RectTransform>();
+			RectTransform tradingEntryRectTransform = GameObject.Instantiate<RectTransform>(tradingEntryPrefab, tradingContentPane);
 			tradingEntryRectTransform.anchoredPosition =
 				new Vector3(tradingEntryRectTransform.anchoredPosition.x, -(tradingEntryRectTransform.rect.height * 0.5f + 20.0f + tradingEntryRectTransform.rect.height * j));
 
@@ -321,7 +392,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		uint tradeAmount = uint.Parse(amountField.text);
 		int money = buyer.GetMoney();
 		uint availableAmount = seller.GetGoodAmount(goodName);
-		int totalPrice = CalculateGoodPrice(goodName, stationAmount, (buyer == localPlayerMainInventory ? (int) tradeAmount : (int) -tradeAmount));
+		int totalPrice = CalculateGoodPrice(goodName, stationAmount, (buyer == localPlayerMainInventory ? (int)tradeAmount : (int)-tradeAmount));
 		if(money >= totalPrice)
 		{
 			if(availableAmount >= tradeAmount)
@@ -392,26 +463,49 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private IEnumerator CalculateEconomy()
+	private IEnumerator StationUpdate()
 	{
 		while(true)
 		{
+			updateQuestSelection = true;
+
 			Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
 			foreach(string goodName in goods.Keys)
 			{
 				uint stock = inventoryController.GetGoodAmount(goodName);
 				if(stock < maxGoodStock)
 				{
-					inventoryController.Deposit(goodName, (uint) Random.Range(1, goods[goodName].consumption * 2));
+					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(1, goods[goodName].consumption * 2));
 				}
-				inventoryController.Withdraw(goodName, (uint) Mathf.Max(goods[goodName].consumption, (int) stock));
+				inventoryController.Withdraw(goodName, (uint)Mathf.Max(goods[goodName].consumption, (int)stock));
 			}
+			inventoryController.TransferMoney(UnityEngine.Random.Range(minProfit, maxProfit));
 
-			inventoryController.TransferMoney(Random.Range(minProfit, maxProfit));
-
+			UpdateQuests();
 			UpdateTrading();
-			yield return waitForEconomyUpdateInterval;
+
+			yield return waitForStationUpdateInterval;
 		}
+	}
+
+	private RectTransform GenerateQuestPanel(QuestManager.Quest quest, int position = 0)
+	{
+		RectTransform questEntryRectTransform = GameObject.Instantiate<RectTransform>(questEntryPrefab, questContentPane);
+		questEntryRectTransform.anchoredPosition =
+			new Vector3((questEntryRectTransform.rect.width + 5) * position, questEntryRectTransform.anchoredPosition.y);
+
+		questEntryRectTransform.GetChild(1).GetComponent<Text>().text = questManager.GetBackstoryDescription(quest.backstory);
+		questEntryRectTransform.GetChild(3).GetComponent<Text>().text = questManager.GetQuestGiverDescription(quest.questGiver);
+		questEntryRectTransform.GetChild(5).GetComponent<Text>().text = questManager.GetTaskDescription(quest.task);
+
+		StringBuilder rewardString = new StringBuilder();
+		foreach(KeyValuePair<string, int> reward in quest.rewards)
+		{
+			rewardString.AppendLine(reward.Value + (reward.Key != "$" ? " " : "") + reward.Key);
+		}
+		questEntryRectTransform.GetChild(7).GetComponent<Text>().text = rewardString.ToString();
+
+		return questEntryRectTransform;
 	}
 
 	private int CalculateGoodPrice(string goodName, uint supplyAmount, int transactionAmount = 1)
