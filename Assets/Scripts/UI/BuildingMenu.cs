@@ -282,6 +282,10 @@ public class BuildingMenu : MonoBehaviour
 			reservedZoneRenderers[0].material = zoneInvalidMaterial;
 			reservedZoneTransforms[0].gameObject.SetActive(true);
 		}
+		else
+		{
+			reservedZoneTransforms[0].gameObject.SetActive(false);
+		}
 	}
 
 	private void RefreshBlueprintList()
