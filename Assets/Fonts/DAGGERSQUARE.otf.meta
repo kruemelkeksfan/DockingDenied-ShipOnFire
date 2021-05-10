@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 34038fb992deb8445b1b58cfaf86265e
+guid: 1f6275108013e9d49b8f7c2e65ae8166
 TrueTypeFontImporter:
   externalObjects: {}
   serializedVersion: 4
@@ -8,9 +8,9 @@ TrueTypeFontImporter:
   characterSpacing: 0
   characterPadding: 1
   includeFontData: 1
-  fontName: Space Marine
+  fontName: DAGGERSQUARE
   fontNames:
-  - Space Marine
+  - DAGGERSQUARE
   fallbackFontReferences: []
   customCharacters: 
   fontRenderingMode: 0
