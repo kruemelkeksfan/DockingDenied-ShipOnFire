@@ -63,7 +63,7 @@
     ],
     "questGivers": [
         {
-            "description": "A large syndicate known for opportunistic and aggressive deals which drive stations into poverty and supply shortages.",
+            "description": "A large syndicate known for opportunistic deals which drove many stations into poverty and supply shortages.",
             "tasks": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19]
         },
         {
@@ -71,11 +71,11 @@
             "tasks": [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
         },
         {
-            "description": "A ruthless politician who is known for raising support for his goals and silencing his opponents equally violently.",
+            "description": "A ruthless politician who is known for enforcing his goals and silencing his opponents equally violently.",
             "tasks": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
         },
         {
-            "description": "A member of the council. As he made his way towards you he kindly greeted some people, most of which replied with a smile.",
+            "description": "A member of the council. As he comes toward you he kindly greets some people, most of which reply with a smile.",
             "tasks": [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
         },
         {

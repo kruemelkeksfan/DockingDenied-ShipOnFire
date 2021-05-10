@@ -108,6 +108,10 @@ public class QuestManager : MonoBehaviour
 		}
 	}
 
+	// TODO: Maybe take into Account Player Preferences, e.g. his Questionary Answers and which Types of Quest he did most in the Past
+	// (Example Algorithm for the last Part: Probability of a Quest Part = Amount of Times it was performed in the Past / All Quests performed in the Past
+	// => if >20%, use this Number, else equally distribute Chances,
+	// Always generate 1/3 Quests completely random to avoid Player getting locked up in Quests he does not like (any more))
 	public Quest GenerateQuest(SpaceStationController questStation)
 	{
 		Quest quest = new Quest();
