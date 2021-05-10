@@ -531,7 +531,7 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0.2
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
@@ -663,6 +663,15 @@ MonoBehaviour:
   stationBlueprints:
   - {fileID: 4900000, guid: f4edab895be329a468cd1215ad313a04, type: 3}
   - {fileID: 4900000, guid: 22da0b090b4515244947d69beeaf0991, type: 3}
+  stationPositions:
+  - {x: 500, y: 0}
+  - {x: 0, y: -500}
+  - {x: -500, y: 0}
+  - {x: 0, y: 500}
+  - {x: 500, y: 500}
+  - {x: 500, y: -500}
+  - {x: -500, y: -500}
+  - {x: -500, y: 500}
 --- !u!4 &437986066
 Transform:
   m_ObjectHideFlags: 0
@@ -2439,8 +2448,8 @@ MonoBehaviour:
       type: 
       attributes: []
   - goodName: Steel Ingredients
-    decription: Various ingredients other than iron ore which are necessary for steel
-      production. Mostly carbon, chromium, nickel, manganese and molybdenum.
+    decription: Ingredients other than iron ore for steel production, like carbon,
+      chromium, nickel, manganese and molybdenum.
     state: 0
     mass: 8
     volume: 1

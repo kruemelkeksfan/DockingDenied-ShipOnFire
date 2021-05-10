@@ -300,8 +300,7 @@ public class BuildingMenu : MonoBehaviour
 		{
 			Button blueprintButton = GameObject.Instantiate<Button>(blueprintButtonPrefab, blueprintContentPane);
 			RectTransform blueprintButtonRectTransform = blueprintButton.GetComponent<RectTransform>();
-			blueprintButtonRectTransform.anchoredPosition =
-				new Vector3(blueprintButtonRectTransform.anchoredPosition.x, -(blueprintButtonRectTransform.rect.height * 0.5f + blueprintButtonRectTransform.rect.height * i));
+
 			int startIndex = blueprintPaths[i].LastIndexOf(Path.DirectorySeparatorChar) + 1;
 			int endIndex = blueprintPaths[i].LastIndexOf(".");
 			blueprintButton.GetComponentInChildren<Text>().text = blueprintPaths[i].Substring(startIndex, endIndex - startIndex);

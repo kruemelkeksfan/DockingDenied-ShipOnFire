@@ -12,6 +12,7 @@ public class SpaceStationSpawner : MonoBehaviour
 	[SerializeField] private float numberSuffixChance = 0.1f;
 	[SerializeField] private Spacecraft spacecraftPrefab = null;
 	[SerializeField] private TextAsset[] stationBlueprints = { };
+	[SerializeField] private Vector2[] stationPositions = { };
 
 	public static SpaceStationSpawner GetInstance()
 	{
@@ -25,36 +26,39 @@ public class SpaceStationSpawner : MonoBehaviour
 
 	private void Start()
 	{
-		Spacecraft spaceStationSpacecraft = GameObject.Instantiate<Spacecraft>(spacecraftPrefab, new Vector3(500.0f, 0.2f, 0.0f), Quaternion.identity);
-		SpacecraftBlueprintController.LoadBlueprint(stationBlueprints[Random.Range(0, stationBlueprints.Length)], spaceStationSpacecraft, spaceStationSpacecraft.GetTransform());
-		SpaceStationController spaceStation = spaceStationSpacecraft.GetComponent<SpaceStationController>();
+		foreach(Vector2 position in stationPositions)
+		{
+			Spacecraft spaceStationSpacecraft = GameObject.Instantiate<Spacecraft>(spacecraftPrefab, position, Quaternion.identity);
+			SpacecraftBlueprintController.LoadBlueprint(stationBlueprints[Random.Range(0, stationBlueprints.Length)], spaceStationSpacecraft, spaceStationSpacecraft.GetTransform());
+			SpaceStationController spaceStation = spaceStationSpacecraft.GetComponent<SpaceStationController>();
 
-		int prefixIndex = Random.Range(0, namePrefixes.Count);
-		if(Random.value < numberSuffixChance)
-		{
-			StringBuilder name = new StringBuilder(namePrefixes[prefixIndex] + " ");
-			int i = 0;
-			do
+			int prefixIndex = Random.Range(0, namePrefixes.Count);
+			if(Random.value < numberSuffixChance)
 			{
-				if(i <= 0)
+				StringBuilder name = new StringBuilder(namePrefixes[prefixIndex] + " ");
+				int i = 0;
+				do
 				{
-					name.Append(Random.Range(1, 9));
+					if(i <= 0)
+					{
+						name.Append(Random.Range(1, 9));
+					}
+					else
+					{
+						name.Append(Random.Range(0, 9));
+					}
+					++i;
 				}
-				else
-				{
-					name.Append(Random.Range(0, 9));
-				}
-				++i;
+				while(i < 4 && Random.value < 0.5f);
+				spaceStation.SetStationName(name.ToString());
 			}
-			while(i < 4 && Random.value < 0.5f);
-			spaceStation.SetStationName(name.ToString());
+			else
+			{
+				int suffixIndex = Random.Range(0, nameSuffixes.Count);
+				spaceStation.SetStationName(namePrefixes[prefixIndex] + " " + nameSuffixes[suffixIndex]);
+				nameSuffixes.RemoveAt(suffixIndex);
+			}
+			namePrefixes.RemoveAt(prefixIndex);
 		}
-		else
-		{
-			int suffixIndex = Random.Range(0, nameSuffixes.Count);
-			spaceStation.SetStationName(namePrefixes[prefixIndex] + " " + nameSuffixes[suffixIndex]);
-			nameSuffixes.RemoveAt(suffixIndex);
-		}
-		namePrefixes.RemoveAt(prefixIndex);
 	}
 }
