@@ -82,9 +82,10 @@ public class HotkeyModule : Module, IHotkeyListener
 
 	public void SetHotkey(int hotkey)
 	{
-		inputController.RemoveHotkey(this.hotkey, this);
+		// TODO: Clean up the ?.-Operators by figuring out a Software Architecture that does not need Hotkeys when no KeyboardInputController is present
+		inputController?.RemoveHotkey(this.hotkey, this);
 		this.hotkey = hotkey;
-		inputController.AddHotkey(hotkey, this, actionName);
+		inputController?.AddHotkey(hotkey, this, actionName);
 		hotkeySelection.value = hotkey;
 	}
 }

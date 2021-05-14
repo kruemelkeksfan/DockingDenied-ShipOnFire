@@ -80,7 +80,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			waitForDockingTimeout = new WaitForSeconds(dockingTimeout);
 		}
 
-		ToggleController.GetInstance().AddToggleObject("StationMarkers", mapMarker.gameObject);
+		ToggleController.GetInstance().AddToggleObject("SpacecraftMarkers", mapMarker.gameObject);
 
 		maxApproachDistance *= maxApproachDistance;
 		spacecraft = GetComponent<Spacecraft>();
@@ -110,7 +110,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private void OnDestroy()
 	{
-		ToggleController.GetInstance().RemoveToggleObject("StationMarkers", mapMarker.gameObject);
+		ToggleController.GetInstance().RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
 	}
 
 	public void UpdateNotify()
@@ -173,7 +173,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		localPlayerMainInventory = localPlayerSpacecraft.GetComponent<InventoryController>();
 	}
 
-	public void ToggleStationMenu()										// ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
+	public void ToggleStationMenu()                                     // ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
 	{
 		stationMenu.SetActive(!stationMenu.activeSelf);
 		InputController.SetFlightControls(!stationMenu.activeSelf);
@@ -197,15 +197,19 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		ToggleStationMenu();
 	}
 
-	public void RequestDocking()
+	public void RequestDocking(Spacecraft requester = null, bool ignoreRange = false)
 	{
+		if(requester == null)
+		{
+			requester = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
+		}
+
 		// TODO: Check if Ship is on Fire etc.
-		Spacecraft requester = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
 		if(!dockedSpacecraft.Contains(requester))
 		{
 			if(!expectedDockings.ContainsValue(requester))
 			{
-				if((requester.GetTransform().position - transform.position).sqrMagnitude <= maxApproachDistance)
+				if(ignoreRange || (requester.GetTransform().position - transform.position).sqrMagnitude <= maxApproachDistance)
 				{
 					float maxAngle = float.MinValue;
 					DockingPort alignedPort = null;
@@ -263,17 +267,17 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			GameObject.Destroy(questContentPane.GetChild(i).gameObject);
 		}
 
-		QuestManager.Quest? activeQuest = questManager.GetActiveQuest(this);
-		if(activeQuest.HasValue)
+		QuestManager.Quest activeQuest = questManager.GetActiveQuest(this);
+		if(activeQuest != null)
 		{
 			questSelection = null;
 
-			RectTransform questPanel = GenerateQuestPanel(activeQuest.Value);
+			RectTransform questPanel = GenerateQuestPanel(activeQuest);
 			Button completeButton = questPanel.GetChild(8).GetComponent<Button>();
-			if(activeQuest.Value.progress < 1.0f)
+			if(activeQuest.progress < 1.0f)
 			{
 				completeButton.interactable = false;
-				completeButton.GetComponentInChildren<Text>().text = Mathf.FloorToInt(activeQuest.Value.progress * 100.0f) + "%";
+				completeButton.GetComponentInChildren<Text>().text = Mathf.FloorToInt(activeQuest.progress * 100.0f) + "%";
 			}
 			else
 			{
@@ -284,7 +288,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 					questManager.CompleteQuest(this);
 					UpdateQuests();
 				});
-			}	
+			}
 		}
 		else
 		{
@@ -415,6 +419,15 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 					buyer.TransferMoney(-totalPrice);
 					seller.TransferMoney(totalPrice);
+
+					if(buyer == localPlayerMainInventory)
+					{
+						questManager.NotifyTrade(this, goodName, (int)tradeAmount, -price);
+					}
+					else
+					{
+						questManager.NotifyTrade(this, goodName, (int)-tradeAmount, price);
+					}
 
 					UpdateTrading();
 
@@ -553,6 +566,16 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			float price = (consumptionPriceConstant / (supplyAmount)) - (consumptionPriceConstant / (supplyAmount + transactionAmount));
 			return Mathf.CeilToInt(price - (bulkDiscount * transactionAmount * price));
 		}
+	}
+
+	public Transform GetTransform()
+	{
+		return transform;
+	}
+
+	public InventoryController GetInventoryController()
+	{
+		return inventoryController;
 	}
 
 	public void SetStationName(string stationName)

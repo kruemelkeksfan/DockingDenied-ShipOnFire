@@ -56,6 +56,9 @@ public class InputController : MonoBehaviour, IUpdateListener
 
 	public virtual void RemoveHotkey(int hotkey, IHotkeyListener listener)
 	{
-		hotkeys[hotkey].Remove(listener);
+		if(hotkeys.ContainsKey(hotkey))
+		{
+			hotkeys[hotkey].Remove(listener);
+		}
 	}
 }

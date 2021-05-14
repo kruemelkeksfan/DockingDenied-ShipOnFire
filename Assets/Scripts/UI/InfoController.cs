@@ -61,7 +61,7 @@ public class InfoController : MonoBehaviour
 		{
 			if(keyBindings[key].Length > 0)
 			{
-				hint.Append(key + " -\t");
+				hint.Append(key + " - \t");
 			}
 			
 			bool first = true;

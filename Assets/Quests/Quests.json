@@ -106,19 +106,19 @@
             "description": "Destroy a Pirate Vessel"
         },
         {
-            "description": "Dock to a Customs Vessel and bribe the Crew"
+            "description": "Bribe a Customs Vessels Crew"
         },
         {
-            "description": "Dock to a helpless Vessel and jump-start its Engine"
+            "description": "Jump-start a helpless Vessel"
         },
         {
-            "description": "Dock to a helpless Vessel and supply Oxygen"
+            "description": "Supply 10 Oxygen to a helpless Vessel"
         },
         {
-            "description": "Dock to a helpless Vessel and plunder it"
+            "description": "Plunder a helpless Vessel"
         },
         {
-            "description": "Dock to a helpless Vessel and tow it to the Station"
+            "description": "Tow a helpless Vessel to the Station"
         },
         {
             "description": "Sell 40 Steel to Station"
@@ -151,7 +151,7 @@
             "description": "Buy Goods for at least 200$ from the Station"
         },
 	   {
-            "description": "Dock to a Trading Vessel and plunder it"
+            "description": "Plunder a Trading Vessel"
         },
 	   {
             "description": "Destroy a Combat Vessel"

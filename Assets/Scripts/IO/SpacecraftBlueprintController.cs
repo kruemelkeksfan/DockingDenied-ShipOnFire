@@ -62,7 +62,7 @@ public class SpacecraftBlueprintController
 				if(modules[position] is HotkeyModule)
 				{
 					HotkeyModule hotkeyModule = (HotkeyModule) modules[position];
-					moduleData.Add(new ModuleData(hotkeyModule.GetActionName(), hotkeyModule.GetPosition(), hotkeyModule.GetTransform().localRotation.eulerAngles.z, hotkeyModule.GetActionName(), hotkeyModule.GetHotkey()));
+					moduleData.Add(new ModuleData(modules[position].GetModuleName(), hotkeyModule.GetPosition(), hotkeyModule.GetTransform().localRotation.eulerAngles.z, hotkeyModule.GetActionName(), hotkeyModule.GetHotkey()));
 				}
 				else
 				{

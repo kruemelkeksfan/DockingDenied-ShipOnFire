@@ -10,7 +10,7 @@ public class SpaceStationSpawner : MonoBehaviour
 	[SerializeField] private List<string> namePrefixes = null;
 	[SerializeField] private List<string> nameSuffixes = null;
 	[SerializeField] private float numberSuffixChance = 0.1f;
-	[SerializeField] private Spacecraft spacecraftPrefab = null;
+	[SerializeField] private Spacecraft spaceStationPrefab = null;
 	[SerializeField] private TextAsset[] stationBlueprints = { };
 	[SerializeField] private Vector2[] stationPositions = { };
 
@@ -28,7 +28,7 @@ public class SpaceStationSpawner : MonoBehaviour
 	{
 		foreach(Vector2 position in stationPositions)
 		{
-			Spacecraft spaceStationSpacecraft = GameObject.Instantiate<Spacecraft>(spacecraftPrefab, position, Quaternion.identity);
+			Spacecraft spaceStationSpacecraft = GameObject.Instantiate<Spacecraft>(spaceStationPrefab, position, Quaternion.identity);
 			SpacecraftBlueprintController.LoadBlueprint(stationBlueprints[Random.Range(0, stationBlueprints.Length)], spaceStationSpacecraft, spaceStationSpacecraft.GetTransform());
 			SpaceStationController spaceStation = spaceStationSpacecraft.GetComponent<SpaceStationController>();
 

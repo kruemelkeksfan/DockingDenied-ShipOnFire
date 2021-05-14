@@ -658,7 +658,7 @@ MonoBehaviour:
   - Nadazero
   - Pantafive
   numberSuffixChance: 0.1
-  spacecraftPrefab: {fileID: 5754137889621204191, guid: dee246da73e76bf4e8b3902e583170be,
+  spaceStationPrefab: {fileID: 5754137889621204191, guid: dee246da73e76bf4e8b3902e583170be,
     type: 3}
   stationBlueprints:
   - {fileID: 4900000, guid: f4edab895be329a468cd1215ad313a04, type: 3}
@@ -1307,7 +1307,7 @@ PrefabInstance:
       propertyPath: m_Text
       value: 'Hide
 
-        Stations'
+        Spacecraft'
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -1342,7 +1342,7 @@ PrefabInstance:
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: StationMarkers
+      value: SpacecraftMarkers
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -1352,7 +1352,7 @@ PrefabInstance:
     - target: {fileID: 8633029733610519970, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_Name
-      value: ShowStations
+      value: ShowSpacecraft
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -2761,6 +2761,14 @@ MonoBehaviour:
   rewardValue: 100
   rewardCount: 3
   monetaryRewardChance: 0.4
+  questVesselSpawnRange:
+    min: 4
+    max: 12
+  questVesselPrefab: {fileID: 6497912318156362318, guid: c347a9d1101a45e41aac3af9b415db46,
+    type: 3}
+  questVesselBlueprints:
+  - {fileID: 4900000, guid: 2acd4dc4e30946447900601e68da4573, type: 3}
+  questVesselSpawnClearance: 0.2
 --- !u!4 &938566358
 Transform:
   m_ObjectHideFlags: 0
@@ -3745,7 +3753,7 @@ MonoBehaviour:
     text: {fileID: 1466514765}
   - groupName: COMIndicators
     text: {fileID: 1745880928}
-  - groupName: StationMarkers
+  - groupName: SpacecraftMarkers
     text: {fileID: 1930214034}
   - groupName: PortNameplates
     text: {fileID: 1571141922}
