@@ -60,8 +60,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private Spacecraft spacecraft = null;
 	private new Transform transform = null;
 	private InventoryController inventoryController = null;
-	private Spacecraft localPlayerSpacecraft = null;
-	private Transform localPlayerSpacecraftTransform = null;
+	private Spacecraft localPlayerMainSpacecraft = null;
+	private Transform localPlayerMainTransform = null;
 	private InventoryController localPlayerMainInventory = null;
 	private new Camera camera = null;
 	private DockingPort[] dockingPorts = null;
@@ -98,9 +98,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
-		localPlayerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
-		localPlayerSpacecraftTransform = localPlayerSpacecraft.GetTransform();
-		localPlayerMainInventory = localPlayerSpacecraft.GetComponent<InventoryController>();
+		localPlayerMainSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
+		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
+		localPlayerMainInventory = localPlayerMainSpacecraft.GetComponent<InventoryController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
 		spacecraft.AddUpdateListener(this);
@@ -119,7 +119,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		RectTransformUtility.ScreenPointToLocalPointInRectangle(uiTransform, camera.WorldToScreenPoint(transform.position), null, out screenPoint);
 		mapMarker.anchoredPosition = screenPoint;
 
-		float distance = (transform.position - localPlayerSpacecraftTransform.position).magnitude;
+		float distance = (transform.position - localPlayerMainTransform.position).magnitude;
 		if(distance > decimalDigitThreshold)
 		{
 			mapMarkerDistance.text = distance.ToString("F0") + "km";
@@ -168,9 +168,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void Notify()
 	{
-		localPlayerSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
-		localPlayerSpacecraftTransform = localPlayerSpacecraft.GetTransform();
-		localPlayerMainInventory = localPlayerSpacecraft.GetComponent<InventoryController>();
+		localPlayerMainSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
+		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
+		localPlayerMainInventory = localPlayerMainSpacecraft.GetComponent<InventoryController>();
 	}
 
 	public void ToggleStationMenu()                                     // ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
@@ -197,13 +197,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		ToggleStationMenu();
 	}
 
-	public void RequestDocking(Spacecraft requester = null, bool ignoreRange = false)
+	public void RequestPlayerDocking()
 	{
-		if(requester == null)
-		{
-			requester = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
-		}
+		RequestDocking(localPlayerMainSpacecraft);
+	}
 
+	public void RequestDocking(Spacecraft requester, bool ignoreRange = false)
+	{
 		// TODO: Check if Ship is on Fire etc.
 		if(!dockedSpacecraft.Contains(requester))
 		{
@@ -356,7 +356,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = tradingInventory[goodName].price.ToString();
 			tradingEntryRectTransform.GetChild(4).GetComponent<Text>().text = goodManager.GetGood(goodName).decription;
 
-			if(dockedSpacecraft.Contains(localPlayerSpacecraft))
+			if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))
 			{
 				tradingEntryRectTransform.GetChild(5).gameObject.SetActive(true);
 				tradingEntryRectTransform.GetChild(6).gameObject.SetActive(true);
@@ -559,12 +559,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		if(transactionAmount >= 0)
 		{
 			float price = (consumptionPriceConstant / (supplyAmount + transactionAmount)) - (consumptionPriceConstant / (supplyAmount));
-			return Mathf.CeilToInt(price + (bulkDiscount * transactionAmount * price));
+			return Mathf.RoundToInt(price + (bulkDiscount * transactionAmount * price)) + 1;														// Round instead of Ceil to avoid different Values for amount = 1 and amount = many, + 1 to avoid price = 0
 		}
 		else
 		{
 			float price = (consumptionPriceConstant / (supplyAmount)) - (consumptionPriceConstant / (supplyAmount + transactionAmount));
-			return Mathf.CeilToInt(price - (bulkDiscount * transactionAmount * price));
+			return Mathf.RoundToInt(price - (bulkDiscount * transactionAmount * price)) + 1;														// Round instead of Ceil to avoid different Values for amount = 1 and amount = many, + 1 to avoid price = 0
 		}
 	}
 
