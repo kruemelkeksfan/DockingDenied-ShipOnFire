@@ -158,5 +158,16 @@ MonoBehaviour:
   - {x: 0, y: 0}
   attachableReservePositions: 0
   overlappingReservePositions: 0
+  buildingCosts:
+  - goodName: Steel
+    amount: 10
+  - goodName: Aluminium
+    amount: 25
+  - goodName: Copper
+    amount: 2
+  - goodName: Gold
+    amount: 1
+  - goodName: Silicon
+    amount: 2
   state: 0
   capacity: 200

@@ -29,7 +29,7 @@ public class SpaceStationSpawner : MonoBehaviour
 		foreach(Vector2 position in stationPositions)
 		{
 			Spacecraft spaceStationSpacecraft = GameObject.Instantiate<Spacecraft>(spaceStationPrefab, position, Quaternion.identity);
-			SpacecraftBlueprintController.LoadBlueprint(stationBlueprints[Random.Range(0, stationBlueprints.Length)], spaceStationSpacecraft, spaceStationSpacecraft.GetTransform());
+			SpacecraftBlueprintController.LoadBlueprint(stationBlueprints[Random.Range(0, stationBlueprints.Length)], spaceStationSpacecraft.GetTransform());
 			SpaceStationController spaceStation = spaceStationSpacecraft.GetComponent<SpaceStationController>();
 
 			int prefixIndex = Random.Range(0, namePrefixes.Count);

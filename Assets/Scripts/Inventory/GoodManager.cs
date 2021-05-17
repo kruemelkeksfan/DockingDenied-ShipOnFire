@@ -43,6 +43,19 @@ public class GoodManager : MonoBehaviour
 		public float value;
 	}
 
+	[Serializable]
+	public struct Load
+	{
+		public string goodName;
+		public uint amount;
+
+		public Load(string goodName, uint amount)
+		{
+			this.goodName = goodName;
+			this.amount = amount;
+		}
+	}
+
 	private static GoodManager instance = null;
 
     [SerializeField] private Good[] goods = { };

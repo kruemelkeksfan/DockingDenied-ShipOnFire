@@ -337,7 +337,7 @@ public class QuestManager : MonoBehaviour, IListener
 			while(Physics2D.OverlapCircle(spawnPosition, questVesselSpawnClearance));
 
 			Spacecraft questVesselSpacecraft = GameObject.Instantiate<Spacecraft>(questVesselPrefab, spawnPosition, Quaternion.identity);
-			SpacecraftBlueprintController.LoadBlueprint(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)], questVesselSpacecraft, questVesselSpacecraft.GetTransform());
+			SpacecraftBlueprintController.LoadBlueprint(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)], questVesselSpacecraft.GetTransform());
 
 			QuestVesselController questVessel = questVesselSpacecraft.GetComponent<QuestVesselController>();
 			questVessel.SetQuest(quest);

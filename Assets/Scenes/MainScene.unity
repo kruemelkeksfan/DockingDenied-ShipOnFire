@@ -1575,7 +1575,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageField: {fileID: 1116002635}
-  messageDuration: 40
+  messageDuration: 6
   controlHint: {fileID: 82966304}
   resourceDisplay: {fileID: 775159703}
   buildingResourceDisplay: {fileID: 1632501202}
@@ -2364,7 +2364,7 @@ MonoBehaviour:
     mass: 2.2
     volume: 1
     flammability: 0
-    consumption: 10
+    consumption: 16
     price: 3
     item:
       type: 
@@ -2375,7 +2375,7 @@ MonoBehaviour:
     mass: 2.9
     volume: 1
     flammability: 0
-    consumption: 5
+    consumption: 6
     price: 5
     item:
       type: 
@@ -2397,7 +2397,7 @@ MonoBehaviour:
     mass: 8
     volume: 1
     flammability: 0
-    consumption: 5
+    consumption: 20
     price: 10
     item:
       type: 
@@ -2409,7 +2409,7 @@ MonoBehaviour:
     mass: 2.7
     volume: 1
     flammability: 0
-    consumption: 5
+    consumption: 20
     price: 8
     item:
       type: 
@@ -2420,7 +2420,7 @@ MonoBehaviour:
     mass: 9
     volume: 1
     flammability: 0
-    consumption: 3
+    consumption: 5
     price: 12
     item:
       type: 
@@ -2431,7 +2431,7 @@ MonoBehaviour:
     mass: 19
     volume: 1
     flammability: 0
-    consumption: 1
+    consumption: 3
     price: 20
     item:
       type: 
@@ -2442,7 +2442,7 @@ MonoBehaviour:
     mass: 2.3
     volume: 1
     flammability: 0
-    consumption: 2
+    consumption: 6
     price: 12
     item:
       type: 
@@ -2584,13 +2584,13 @@ PrefabInstance:
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 5
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Target
       value: 
-      objectReference: {fileID: 1461398740}
+      objectReference: {fileID: 2000540777}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_CallState
@@ -2599,17 +2599,17 @@ PrefabInstance:
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ToggleGroup
+      value: DeselectBlueprint
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_IntArgument
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Arguments.m_StringArgument
-      value: LoadBlueprint
+      value: 
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -3744,8 +3744,6 @@ MonoBehaviour:
   initToggleObjects:
   - groupName: SaveBlueprint
     toggleObject: {fileID: 971735205}
-  - groupName: LoadBlueprint
-    toggleObject: {fileID: 986459331}
   - groupName: InventoryPanel
     toggleObject: {fileID: 471828099}
   initToggleTexts:
@@ -5536,6 +5534,7 @@ MonoBehaviour:
   blueprintMenu: {fileID: 1309728543}
   blueprintNameField: {fileID: 22475532}
   blueprintContentPane: {fileID: 452516121}
+  blueprintLoadPanel: {fileID: 986459331}
   modulePrefabs:
   - {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193, type: 3}
   - {fileID: 6033598934764924008, guid: d79625a9fa7875744b399f9a17a614db, type: 3}

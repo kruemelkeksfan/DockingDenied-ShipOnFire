@@ -153,6 +153,19 @@ MonoBehaviour:
   moduleName: Command Module
   mass: 60
   hp: 100
+  pressurized: 1
   reservedPositions:
   - {x: 0, y: 0}
-  firstPositionNeighboursOnly: 0
+  attachableReservePositions: 0
+  overlappingReservePositions: 0
+  buildingCosts:
+  - goodName: Steel
+    amount: 20
+  - goodName: Aluminium
+    amount: 40
+  - goodName: Copper
+    amount: 6
+  - goodName: Gold
+    amount: 4
+  - goodName: Silicon
+    amount: 12

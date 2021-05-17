@@ -13,6 +13,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private bool attachableReservePositions = false;
 	[Tooltip("Whether all reserved Positions after the First can overlap with other reserved Positions which have this Flag enabled.")]
 	[SerializeField] private bool overlappingReservePositions = false;
+	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
+		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
 	protected new Transform transform = null;
@@ -139,5 +141,10 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public bool HasOverlappingReservePositions()
 	{
 		return overlappingReservePositions;
+	}
+
+	public GoodManager.Load[] GetBuildingCosts()
+	{
+		return buildingCosts;
 	}
 }

@@ -18,7 +18,7 @@ public class Spacecraft : MonoBehaviour
 		all
 	};
 
-	[SerializeField] private Module[] essentialModules = null;
+	[SerializeField] private Module commandModulePrefab = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
 	private Dictionary<Vector2Int, Module> modules = null;
 	private HashSet<IUpdateListener> updateListeners = null;
@@ -48,12 +48,7 @@ public class Spacecraft : MonoBehaviour
 	{
 		if(modules.Count <= 0)                                                                      // If no Blueprint was loaded during Awake()
 		{
-			Vector2Int position = Vector2Int.zero;
-			for(int i = 0; i < essentialModules.Length; ++i)
-			{
-				GameObject.Instantiate<Module>(essentialModules[i], transform).Build(position);
-				position += Vector2Int.down;
-			}
+			GameObject.Instantiate<Module>(commandModulePrefab, transform).Build(Vector2Int.zero);
 		}
 
 		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);

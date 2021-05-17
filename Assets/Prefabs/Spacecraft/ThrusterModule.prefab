@@ -4886,6 +4886,7 @@ MonoBehaviour:
   moduleName: Thruster
   mass: 60
   hp: 100
+  pressurized: 1
   reservedPositions:
   - {x: 0, y: 0}
   - {x: 0, y: -1}
@@ -4894,6 +4895,17 @@ MonoBehaviour:
   - {x: 0, y: -4}
   attachableReservePositions: 0
   overlappingReservePositions: 1
+  buildingCosts:
+  - goodName: Steel
+    amount: 10
+  - goodName: Aluminium
+    amount: 20
+  - goodName: Copper
+    amount: 6
+  - goodName: Gold
+    amount: 6
+  - goodName: Silicon
+    amount: 4
   thrust: 1
 --- !u!1 &4989274293812750468
 GameObject:

@@ -15,7 +15,7 @@ public class InventoryController : MonoBehaviour, IListener
 	{
 		money = startingMoney;
 
-		containers = new Dictionary<GoodManager.State, List<Container>>();
+		containers = new Dictionary<GoodManager.State, List<Container>>(2);
 		containers[GoodManager.State.solid] = new List<Container>();
 		containers[GoodManager.State.fluid] = new List<Container>();
 
@@ -30,13 +30,13 @@ public class InventoryController : MonoBehaviour, IListener
 		resourceDisplayController = spacecraftManager.GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
-		resourceDisplayController?.UpdateResourceDisplays(this);
+		resourceDisplayController?.UpdateResourceDisplays();
 	}
 
 	public void Notify()
 	{
 		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
-		resourceDisplayController?.UpdateResourceDisplays(this);
+		resourceDisplayController?.UpdateResourceDisplays();
 	}
 
 	public bool TransferMoney(int money)
@@ -45,7 +45,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			this.money += money;
 
-			resourceDisplayController?.UpdateResourceDisplays(this);
+			resourceDisplayController?.UpdateResourceDisplays();
 			return true;
 		}
 		else
@@ -56,6 +56,11 @@ public class InventoryController : MonoBehaviour, IListener
 
 	public bool Deposit(string goodName, uint amount)
 	{
+		if(amount == 0)
+		{
+			return true;
+		}
+
 		if(goodManager == null)
 		{
 			goodManager = GoodManager.GetInstance();
@@ -68,7 +73,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			if(container.Deposit(goodName, amount))
 			{
-				resourceDisplayController?.UpdateResourceDisplays(this);
+				resourceDisplayController?.UpdateResourceDisplays();
 				return true;
 			}
 			else
@@ -89,7 +94,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 				if(amount <= 0)
 				{
-					resourceDisplayController?.UpdateResourceDisplays(this);
+					resourceDisplayController?.UpdateResourceDisplays();
 					return true;
 				}
 			}
@@ -103,8 +108,51 @@ public class InventoryController : MonoBehaviour, IListener
 		}
 	}
 
+	public bool DepositBulk(GoodManager.Load[] goods)
+	{
+		uint solidSum = 0;
+		uint fluidSum = 0;
+		foreach(GoodManager.Load good in goods)
+		{
+			if(goodManager.GetGood(good.goodName).state == GoodManager.State.solid)
+			{
+				solidSum += good.amount;
+			}
+			else
+			{
+				fluidSum += good.amount;
+			}
+		}
+		if(solidSum > GetFreeCapacity(GoodManager.State.solid))
+		{
+			InfoController.GetInstance().AddMessage("Not enough Solid Storage Capacity available in this Spacecrafts Inventory!");
+			return false;
+		}
+		else if(fluidSum > GetFreeCapacity(GoodManager.State.fluid))
+		{
+			InfoController.GetInstance().AddMessage("Not enough Fluid Storage Capacity available in this Spacecrafts Inventory!");
+			return false;
+		}
+
+		foreach(GoodManager.Load good in goods)
+		{
+			if(!Deposit(good.goodName, good.amount))
+			{
+				Debug.LogWarning("Goods could not be deposited in Inventory, although they should be!");
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public bool Withdraw(string goodName, uint amount)
 	{
+		if(amount == 0)
+		{
+			return true;
+		}
+
 		if(goodManager == null)
 		{
 			goodManager = GoodManager.GetInstance();
@@ -117,7 +165,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			if(container.Withdraw(goodName, amount))
 			{
-				resourceDisplayController?.UpdateResourceDisplays(this);
+				resourceDisplayController?.UpdateResourceDisplays();
 				return true;
 			}
 			else
@@ -138,7 +186,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 				if(amount <= 0)
 				{
-					resourceDisplayController?.UpdateResourceDisplays(this);
+					resourceDisplayController?.UpdateResourceDisplays();
 					return true;
 				}
 			}
@@ -150,6 +198,29 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			return false;
 		}
+	}
+
+	public bool WithdrawBulk(GoodManager.Load[] goods)
+	{
+		foreach(GoodManager.Load good in goods)
+		{
+			if(GetGoodAmount(good.goodName) < good.amount)
+			{
+				InfoController.GetInstance().AddMessage("Not enough " + good.goodName + " available in this Spacecrafts Inventory!");
+				return false;
+			}
+		}
+
+		foreach(GoodManager.Load good in goods)
+		{
+			if(!Withdraw(good.goodName, good.amount))
+			{
+				Debug.LogWarning("Goods could not be withdrawn from Inventory, although they should be!");
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	public int GetMoney()
@@ -191,13 +262,13 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			return (((Vector2)x.GetTransform().localPosition) - rigidbody.centerOfMass).sqrMagnitude - (((Vector2)y.GetTransform().localPosition) - rigidbody.centerOfMass).sqrMagnitude >= 0 ? 1 : -1;
 		});
-		resourceDisplayController?.UpdateResourceDisplays(this);
+		resourceDisplayController?.UpdateResourceDisplays();
 	}
 
 	public void RemoveContainer(Container container)
 	{
 		containers[container.GetState()].Remove(container);
-		resourceDisplayController?.UpdateResourceDisplays(this);
+		resourceDisplayController?.UpdateResourceDisplays();
 	}
 
 	public Dictionary<string, uint> GetInventoryContents()

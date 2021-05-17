@@ -5208,6 +5208,17 @@ MonoBehaviour:
   - {x: 0, y: 1}
   attachableReservePositions: 0
   overlappingReservePositions: 0
+  buildingCosts:
+  - goodName: Steel
+    amount: 10
+  - goodName: Aluminium
+    amount: 20
+  - goodName: Copper
+    amount: 4
+  - goodName: Gold
+    amount: 2
+  - goodName: Silicon
+    amount: 4
   moduleSettingMenu: {fileID: 2930098445418603330}
   actionNameField: {fileID: 7320006615892210955}
   hotkeySelection: {fileID: 9193948741579083494}

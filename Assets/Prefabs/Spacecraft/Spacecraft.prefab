@@ -80,9 +80,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 166f1617e4f1e6b49ae79e325dbb59bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  essentialModules:
-  - {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193, type: 3}
-  - {fileID: 6033598934764924008, guid: d79625a9fa7875744b399f9a17a614db, type: 3}
+  commandModulePrefab: {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193,
+    type: 3}
   centerOfMassIndicator: {fileID: 5754137889756671905}
 --- !u!114 &6188606278163628312
 MonoBehaviour:

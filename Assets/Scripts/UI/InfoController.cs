@@ -4,28 +4,25 @@ using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InfoController : MonoBehaviour
+public class InfoController : MonoBehaviour, IListener
 {
-    private struct Message
+	private struct Message
 	{
-        public string message;
-        public float timestamp;
-
-		public Message(string message)
-		{
-			this.message = message;
-			this.timestamp = Time.time;
-		}
+		public string message;
+		public float timestamp;
 	}
 
 	public static InfoController instance = null;
 
-    [SerializeField] private Text messageField = null;
-    [SerializeField] private float messageDuration = 40.0f;
+	[SerializeField] private Text messageField = null;
+	[SerializeField] private float messageDuration = 6.0f;
 	[SerializeField] private Text controlHint = null;
 	[SerializeField] private Text resourceDisplay = null;
 	[SerializeField] private Text buildingResourceDisplay = null;
 	private Queue<Message> messages = null;
+	private float minTimestamp = 0.0f;
+	private Dictionary<string, uint> buildingCosts = null;
+	private InventoryController inventoryController = null;
 
 	public static InfoController GetInstance()
 	{
@@ -38,10 +35,17 @@ public class InfoController : MonoBehaviour
 		instance = this;
 	}
 
+	private void Start()
+	{
+		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
+		inventoryController = spacecraftManager.GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
+		spacecraftManager.AddSpacecraftChangeListener(this);
+	}
+
 	// TODO: Put this into a Method which only gets called when a new Message is added or a Message Timestamp runs out (Coroutine)
 	private void Update()
 	{
-		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < Time.time)
+		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < Time.realtimeSinceStartup)
 		{
 			messages.Dequeue();
 		}
@@ -54,6 +58,11 @@ public class InfoController : MonoBehaviour
 		messageField.text = messageText.ToString();
 	}
 
+	public void Notify()
+	{
+		inventoryController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
+	}
+
 	public void UpdateControlHint(Dictionary<string, string[]> keyBindings)
 	{
 		StringBuilder hint = new StringBuilder(256);
@@ -63,7 +72,7 @@ public class InfoController : MonoBehaviour
 			{
 				hint.Append(key + " - \t");
 			}
-			
+
 			bool first = true;
 			foreach(string action in keyBindings[key])
 			{
@@ -79,16 +88,56 @@ public class InfoController : MonoBehaviour
 		controlHint.text = hint.ToString();
 	}
 
-	public void UpdateResourceDisplays(InventoryController inventoryController)
+	public void UpdateResourceDisplays()
 	{
-		resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - 0 / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
-			+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water");
-		buildingResourceDisplay.text = "Steel - " + inventoryController.GetGoodAmount("Steel") + " / Aluminium - "
-			+ inventoryController.GetGoodAmount("Aluminium") + " / Copper - " + inventoryController.GetGoodAmount("Copper") + " / Gold - " + inventoryController.GetGoodAmount("Gold") + " / Silicon - " + inventoryController.GetGoodAmount("Silicon");
+		if(inventoryController != null)
+		{
+			resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - 0"/* / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
+			+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/;
+			if(buildingCosts == null)
+			{
+				buildingResourceDisplay.text = "Steel - " + inventoryController.GetGoodAmount("Steel")
+					+ " / Aluminium - " + inventoryController.GetGoodAmount("Aluminium")
+					+ " / Copper - " + inventoryController.GetGoodAmount("Copper")
+					+ " / Gold - " + inventoryController.GetGoodAmount("Gold")
+					+ " / Silicon - " + inventoryController.GetGoodAmount("Silicon");
+			}
+			else
+			{
+				buildingResourceDisplay.text = "Steel - " + inventoryController.GetGoodAmount("Steel") + " (" + (buildingCosts.ContainsKey("Steel") ? buildingCosts["Steel"] : 0) + ")"
+					+ " / Aluminium - " + inventoryController.GetGoodAmount("Aluminium") + " (" + (buildingCosts.ContainsKey("Aluminium") ? buildingCosts["Aluminium"] : 0) + ")"
+					+ " / Copper - " + inventoryController.GetGoodAmount("Copper") + " (" + (buildingCosts.ContainsKey("Copper") ? buildingCosts["Copper"] : 0) + ")"
+					+ " / Gold - " + inventoryController.GetGoodAmount("Gold") + " (" + (buildingCosts.ContainsKey("Gold") ? buildingCosts["Gold"] : 0) + ")"
+					+ " / Silicon - " + inventoryController.GetGoodAmount("Silicon") + " (" + (buildingCosts.ContainsKey("Silicon") ? buildingCosts["Silicon"] : 0) + ")";
+			}
+		}
 	}
 
 	public void AddMessage(string message)
 	{
-		messages.Enqueue(new Message(message));
+		Message messageRecord = new Message();
+		messageRecord.message = message;
+		messageRecord.timestamp = Mathf.Max(minTimestamp, Time.realtimeSinceStartup);
+		minTimestamp = messageRecord.timestamp + messageDuration;
+
+		messages.Enqueue(messageRecord);
+	}
+
+	public void SetBuildingCosts(GoodManager.Load[] buildingCosts)
+	{
+		if(buildingCosts != null)
+		{
+			this.buildingCosts = new Dictionary<string, uint>(buildingCosts.Length);
+			foreach(GoodManager.Load cost in buildingCosts)
+			{
+				this.buildingCosts.Add(cost.goodName, cost.amount);
+			}
+		}
+		else
+		{
+			this.buildingCosts = null;
+		}
+
+		UpdateResourceDisplays();
 	}
 }

@@ -46,12 +46,15 @@ public class BuildingMenu : MonoBehaviour
 	[SerializeField] private GameObject blueprintMenu = null;
 	[SerializeField] private InputField blueprintNameField = null;
 	[SerializeField] private RectTransform blueprintContentPane = null;
+	[SerializeField] private GameObject blueprintLoadPanel = null;
 	[SerializeField] private Module[] modulePrefabs = null;
 	[SerializeField] private MeshRenderer reservedZonePrefab = null;
 	[SerializeField] private Material zoneValidMaterial = null;
 	[SerializeField] private Material zoneInvalidMaterial = null;
 	[SerializeField] private string blueprintFolder = "Blueprints";
 	[SerializeField] private Spacecraft spacecraft = null;
+	private SpacecraftManager spacecraftManager = null;
+	private InfoController infoController = null;
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
 	private Plane buildingPlane = new Plane(Vector3.back, 0.0f);
@@ -63,6 +66,7 @@ public class BuildingMenu : MonoBehaviour
 	private bool erase = false;
 	private HotkeyModule activeModuleSettings = null;
 	private string selectedBlueprintPath = null;
+	private GoodManager.Load[] selectedBlueprintCosts = null;
 	private Dictionary<string, Module> modulePrefabDictionary = null;
 	private Transform spacecraftTransform = null;
 	private new Camera camera = null;
@@ -106,6 +110,8 @@ public class BuildingMenu : MonoBehaviour
 				});
 		}
 
+		spacecraftManager = SpacecraftManager.GetInstance();
+		infoController = InfoController.GetInstance();
 		spacecraftTransform = spacecraft.GetTransform();
 		camera = Camera.main;
 		cameraTransform = camera.GetComponent<Transform>();
@@ -185,11 +191,21 @@ public class BuildingMenu : MonoBehaviour
 				}
 				if(Input.GetButtonUp("Place Module") && currentModule.buildable && !EventSystem.current.IsPointerOverGameObject())
 				{
-					currentModule.module.Build(gridPosition);
-					currentModule.collider.enabled = true;
-					currentModule.transform.localScale = currentModule.scale;
+					Constructor constructor = FindBuildingConstructor(currentModule.transform.position, currentModule.module.GetBuildingCosts());
+					if(constructor != null)
+					{
+						currentModule.module.Build(gridPosition);
+						currentModule.collider.enabled = true;
+						currentModule.transform.localScale = currentModule.scale;
 
-					SpawnModule(currentModule.index);
+						constructor.StartConstruction(currentModule.transform.position);
+
+						SpawnModule(currentModule.index);
+					}
+					else
+					{
+						infoController.AddMessage("Either no Constructor is in Range or no Construction Materials can be provided!");
+					}
 				}
 			}
 			else if(erase)
@@ -200,7 +216,17 @@ public class BuildingMenu : MonoBehaviour
 					Module module = spacecraft.GetModule(gridPosition);
 					if(module != null && module.GetModuleName() != "Command Module")
 					{
-						module.Deconstruct();
+						Vector3 position = module.GetTransform().position;
+						Constructor constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts());
+						if(constructor != null)
+						{
+							constructor.StartConstruction(position);
+							module.Deconstruct();
+						}
+						else
+						{
+							infoController.AddMessage("Either no Constructor is in Range or the Deconstruction Materials can not be sold or stored!");
+						}
 					}
 				}
 			}
@@ -253,6 +279,7 @@ public class BuildingMenu : MonoBehaviour
 		{
 			erase = false;
 			SpawnModule(moduleIndex);
+			infoController.SetBuildingCosts(currentModule.module.GetBuildingCosts());
 		}
 		else
 		{
@@ -262,6 +289,7 @@ public class BuildingMenu : MonoBehaviour
 				reservedZoneTransforms[i].gameObject.SetActive(false);
 			}
 			activeReservedZones = 0;
+			infoController.SetBuildingCosts(null);
 		}
 	}
 	private void SpawnModule(int moduleIndex)
@@ -328,17 +356,76 @@ public class BuildingMenu : MonoBehaviour
 	public void SelectBlueprint(string blueprintPath)
 	{
 		selectedBlueprintPath = blueprintPath;
-		ToggleController.GetInstance().ToggleGroup("LoadBlueprint");
+		selectedBlueprintCosts = SpacecraftBlueprintController.CalculateBlueprintCosts(blueprintPath);
+		infoController.SetBuildingCosts(selectedBlueprintCosts);
+		blueprintLoadPanel.SetActive(true);
+	}
+
+	public void DeselectBlueprint()
+	{
+		selectedBlueprintPath = null;
+		selectedBlueprintCosts = null;
+		infoController.SetBuildingCosts(null);
+		blueprintLoadPanel.SetActive(false);
 	}
 
 	public void ConfirmBlueprint()
 	{
-		if(selectedBlueprintPath != null)
+		if(spacecraft.GetModules().Count <= 1)
 		{
-			SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, spacecraft, spacecraftTransform);
-			selectedBlueprintPath = null;
-			ToggleController.GetInstance().ToggleGroup("LoadBlueprint");
+			if(FindBuildingConstructor(spacecraftTransform.position, selectedBlueprintCosts) != null)
+			{
+				SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, spacecraftTransform);
+				DeselectBlueprint();
+			}
 		}
+		else
+		{
+			InfoController.GetInstance().AddMessage("Unable to instantiate Blueprint, deconstruct old Modules first!");
+			return;
+		}
+	}
+
+	public Constructor FindBuildingConstructor(Vector2 position, GoodManager.Load[] materials)
+	{
+		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
+		{
+			if(constructor.PositionInRange(position))
+			{
+				SpaceStationController spaceStationController = constructor.GetSpaceStationController();
+				if(spaceStationController != null && spaceStationController.BuyConstructionMaterials(materials))
+				{
+					return constructor;
+				}
+				else if(constructor.GetInventoryController().WithdrawBulk(materials))
+				{
+					return constructor;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	public Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials)
+	{
+		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
+		{
+			if(constructor.PositionInRange(position))
+			{
+				SpaceStationController spaceStationController = constructor.GetSpaceStationController();
+				if(spaceStationController != null && spaceStationController.SellDeconstructionMaterials(materials))
+				{
+					return constructor;
+				}
+				else if(constructor.GetInventoryController().DepositBulk(materials))
+				{
+					return constructor;
+				}
+			}
+		}
+
+		return null;
 	}
 
 	public Vector2Int WorldToGridPosition(Vector3 position)
@@ -349,6 +436,11 @@ public class BuildingMenu : MonoBehaviour
 	public Vector2Int LocalToGridPosition(Vector3 position)
 	{
 		return Vector2Int.RoundToInt(position * inverseBuildingGridSize);
+	}
+
+	public Vector3 GridToWorldPosition(Vector2Int position)
+	{
+		return spacecraftTransform.TransformPoint(((Vector2)position) * buildingGridSize);
 	}
 
 	public Vector3 GridToLocalPosition(Vector2Int position)

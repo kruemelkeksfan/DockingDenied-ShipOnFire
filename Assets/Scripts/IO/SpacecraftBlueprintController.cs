@@ -61,7 +61,7 @@ public class SpacecraftBlueprintController
 			{
 				if(modules[position] is HotkeyModule)
 				{
-					HotkeyModule hotkeyModule = (HotkeyModule) modules[position];
+					HotkeyModule hotkeyModule = (HotkeyModule)modules[position];
 					moduleData.Add(new ModuleData(modules[position].GetModuleName(), hotkeyModule.GetPosition(), hotkeyModule.GetTransform().localRotation.eulerAngles.z, hotkeyModule.GetActionName(), hotkeyModule.GetHotkey()));
 				}
 				else
@@ -78,22 +78,61 @@ public class SpacecraftBlueprintController
 		}
 	}
 
-	public static void LoadBlueprint(string blueprintPath, Spacecraft spacecraft, Transform spacecraftTransform)
+	public static GoodManager.Load[] CalculateBlueprintCosts(string blueprintPath)
 	{
 		using(StreamReader reader = new StreamReader(blueprintPath))
 		{
-			InstantiateModules(JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd()), spacecraft, spacecraftTransform);
+			SpacecraftData spacecraftData = JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd());
+
+			Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
+			Dictionary<string, uint> costDictionary = new Dictionary<string, uint>();
+			foreach(ModuleData moduleData in spacecraftData.moduleData)
+			{
+				foreach(GoodManager.Load cost in modulePrefabDictionary[moduleData.type].GetBuildingCosts())
+				{
+					if(cost.amount > 0)
+					{
+						if(!costDictionary.ContainsKey(cost.goodName))
+						{
+							costDictionary[cost.goodName] = cost.amount;
+						}
+						else
+						{
+							costDictionary[cost.goodName] += cost.amount;
+						}
+					}
+				}
+			}
+			GoodManager.Load[] costs = new GoodManager.Load[costDictionary.Count];
+			int i = 0;
+			foreach(string costName in costDictionary.Keys)
+			{
+				costs[i] = new GoodManager.Load();
+				costs[i].goodName = costName;
+				costs[i].amount = costDictionary[costName];
+				++i;
+			}
+
+			return costs;
 		}
 	}
 
-	public static void LoadBlueprint(TextAsset blueprint, Spacecraft spacecraft, Transform spacecraftTransform)
+	public static void LoadBlueprint(string blueprintPath, Transform spacecraftTransform)
 	{
-		InstantiateModules(JsonUtility.FromJson<SpacecraftData>(blueprint.text), spacecraft, spacecraftTransform);
+		using(StreamReader reader = new StreamReader(blueprintPath))
+		{
+			InstantiateModules(JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd()), spacecraftTransform);
+		}
 	}
 
-	private static void InstantiateModules(SpacecraftData spacecraftData, Spacecraft spacecraft, Transform spacecraftTransform)
+	public static void LoadBlueprint(TextAsset blueprint, Transform spacecraftTransform)
 	{
-		spacecraft.DeconstructModules();
+		InstantiateModules(JsonUtility.FromJson<SpacecraftData>(blueprint.text), spacecraftTransform);
+	}
+
+	private static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)
+	{
+		// spacecraft.DeconstructModules();
 
 		Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)

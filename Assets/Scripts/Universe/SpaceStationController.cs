@@ -21,7 +21,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private static WaitForSeconds waitASecond = null;
+	private static WaitForSecondsRealtime waitASecond = null;
 	private static WaitForSeconds waitForStationUpdateInterval = null;
 	private static WaitForSeconds waitForDockingTimeout = null;
 
@@ -38,7 +38,10 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[Tooltip("Maximum Time in Seconds before Docking Permission expires")]
 	[SerializeField] private float dockingTimeout = 600.0f;
 	[SerializeField] private float stationUpdateInterval = 600.0f;
-	[SerializeField] private int maxGoodStock = 100;
+	[Tooltip("Determines the initial Amount of this Good in the Station, depending on the Consumption.")]
+	[SerializeField] private float startingStockFactor = 8.0f;
+	[Tooltip("Determines the maximum Amount of this Good this Station will stockpile by itself, depending on the Consumption.")]
+	[SerializeField] private float maxGoodStockFactor = 8.0f;
 	[Tooltip("Minimum Money Change of the Station per Economy Update.")]
 	[SerializeField] private int minProfit = -100;
 	[Tooltip("Maximum Money Change of the Station per Economy Update.")]
@@ -75,7 +78,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	{
 		if(waitASecond == null || waitForStationUpdateInterval == null || waitForDockingTimeout == null)
 		{
-			waitASecond = new WaitForSeconds(1.0f);
+			waitASecond = new WaitForSecondsRealtime(1.0f);
 			waitForStationUpdateInterval = new WaitForSeconds(stationUpdateInterval);
 			waitForDockingTimeout = new WaitForSeconds(dockingTimeout);
 		}
@@ -102,6 +105,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
 		localPlayerMainInventory = localPlayerMainSpacecraft.GetComponent<InventoryController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
+
+		Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
+		foreach(string goodName in goods.Keys)
+		{
+			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * startingStockFactor));
+		}
 
 		spacecraft.AddUpdateListener(this);
 
@@ -202,14 +211,14 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		RequestDocking(localPlayerMainSpacecraft);
 	}
 
-	public void RequestDocking(Spacecraft requester, bool ignoreRange = false)
+	public void RequestDocking(Spacecraft requester, bool aiRequest = false)
 	{
 		// TODO: Check if Ship is on Fire etc.
 		if(!dockedSpacecraft.Contains(requester))
 		{
 			if(!expectedDockings.ContainsValue(requester))
 			{
-				if(ignoreRange || (requester.GetTransform().position - transform.position).sqrMagnitude <= maxApproachDistance)
+				if(aiRequest || (requester.GetTransform().position - transform.position).sqrMagnitude <= maxApproachDistance)
 				{
 					float maxAngle = float.MinValue;
 					DockingPort alignedPort = null;
@@ -231,7 +240,10 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 					{
 						expectedDockings.Add(alignedPort, requester);
 						alignedPort.HotkeyDown();
-						StartCoroutine(DockingTimeout(alignedPort, requester));
+						if(!aiRequest)
+						{
+							StartCoroutine(DockingTimeout(alignedPort, requester));
+						}
 
 						if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
 						{
@@ -372,11 +384,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				InventoryController localStationInventory = inventoryController;
 				tradingEntryRectTransform.GetChild(6).GetComponent<Button>().onClick.AddListener(delegate
 				{
-					Trade(localGoodName, localAmountField, localPlayerInventory, localStationInventory, tradingInventory[goodName].price, tradingInventory[goodName].stationAmount);
+					Trade(localGoodName, 0, localPlayerInventory, localStationInventory, tradingInventory[goodName].stationAmount, localAmountField);
 				});
 				tradingEntryRectTransform.GetChild(7).GetComponent<Button>().onClick.AddListener(delegate
 				{
-					Trade(localGoodName, localAmountField, localStationInventory, localPlayerInventory, tradingInventory[goodName].price, tradingInventory[goodName].stationAmount);
+					Trade(localGoodName, 0, localStationInventory, localPlayerInventory, tradingInventory[goodName].stationAmount, localAmountField);
 				});
 			}
 			else
@@ -399,39 +411,46 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	public void Trade(string goodName, InputField amountField, InventoryController buyer, InventoryController seller, int price, uint stationAmount)
+	public bool Trade(string goodName, uint tradeAmount, InventoryController buyer, InventoryController seller, uint stationAmount, InputField amountField = null, bool dumpGoods = false, bool hollowSale = false)
 	{
-		if(amountField.text.StartsWith("-"))
+		if(amountField != null)
 		{
-			amountField.text = amountField.text.Remove(0, 1);
+			if(amountField.text.StartsWith("-"))
+			{
+				amountField.text = amountField.text.Remove(0, 1);
+			}
+			tradeAmount = uint.Parse(amountField.text);
 		}
-		uint tradeAmount = uint.Parse(amountField.text);
+
 		int money = buyer.GetMoney();
 		uint availableAmount = seller.GetGoodAmount(goodName);
 		int totalPrice = CalculateGoodPrice(goodName, stationAmount, (buyer == localPlayerMainInventory ? (int)tradeAmount : (int)-tradeAmount));
 		if(money >= totalPrice)
 		{
-			if(availableAmount >= tradeAmount)
+			if(hollowSale || availableAmount >= tradeAmount)
 			{
-				if(buyer.Deposit(goodName, tradeAmount))
+				if(dumpGoods || buyer.Deposit(goodName, tradeAmount))
 				{
-					seller.Withdraw(goodName, tradeAmount);
+					if(!hollowSale)
+					{
+						seller.Withdraw(goodName, tradeAmount);
+					}
 
 					buyer.TransferMoney(-totalPrice);
 					seller.TransferMoney(totalPrice);
 
 					if(buyer == localPlayerMainInventory)
 					{
-						questManager.NotifyTrade(this, goodName, (int)tradeAmount, -price);
+						questManager.NotifyTrade(this, goodName, (int)tradeAmount, -totalPrice);
 					}
 					else
 					{
-						questManager.NotifyTrade(this, goodName, (int)-tradeAmount, price);
+						questManager.NotifyTrade(this, goodName, (int)-tradeAmount, totalPrice);
 					}
 
 					UpdateTrading();
 
-					return;
+					return true;
 				}
 				else
 				{
@@ -469,7 +488,100 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			}
 		}
 
-		amountField.text = Mathf.Min(new int[] { (int)availableAmount, (int)(money / (price * tradeAmount)), (int)buyer.GetFreeCapacity(goodManager.GetGood(goodName).state) }).ToString();
+		if(amountField != null && totalPrice <= money)
+		{
+			amountField.text = Mathf.Min((int)availableAmount, (int)buyer.GetFreeCapacity(goodManager.GetGood(goodName).state)).ToString();
+		}
+
+		return false;
+	}
+
+	public bool BuyConstructionMaterials(GoodManager.Load[] materials)
+	{
+		int totalPrice = 0;
+		uint[] supplyAmounts = new uint[materials.Length];
+		for(int i = 0; i < materials.Length; ++i)
+		{
+			supplyAmounts[i] = inventoryController.GetGoodAmount(materials[i].goodName);
+			if(supplyAmounts[i] < materials[i].amount)
+			{
+				InfoController.GetInstance().AddMessage("Not enough " + materials[i].goodName + " available at this Station!");
+				return false;
+			}
+
+			totalPrice += CalculateGoodPrice(materials[i].goodName, supplyAmounts[i], (int)materials[i].amount);
+			++i;
+		}
+
+		if(totalPrice > localPlayerMainInventory.GetMoney())
+		{
+			InfoController.GetInstance().AddMessage("You are too poor to buy the Construction Materials!");
+			return false;
+		}
+
+		for(int i = 0; i < materials.Length; ++i)
+		{
+			if(!Trade(materials[i].goodName, materials[i].amount, localPlayerMainInventory, inventoryController, supplyAmounts[i], null, true))
+			{
+				Debug.LogWarning("Construction Materials could not be bought, although they should be!");
+				return false;
+			}
+			++i;
+		}
+
+		return true;
+	}
+
+	public bool SellDeconstructionMaterials(GoodManager.Load[] materials)
+	{
+		uint solidSum = 0;
+		uint fluidSum = 0;
+		uint[] supplyAmounts = new uint[materials.Length];
+		int totalPrice = 0;
+		for(int i = 0; i < materials.Length; ++i)
+		{
+			if(goodManager.GetGood(materials[i].goodName).state == GoodManager.State.solid)
+			{
+				solidSum += materials[i].amount;
+			}
+			else
+			{
+				fluidSum += materials[i].amount;
+			}
+
+			supplyAmounts[i] = inventoryController.GetGoodAmount(materials[i].goodName);
+			totalPrice += CalculateGoodPrice(materials[i].goodName, supplyAmounts[i], (int)materials[i].amount);
+			++i;
+		}
+
+		if(solidSum > inventoryController.GetFreeCapacity(GoodManager.State.solid))
+		{
+			InfoController.GetInstance().AddMessage("Not enough Solid Storage Capacity available in this Station!");
+			return false;
+		}
+		else if(fluidSum > inventoryController.GetFreeCapacity(GoodManager.State.fluid))
+		{
+			InfoController.GetInstance().AddMessage("Not enough Fluid Storage Capacity available in this Station!");
+			return false;
+		}
+
+		if(totalPrice > inventoryController.GetMoney())
+		{
+			InfoController.GetInstance().AddMessage("The Station is too poor to buy the Deconstruction Materials!");
+			return false;
+		}
+
+		for(int i = 0; i < materials.Length; ++i)
+		{
+			if(!Trade(materials[i].goodName, materials[i].amount, inventoryController, localPlayerMainInventory, supplyAmounts[i], null, false, true))
+			{
+				Debug.LogWarning("Construction Materials could not be sold, although they should be!");
+				return false;
+			}
+			++i;
+		}
+
+		return true;
 	}
 
 	private IEnumerator DockingTimeout(DockingPort port, Spacecraft requester)
@@ -500,11 +612,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			foreach(string goodName in goods.Keys)
 			{
 				uint stock = inventoryController.GetGoodAmount(goodName);
-				if(stock < maxGoodStock)
+				if(stock < goods[goodName].consumption * maxGoodStockFactor)
 				{
 					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(1, goods[goodName].consumption * 2));
 				}
-				inventoryController.Withdraw(goodName, (uint)Mathf.Max(goods[goodName].consumption, (int)stock));
+				inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, (int)stock));
 			}
 			inventoryController.TransferMoney(UnityEngine.Random.Range(minProfit, maxProfit));
 
@@ -559,12 +671,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		if(transactionAmount >= 0)
 		{
 			float price = (consumptionPriceConstant / (supplyAmount + transactionAmount)) - (consumptionPriceConstant / (supplyAmount));
-			return Mathf.RoundToInt(price + (bulkDiscount * transactionAmount * price)) + 1;														// Round instead of Ceil to avoid different Values for amount = 1 and amount = many, + 1 to avoid price = 0
+			return Mathf.RoundToInt(price + (bulkDiscount * transactionAmount * price)) + 1;                                                        // Round instead of Ceil to avoid different Values for amount = 1 and amount = many, + 1 to avoid price = 0
 		}
 		else
 		{
 			float price = (consumptionPriceConstant / (supplyAmount)) - (consumptionPriceConstant / (supplyAmount + transactionAmount));
-			return Mathf.RoundToInt(price - (bulkDiscount * transactionAmount * price)) + 1;														// Round instead of Ceil to avoid different Values for amount = 1 and amount = many, + 1 to avoid price = 0
+			return Mathf.RoundToInt(price - (bulkDiscount * transactionAmount * price)) + 1;                                                        // Round instead of Ceil to avoid different Values for amount = 1 and amount = many, + 1 to avoid price = 0
 		}
 	}
 

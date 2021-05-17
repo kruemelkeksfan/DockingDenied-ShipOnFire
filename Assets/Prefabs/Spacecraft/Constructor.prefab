@@ -236,11 +236,23 @@ MonoBehaviour:
   moduleName: Constructor
   mass: 60
   hp: 100
+  pressurized: 1
   reservedPositions:
   - {x: 0, y: 0}
   attachableReservePositions: 0
   overlappingReservePositions: 0
-  constructionRange: 0.1
+  buildingCosts:
+  - goodName: Steel
+    amount: 0
+  - goodName: Aluminium
+    amount: 0
+  - goodName: Copper
+    amount: 0
+  - goodName: Gold
+    amount: 0
+  - goodName: Silicon
+    amount: 0
+  constructionRange: 0.4
   doorOpeningSpeed: 1
   constructionAreaIndicator: {fileID: 6883182764642151313}
   hatchUpper: {fileID: 1905053486965204696}
