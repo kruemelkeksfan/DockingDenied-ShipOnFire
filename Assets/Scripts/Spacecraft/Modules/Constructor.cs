@@ -30,7 +30,7 @@ public class Constructor : Module
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
 
-		inventoryController = GetComponentInParent<InventoryController>();
+		inventoryController = spacecraft.GetInventoryController();
 		spaceStationController = GetComponentInParent<SpaceStationController>();
 
 		SpacecraftManager.GetInstance().AddConstructor(this);

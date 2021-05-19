@@ -4906,6 +4906,10 @@ MonoBehaviour:
     amount: 6
   - goodName: Silicon
     amount: 4
+  capacitor:
+    capacity: 320
+    charge: 0
+  energyConsumption: 160
   thrust: 1
 --- !u!1 &4989274293812750468
 GameObject:

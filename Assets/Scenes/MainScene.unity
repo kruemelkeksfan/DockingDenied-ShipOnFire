@@ -776,7 +776,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: -200}
   m_Pivot: {x: 0, y: 1}
 --- !u!114 &452516122
 MonoBehaviour:
@@ -5543,7 +5543,8 @@ MonoBehaviour:
   - {fileID: 3236814468019911108, guid: 3c4b10af7e4ca2e468d37240f2da2a48, type: 3}
   - {fileID: 5582716761120108640, guid: 00e1a39e3db9e0d46b898ade26152969, type: 3}
   - {fileID: 5582716761120108640, guid: a396c65a3df58d34abca7e5e060f4dff, type: 3}
-  - {fileID: 5582716761120108640, guid: 9264ef601d98e6745b1c42372b9ab8ec, type: 3}
+  - {fileID: 2825718841994423135, guid: 1b2d01318b2ff3142b690471645553b8, type: 3}
+  - {fileID: 5712120552042506432, guid: 9264ef601d98e6745b1c42372b9ab8ec, type: 3}
   - {fileID: 9191871534577045455, guid: 39b80cf02a8186247930968442a2b2a5, type: 3}
   - {fileID: 5582716761120108640, guid: c75763a12d90e2f43bdb56b13ac92134, type: 3}
   reservedZonePrefab: {fileID: 8223917137543656114, guid: d4b17ac56ae6b0c4aaee533ffc7f68e9,

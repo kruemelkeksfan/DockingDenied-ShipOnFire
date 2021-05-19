@@ -114,7 +114,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		spacecraft.AddUpdateListener(this);
 
-		StartCoroutine(StationUpdate());
+		StartCoroutine(UpdateStation());
 	}
 
 	private void OnDestroy()
@@ -600,7 +600,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private IEnumerator StationUpdate()
+	private IEnumerator UpdateStation()
 	{
 		while(true)
 		{

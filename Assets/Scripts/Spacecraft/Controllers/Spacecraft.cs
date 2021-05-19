@@ -24,6 +24,7 @@ public class Spacecraft : MonoBehaviour
 	private HashSet<IUpdateListener> updateListeners = null;
 	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
 	private new Transform transform = null;
+	private InventoryController inventoryController = null;
 	private new Rigidbody2D rigidbody = null;
 	private HashSet<Thruster>[] thrusters = null;
 
@@ -33,6 +34,7 @@ public class Spacecraft : MonoBehaviour
 		updateListeners = new HashSet<IUpdateListener>();
 		fixedUpdateListeners = new HashSet<IFixedUpdateListener>();
 		transform = gameObject.GetComponent<Transform>();
+		inventoryController = gameObject.GetComponent<InventoryController>();
 		rigidbody = gameObject.GetComponentInChildren<Rigidbody2D>();
 
 		thrusters = new HashSet<Thruster>[Enum.GetValues(typeof(ThrusterGroup)).Length];
@@ -80,6 +82,7 @@ public class Spacecraft : MonoBehaviour
 	{
 		HashSet<Thruster> inactiveThrusters = new HashSet<Thruster>(thrusters[(int)ThrusterGroup.all]);
 
+		// TODO: Remove Else to enable activating opposing Thrusters at the same Time
 		if(vertical > 0.0f)
 		{
 			SetThrusterGroupThrottle(ThrusterGroup.up, vertical, inactiveThrusters);
@@ -199,6 +202,21 @@ public class Spacecraft : MonoBehaviour
 		}
 	}
 
+	public Dictionary<Vector2Int, Module> GetModules()
+	{
+		return modules;
+	}
+
+	public Transform GetTransform()
+	{
+		return transform;
+	}
+
+	public InventoryController GetInventoryController()
+	{
+		return inventoryController;
+	}
+
 	public void AddModule(Vector2Int position, Module module)
 	{
 		modules[position] = module;
@@ -276,15 +294,5 @@ public class Spacecraft : MonoBehaviour
 		{
 			thrusterGroup.Remove(thruster);
 		}
-	}
-
-	public Dictionary<Vector2Int, Module> GetModules()
-	{
-		return modules;
-	}
-
-	public Transform GetTransform()
-	{
-		return transform;
 	}
 }

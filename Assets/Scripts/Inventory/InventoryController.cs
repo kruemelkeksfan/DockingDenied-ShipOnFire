@@ -4,7 +4,14 @@ using UnityEngine;
 
 public class InventoryController : MonoBehaviour, IListener
 {
+	private static WaitForSeconds waitForEnergyUpdateInterval = null;
+
+	[SerializeField] private float energyUpdateInterval = 0.05f;
 	[SerializeField] private int startingMoney = 200;
+	private HashSet<EnergyProducer> energyProducers = null;
+	private List<Capacitor> energyConsumers = null;
+	private HashSet<Capacitor> batteries = null;
+	private float storedEnergy = 0.0f;
 	private int money = 0;
 	private Dictionary<GoodManager.State, List<Container>> containers = null;
 	private InfoController resourceDisplayController = null;
@@ -13,6 +20,15 @@ public class InventoryController : MonoBehaviour, IListener
 
 	private void Awake()
 	{
+		if(waitForEnergyUpdateInterval == null)
+		{
+			waitForEnergyUpdateInterval = new WaitForSeconds(energyUpdateInterval);
+		}
+
+		energyProducers = new HashSet<EnergyProducer>();
+		energyConsumers = new List<Capacitor>();
+		batteries = new HashSet<Capacitor>();
+
 		money = startingMoney;
 
 		containers = new Dictionary<GoodManager.State, List<Container>>(2);
@@ -29,6 +45,8 @@ public class InventoryController : MonoBehaviour, IListener
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
 		resourceDisplayController = spacecraftManager.GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
 		spacecraftManager.AddSpacecraftChangeListener(this);
+
+		StartCoroutine(UpdateEnergy());
 
 		resourceDisplayController?.UpdateResourceDisplays();
 	}
@@ -223,6 +241,63 @@ public class InventoryController : MonoBehaviour, IListener
 		return true;
 	}
 
+	private IEnumerator UpdateEnergy()
+	{
+		float lastUpdate = 0.0f;
+		int consumerIndex = 0;
+		while(true)
+		{
+			yield return waitForEnergyUpdateInterval;
+
+			float energy = 0.0f;
+			float deltaTime = Time.time - lastUpdate;
+			lastUpdate = Time.time;
+			foreach(EnergyProducer producer in energyProducers)
+			{
+				energy += producer.production * deltaTime;
+			}
+
+			int consumerCounter = 0;
+			while(energy > 0.0f && consumerCounter < energyConsumers.Count)
+			{
+				energy = energyConsumers[consumerIndex].Charge(energy);
+				if(energy <= 0.0f)
+				{
+					foreach(Capacitor battery in batteries)
+					{
+						energy += battery.DischargeAll();
+					}
+					energy = energyConsumers[consumerIndex].Charge(energy);
+				}
+
+				++consumerCounter;
+				consumerIndex = (consumerIndex + 1) % energyConsumers.Count;
+			}
+
+			storedEnergy = 0.0f;
+			if(energy > 0.0f)
+			{
+				foreach(Capacitor battery in batteries)
+				{
+					if(energy <= 0.0f)
+					{
+						break;
+					}
+
+					energy = battery.Charge(energy);
+					storedEnergy += battery.charge;
+				}
+			}
+
+			resourceDisplayController?.UpdateResourceDisplays();
+		}
+	}
+
+	public float GetEnergy()
+	{
+		return storedEnergy;
+	}
+
 	public int GetMoney()
 	{
 		return money;
@@ -253,6 +328,36 @@ public class InventoryController : MonoBehaviour, IListener
 		}
 
 		return sum;
+	}
+
+	public void AddEnergyProducer(EnergyProducer producer)
+	{
+		energyProducers.Add(producer);
+	}
+
+	public void RemoveEnergyProducer(EnergyProducer producer)
+	{
+		energyProducers.Remove(producer);
+	}
+
+	public void AddEnergyConsumer(Capacitor consumer)
+	{
+		energyConsumers.Add(consumer);
+	}
+
+	public void RemoveEnergyConsumer(Capacitor consumer)
+	{
+		energyConsumers.Remove(consumer);
+	}
+
+	public void AddBattery(Capacitor battery)
+	{
+		batteries.Add(battery);
+	}
+
+	public void RemoveBattery(Capacitor battery)
+	{
+		batteries.Remove(battery);
 	}
 
 	public void AddContainer(Container container)

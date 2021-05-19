@@ -168,7 +168,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5380353103309319201}
   - component: {fileID: 6344212048888014121}
-  - component: {fileID: 5582716761120108640}
+  - component: {fileID: 5712120552042506432}
   m_Layer: 0
   m_Name: SolarModule
   m_TagString: Untagged
@@ -218,7 +218,7 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 0.01, y: 0.01}
   m_EdgeRadius: 0
---- !u!114 &5582716761120108640
+--- !u!114 &5712120552042506432
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -227,16 +227,29 @@ MonoBehaviour:
   m_GameObject: {fileID: 9003121702170451506}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 2d05e6f1869c62a4e86915473fbba17d, type: 3}
+  m_Script: {fileID: 11500000, guid: c4e9c4bd5fdad4a4cb981cb4bc0142c4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   moduleName: Solar Module
   mass: 60
   hp: 100
+  pressurized: 1
   reservedPositions:
   - {x: 0, y: 0}
   - {x: 0, y: 1}
   - {x: 0, y: 2}
   - {x: 0, y: 3}
   - {x: 0, y: 4}
-  transparentReservePositions: 1
+  attachableReservePositions: 0
+  overlappingReservePositions: 0
+  buildingCosts:
+  - goodName: Steel
+    amount: 10
+  - goodName: Aluminium
+    amount: 30
+  - goodName: Copper
+    amount: 4
+  - goodName: Gold
+    amount: 6
+  - goodName: Silicon
+    amount: 20

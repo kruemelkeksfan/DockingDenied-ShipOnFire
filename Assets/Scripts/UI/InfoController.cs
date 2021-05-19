@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
+using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -31,6 +33,8 @@ public class InfoController : MonoBehaviour, IListener
 
 	private void Awake()
 	{
+		Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");												// Decimal Points FTW!!elf!
+
 		messages = new Queue<Message>();
 		instance = this;
 	}
@@ -92,7 +96,8 @@ public class InfoController : MonoBehaviour, IListener
 	{
 		if(inventoryController != null)
 		{
-			resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - 0"/* / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
+			resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - " + (inventoryController.GetEnergy() * 0.00027777f).ToString("F2")	// 0.00027777 is the approximate Conversion Factor from kWs to kWh
+				/* / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
 			+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/;
 			if(buildingCosts == null)
 			{
