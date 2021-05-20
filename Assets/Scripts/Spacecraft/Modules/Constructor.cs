@@ -7,21 +7,22 @@ public class Constructor : Module
 	private static readonly WaitForEndOfFrame waitForEndOfFrame = new WaitForEndOfFrame();
 
 	[SerializeField] private float constructionRange = 0.4f;
-	[SerializeField] private float doorOpeningSpeed = 1.0f;
+	[SerializeField] private LineRenderer constructionBeamPrefab = null;
+	[SerializeField] private float constructionBeamDuration = 5.0f;
 	[SerializeField] private Transform constructionAreaIndicator = null;
-	[SerializeField] private Transform hatchUpper = null;
-	[SerializeField] private Transform hatchLower = null;
-	[SerializeField] private ParticleSystem nanobotParticles = null;
-	private ParticleSystem.Particle[] particles = null;
+	[SerializeField] private Transform beamOrigin = null;
 	private InventoryController inventoryController = null;
 	private SpaceStationController spaceStationController = null;
+	private Color startColor = Color.white;
+	private Color endColor = Color.white;
 
 	protected override void Start()
 	{
 		base.Start();
 
+		startColor = constructionBeamPrefab.startColor;
+		endColor = constructionBeamPrefab.endColor;
 		constructionAreaIndicator.localScale = new Vector3(constructionRange * 2.0f, constructionRange * 2.0f, constructionAreaIndicator.localScale.z);
-		particles = new ParticleSystem.Particle[nanobotParticles.emission.GetBurst(0).maxCount];
 
 		ToggleController.GetInstance().AddToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
 	}
@@ -57,44 +58,25 @@ public class Constructor : Module
 
 	private IEnumerator Construction(Vector3 position)
 	{
-		float angle = 0.0f;
-		while(angle < 90.0f)
+		// TODO: Object Pooling
+		LineRenderer constructionBeam = GameObject.Instantiate<LineRenderer>(constructionBeamPrefab, beamOrigin.position, Quaternion.identity, transform);
+		constructionBeam.SetPositions(new Vector3[]{Vector3.zero, transform.InverseTransformPoint(position)});
+
+		float startTime = Time.time;
+		while(Time.time < startTime + constructionBeamDuration)
 		{
-			angle += doorOpeningSpeed * 90.0f * Time.deltaTime;
-			if(angle > 90.0f)
+			float progress = ((Time.time - startTime) / constructionBeamDuration) * 2.0f;
+			if(progress > 1.0f)
 			{
-				angle = 90.0f;
+				progress = 2.0f - progress;
 			}
-			hatchUpper.localRotation = Quaternion.Euler(angle, 0.0f, 0.0f);
-			hatchLower.localRotation = Quaternion.Euler(-angle, 0.0f, 0.0f);
+			constructionBeam.startColor = new Color(startColor.r, startColor.g, startColor.b, startColor.a * progress);
+			constructionBeam.endColor = new Color(endColor.r, endColor.g, endColor.b, endColor.a * progress);
+
 			yield return waitForEndOfFrame;
 		}
-
-		nanobotParticles.Clear();
-		nanobotParticles.Play();
-		yield return waitForEndOfFrame;
-		nanobotParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-		yield return new WaitForSeconds(1.0f);
-		int particleCount = nanobotParticles.GetParticles(particles);
-		Vector3 velocity = (position - transform.position) * 0.2f;
-		velocity.z = -0.002f;
-		for(int i = 0; i < particleCount; ++i)
-		{
-			particles[i].velocity = velocity;
-		}
-		nanobotParticles.SetParticles(particles);
-
-		while(angle > 0.0f)
-		{
-			angle -= doorOpeningSpeed * 90.0f * Time.deltaTime;
-			if(angle < 0.0f)
-			{
-				angle = 0.0f;
-			}
-			hatchUpper.localRotation = Quaternion.Euler(angle, 0.0f, 0.0f);
-			hatchLower.localRotation = Quaternion.Euler(-angle, 0.0f, 0.0f);
-			yield return waitForEndOfFrame;
-		}
+		
+		GameObject.Destroy(constructionBeam);
 	}
 
 	public InventoryController GetInventoryController()
