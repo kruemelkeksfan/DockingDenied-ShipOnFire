@@ -23,8 +23,6 @@ public class Constructor : Module
 		startColor = constructionBeamPrefab.startColor;
 		endColor = constructionBeamPrefab.endColor;
 		constructionAreaIndicator.localScale = new Vector3(constructionRange * 2.0f, constructionRange * 2.0f, constructionAreaIndicator.localScale.z);
-
-		ToggleController.GetInstance().AddToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
 	}
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
@@ -35,6 +33,7 @@ public class Constructor : Module
 		spaceStationController = GetComponentInParent<SpaceStationController>();
 
 		SpacecraftManager.GetInstance().AddConstructor(this);
+		ToggleController.GetInstance().AddToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
 	}
 
 	public override void Deconstruct()

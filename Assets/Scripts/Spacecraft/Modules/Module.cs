@@ -126,6 +126,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return transform;
 	}
 
+	public Spacecraft GetSpacecraft()
+	{
+		return spacecraft;
+	}
+
 	public Vector2Int[] GetReservedPositions(Vector2Int position)
 	{
 		UpdateReservedPositionBuffer(position);

@@ -204,7 +204,7 @@ public class BuildingMenu : MonoBehaviour
 					}
 					else
 					{
-						infoController.AddMessage("Either no Constructor is in Range or no Construction Materials can be provided!");
+						infoController.AddMessage("Either there is no Constructor in Range or no Construction Materials could be provided!");
 					}
 				}
 			}
@@ -217,7 +217,7 @@ public class BuildingMenu : MonoBehaviour
 					if(module != null && module.GetModuleName() != "Command Module")
 					{
 						Vector3 position = module.GetTransform().position;
-						Constructor constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts());
+						Constructor constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), spacecraft);
 						if(constructor != null)
 						{
 							constructor.StartConstruction(position);
@@ -225,7 +225,7 @@ public class BuildingMenu : MonoBehaviour
 						}
 						else
 						{
-							infoController.AddMessage("Either no Constructor is in Range or the Deconstruction Materials can not be sold or stored!");
+							infoController.AddMessage("Either there is no Constructor in Range or the Materials could not be sold or stored! Ships may not disassemble themselves!");
 						}
 					}
 				}
@@ -407,11 +407,11 @@ public class BuildingMenu : MonoBehaviour
 		return null;
 	}
 
-	public Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials)
+	public Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials, Spacecraft deconstructingSpacecraft)
 	{
 		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
 		{
-			if(constructor.PositionInRange(position))
+			if(constructor.GetSpacecraft() != deconstructingSpacecraft && constructor.PositionInRange(position))
 			{
 				SpaceStationController spaceStationController = constructor.GetSpaceStationController();
 				if(spaceStationController != null && spaceStationController.SellDeconstructionMaterials(materials))
