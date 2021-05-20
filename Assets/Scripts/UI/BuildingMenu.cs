@@ -52,7 +52,8 @@ public class BuildingMenu : MonoBehaviour
 	[SerializeField] private Material zoneValidMaterial = null;
 	[SerializeField] private Material zoneInvalidMaterial = null;
 	[SerializeField] private string blueprintFolder = "Blueprints";
-	[SerializeField] private Spacecraft spacecraft = null;
+	[SerializeField] private Spacecraft spacecraft = null;              // TODO: Get this from SpacecraftManager
+	[SerializeField] private Text cheaterModeText = null;
 	private SpacecraftManager spacecraftManager = null;
 	private InfoController infoController = null;
 	private float inverseBuildingGridSize = 1.0f;
@@ -71,6 +72,7 @@ public class BuildingMenu : MonoBehaviour
 	private Transform spacecraftTransform = null;
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
+	private bool cheaterMode = false;
 
 	public static BuildingMenu GetInstance()
 	{
@@ -191,14 +193,14 @@ public class BuildingMenu : MonoBehaviour
 				}
 				if(Input.GetButtonUp("Place Module") && currentModule.buildable && !EventSystem.current.IsPointerOverGameObject())
 				{
-					Constructor constructor = FindBuildingConstructor(currentModule.transform.position, currentModule.module.GetBuildingCosts());
-					if(constructor != null)
+					Constructor constructor = null;
+					if(cheaterMode || (constructor = FindBuildingConstructor(currentModule.transform.position, currentModule.module.GetBuildingCosts())) != null)
 					{
 						currentModule.module.Build(gridPosition);
 						currentModule.collider.enabled = true;
 						currentModule.transform.localScale = currentModule.scale;
 
-						constructor.StartConstruction(currentModule.transform.position);
+						constructor?.StartConstruction(currentModule.transform.position);
 
 						SpawnModule(currentModule.index);
 					}
@@ -217,10 +219,11 @@ public class BuildingMenu : MonoBehaviour
 					if(module != null && module.GetModuleName() != "Command Module")
 					{
 						Vector3 position = module.GetTransform().position;
-						Constructor constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), spacecraft);
-						if(constructor != null)
+						Constructor constructor = null;
+						if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), spacecraft)) != null)
 						{
-							constructor.StartConstruction(position);
+							constructor?.StartConstruction(position);
+
 							module.Deconstruct();
 						}
 						else
@@ -261,6 +264,20 @@ public class BuildingMenu : MonoBehaviour
 		SelectModule(-1);
 		erase = false;
 		InputController.SetFlightControls(!gameObject.activeSelf);
+	}
+
+	public void ToggleCheaterMode()
+	{
+		cheaterMode = !cheaterMode;
+
+		if(cheaterMode)
+		{
+			cheaterModeText.text = cheaterModeText.text.Replace("Enable", "Disable");
+		}
+		else
+		{
+			cheaterModeText.text = cheaterModeText.text.Replace("Disable", "Enable");
+		}
 	}
 
 	public void SelectModule(int moduleIndex)
@@ -373,7 +390,7 @@ public class BuildingMenu : MonoBehaviour
 	{
 		if(spacecraft.GetModules().Count <= 1)
 		{
-			if(FindBuildingConstructor(spacecraftTransform.position, selectedBlueprintCosts) != null)
+			if(cheaterMode || FindBuildingConstructor(spacecraftTransform.position, selectedBlueprintCosts) != null)
 			{
 				SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, spacecraftTransform);
 				DeselectBlueprint();
@@ -386,7 +403,7 @@ public class BuildingMenu : MonoBehaviour
 		}
 	}
 
-	public Constructor FindBuildingConstructor(Vector2 position, GoodManager.Load[] materials)
+	private Constructor FindBuildingConstructor(Vector2 position, GoodManager.Load[] materials)
 	{
 		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
 		{
@@ -407,7 +424,7 @@ public class BuildingMenu : MonoBehaviour
 		return null;
 	}
 
-	public Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials, Spacecraft deconstructingSpacecraft)
+	private Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials, Spacecraft deconstructingSpacecraft)
 	{
 		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
 		{
