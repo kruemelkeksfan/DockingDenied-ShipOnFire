@@ -26,31 +26,40 @@ public class Container : Module
 
 	public override void Deconstruct()
 	{
+		// Dump Contents manually to update their Module Mass in Spacecraft correctly
+		foreach(string loadName in loads.Keys)
+		{
+			Withdraw(loadName, loads[loadName]);
+		}
+
 		inventoryController.RemoveContainer(this);
 		base.Deconstruct();
 	}
 
 	public virtual bool Deposit(string goodName, uint amount)
 	{
-		amount *= (uint) Mathf.CeilToInt(goodManager.GetGood(goodName).volume);
+		GoodManager.Good good = goodManager.GetGood(goodName);
+		uint volume = (uint) Mathf.CeilToInt(good.volume) * amount;
 
-		if(amount <= 0)
+		if(volume <= 0)
 		{
 			return true;
 		}
 
-		if(amount <= freeCapacity)
+		if(volume <= freeCapacity)
 		{
 			if(!loads.ContainsKey(goodName))
 			{
-				loads[goodName] = amount;
+				loads[goodName] = volume;
 			}
 			else
 			{
-				loads[goodName] += amount;
+				loads[goodName] += volume;
 			}
 
-			freeCapacity -= amount;
+			freeCapacity -= volume;
+
+			spacecraft.UpdateModuleMass(transform.localPosition, good.mass * amount);
 
 			return true;
 		}
@@ -62,22 +71,25 @@ public class Container : Module
 
 	public bool Withdraw(string goodName, uint amount)
 	{
-		amount *= (uint) Mathf.CeilToInt(goodManager.GetGood(goodName).volume);
+		GoodManager.Good good = goodManager.GetGood(goodName);
+		uint volume = (uint) Mathf.CeilToInt(good.volume) * amount;
 
-		if(amount <= 0)
+		if(volume <= 0)
 		{
 			return true;
 		}
 
-		if(loads.ContainsKey(goodName) && loads[goodName] >= amount)
+		if(loads.ContainsKey(goodName) && loads[goodName] >= volume)
 		{
-			loads[goodName] -= amount;
-			freeCapacity += amount;
+			loads[goodName] -= volume;
+			freeCapacity += volume;
 
 			if(loads[goodName] <= 0)
 			{
 				loads.Remove(goodName);
 			}
+
+			spacecraft.UpdateModuleMass(transform.localPosition, -good.mass * amount);
 
 			return true;
 		}

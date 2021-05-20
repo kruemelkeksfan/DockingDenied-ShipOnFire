@@ -5,7 +5,6 @@ using UnityEngine;
 public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 {
 	[SerializeField] protected string moduleName = "Module";
-	[SerializeField] protected int mass = 1;
 	[SerializeField] protected int hp = 100;
 	[SerializeField] protected bool pressurized = true;
 	[SerializeField] private Vector2Int[] reservedPositions = { Vector2Int.zero };
@@ -15,6 +14,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private bool overlappingReservePositions = false;
 	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
+	protected float mass = 0.0002f;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
 	protected new Transform transform = null;
@@ -35,6 +35,17 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public virtual void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		spacecraft = gameObject.GetComponentInParent<Spacecraft>();
+
+		GoodManager goodManager = GoodManager.GetInstance();
+		mass = 0.0f;
+		foreach(GoodManager.Load cost in buildingCosts)
+		{
+			mass += goodManager.GetGood(cost.goodName).mass * cost.amount;
+		}
+		if(mass <= 0.0f)
+		{
+			mass = 0.0002f;
+		}
 
 		this.position = position;
 		transform.localPosition = BuildingMenu.GetInstance().GridToLocalPosition(position);
