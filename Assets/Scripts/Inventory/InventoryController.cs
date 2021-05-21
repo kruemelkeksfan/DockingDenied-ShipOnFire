@@ -11,7 +11,8 @@ public class InventoryController : MonoBehaviour, IListener
 	private HashSet<EnergyProducer> energyProducers = null;
 	private List<Capacitor> energyConsumers = null;
 	private HashSet<Capacitor> batteries = null;
-	private float storedEnergy = 0.0f;
+	private float transferEnergy = 0.0f;
+	private double storedEnergy = 0.0f;
 	private int money = 0;
 	private Dictionary<GoodManager.State, List<Container>> containers = null;
 	private InfoController resourceDisplayController = null;
@@ -55,6 +56,33 @@ public class InventoryController : MonoBehaviour, IListener
 	{
 		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
 		resourceDisplayController?.UpdateResourceDisplays();
+	}
+
+	public bool TransferEnergy(float energy)
+	{
+		if(storedEnergy + energy >= 0.0f)
+		{
+			transferEnergy = energy;
+			return true;
+		}
+		else
+		{
+			float production = 0.0f;
+			foreach(EnergyProducer producer in energyProducers)
+			{
+				production += producer.production;
+			}
+
+			if(production >= energy)
+			{
+				transferEnergy = energy;
+				return true;
+			}
+			else
+			{
+				return false;
+			}
+		}
 	}
 
 	public bool TransferMoney(int money)
@@ -249,7 +277,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			yield return waitForEnergyUpdateInterval;
 
-			float energy = 0.0f;
+			float energy = transferEnergy;
 			float deltaTime = Time.time - lastUpdate;
 			lastUpdate = Time.time;
 			foreach(EnergyProducer producer in energyProducers)
@@ -289,11 +317,18 @@ public class InventoryController : MonoBehaviour, IListener
 				}
 			}
 
+			if(energy < 0.0f)
+			{
+				Debug.LogWarning("Negative Energy " + energy + " at the End of Energy Distribution Cycle of " + gameObject.name + "!");
+			}
+
+			transferEnergy = 0.0f;
+
 			resourceDisplayController?.UpdateResourceDisplays();
 		}
 	}
 
-	public float GetEnergy()
+	public double GetEnergy()
 	{
 		return storedEnergy;
 	}

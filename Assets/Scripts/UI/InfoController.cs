@@ -92,12 +92,13 @@ public class InfoController : MonoBehaviour, IListener
 		controlHint.text = hint.ToString();
 	}
 
+	// TODO: Rather set a bool here and update in Update() when bool is true, to avoid Updating dozens of Times each frame
 	public void UpdateResourceDisplays()
 	{
 		if(inventoryController != null)
 		{
-			resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - " + (inventoryController.GetEnergy() * 0.00027777f).ToString("F2")	// 0.00027777 is the approximate Conversion Factor from kWs to kWh
-				/* / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
+			resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - " + (inventoryController.GetEnergy() * 0.00027777f).ToString("F2") + "kWh"	// 0.00027777 is the approximate Conversion Factor from kWs to kWh
+				/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
 			+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/;
 			if(buildingCosts == null)
 			{

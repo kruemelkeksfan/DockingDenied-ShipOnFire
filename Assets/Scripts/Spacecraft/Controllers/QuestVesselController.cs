@@ -125,7 +125,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		}
 		else
 		{
-			hintField.text = "Open Quest Menu of Station for Reward!";
+			hintField.text = "Dock to Station and open Quest Menu for Reward!";
 			interactButton.gameObject.SetActive(false);
 		}
 	}
@@ -163,16 +163,17 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			hintField.text = "Dock to interact!";
 			interactable = true;
-			interactButton.GetComponentInChildren<Text>().text = "Jump-Start Engine";
+			interactButton.GetComponentInChildren<Text>().text = "Jump-Start with 2kWh";
 			interactButton.onClick.AddListener(delegate
 					{
-						if(true)    // TODO: Drain Electricity
+						float amount = Mathf.Min(7200.0f, (float) localPlayerMainInventory.GetEnergy());
+						if(localPlayerMainInventory.TransferEnergy(-amount))
 						{
-							quest.progress = 1.0f;
+							quest.progress += amount / 7200.0f;
 						}
 						else
 						{
-							InfoController.GetInstance().AddMessage("Your Batteries are running dry themselves!");
+							Debug.LogWarning("Energy for Quest could not be supplied, Player Vessel has " + localPlayerMainInventory.GetEnergy() + "kWs!");
 						}
 						UpdateQuestVesselMenu();
 					});
@@ -184,7 +185,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			interactButton.GetComponentInChildren<Text>().text = "Supply " + quest.infoString;
 			interactButton.onClick.AddListener(delegate
 					{
-						int amount = Mathf.Max(quest.infoInt, (int)localPlayerMainInventory.GetGoodAmount(quest.infoString));
+						int amount = Mathf.Min(quest.infoInt, (int)localPlayerMainInventory.GetGoodAmount(quest.infoString));
 						if(localPlayerMainInventory.Withdraw(quest.infoString, (uint)amount))
 						{
 							quest.progress += (float)amount / (float)quest.infoInt;

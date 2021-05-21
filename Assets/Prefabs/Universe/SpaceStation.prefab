@@ -949,6 +949,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 165e09ca6aec0cd4197fa188f4169e39, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  energyUpdateInterval: 0.05
   startingMoney: 2000
 --- !u!114 &399397975410466322
 MonoBehaviour:

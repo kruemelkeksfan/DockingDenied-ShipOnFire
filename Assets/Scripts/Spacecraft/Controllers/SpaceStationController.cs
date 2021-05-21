@@ -293,13 +293,21 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			}
 			else
 			{
-				completeButton.interactable = true;
-				completeButton.GetComponentInChildren<Text>().text = "Complete";
-				completeButton.onClick.AddListener(delegate
+				if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))
 				{
-					questManager.CompleteQuest(this);
-					UpdateQuests();
-				});
+					completeButton.interactable = true;
+					completeButton.GetComponentInChildren<Text>().text = "Complete";
+					completeButton.onClick.AddListener(delegate
+					{
+						questManager.CompleteQuest(this);
+						UpdateQuests();
+					});
+				}
+				else
+				{
+					completeButton.interactable = false;
+					completeButton.GetComponentInChildren<Text>().text = "Get back here!";
+				}
 			}
 		}
 		else
