@@ -11,7 +11,7 @@ GameObject:
   - component: {fileID: 47994276502187971}
   - component: {fileID: 786513659905899280}
   - component: {fileID: 8343165463562524640}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: default
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -92,7 +92,7 @@ GameObject:
   - component: {fileID: -6346119792834082195}
   - component: {fileID: 6137225308136315882}
   - component: {fileID: 7783625340718850097}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: AsteroidSmall
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -175,15 +175,3 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 90408c95064045d4aa5dd255b853a91c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  heightCheckInterval: 50
-  decayHeight: 100
-  clearSpeed: 0.002
-  atmossphereEntryHeight: 300
-  destructionHeight: 280
-  globalHeightConstraint:
-    min: 300
-    max: 10000
-  densities:
-  - 1
-  - 2
-  - 5

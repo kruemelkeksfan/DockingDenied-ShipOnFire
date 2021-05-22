@@ -53,13 +53,21 @@ public class Spacecraft : MonoBehaviour
 			GameObject.Instantiate<Module>(commandModulePrefab, transform).Build(Vector2Int.zero);
 		}
 
-		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 		GetComponent<GravityController>().SetOptimalOrbitalVelocity();
+
+		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+		GravityWellController.GetInstance().AddGravityObject(GetComponent<Rigidbody2D>());
 	}
 
 	private void OnDestroy()
 	{
+		GravityWellController.GetInstance().RemoveGravityObject(GetComponent<Rigidbody2D>());
 		ToggleController.GetInstance().RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+
+		if(this == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+		{
+			GameController.GetInstance().Restart("Game Over...just one more Round...");
+		}
 	}
 
 	private void Update()
@@ -180,10 +188,10 @@ public class Spacecraft : MonoBehaviour
 
 	public void DeconstructModules()
 	{
-		List<Vector2Int> moduleKeys = new List<Vector2Int>(modules.Keys);						// Avoid concurrent Modification
+		List<Vector2Int> moduleKeys = new List<Vector2Int>(modules.Keys);                       // Avoid concurrent Modification
 		foreach(Vector2Int position in moduleKeys)
 		{
-			if(modules.ContainsKey(position) && modules[position].GetPosition() == position)	// Check if Module has already been deleted first
+			if(modules.ContainsKey(position) && modules[position].GetPosition() == position)    // Check if Module has already been deleted first
 			{
 				modules[position].Deconstruct();
 			}

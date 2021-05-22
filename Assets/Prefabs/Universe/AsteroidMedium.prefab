@@ -27,6 +27,11 @@ PrefabInstance:
       propertyPath: m_LocalScale.z
       value: 0.0625
       objectReference: {fileID: 0}
+    - target: {fileID: 1050269121457318773, guid: 995a724cde47723428d487c6b7a91ada,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 3931542096556505849, guid: 995a724cde47723428d487c6b7a91ada,
         type: 3}
       propertyPath: m_Mass
@@ -36,6 +41,16 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: AsteroidMedium
+      objectReference: {fileID: 0}
+    - target: {fileID: 6818173429850476264, guid: 995a724cde47723428d487c6b7a91ada,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
+    - target: {fileID: 6818173429850476264, guid: 995a724cde47723428d487c6b7a91ada,
+        type: 3}
+      propertyPath: m_TagString
+      value: Untagged
       objectReference: {fileID: 0}
     - target: {fileID: 7549261425653873915, guid: 995a724cde47723428d487c6b7a91ada,
         type: 3}

@@ -16,8 +16,6 @@ public class KeyboardInputController : InputController
 		}
 	}
 
-	[SerializeField] private GameObject buildingMenu = null;
-	[SerializeField] private GameObject inventoryMenu = null;
 	private InfoController infoController = null;
 	private Dictionary<HotkeyKey, string> actionNames = null;
 

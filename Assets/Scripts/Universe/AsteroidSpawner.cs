@@ -10,6 +10,10 @@ public class AsteroidSpawner : MonoBehaviour
 
 	[Tooltip("Prefab for new Asteroids")]
 	[SerializeField] private GravityController[] asteroidPrefabs = null;
+	// TODO: Inventory/Materials (read from JSON), calculate density from (Material Density + Stone Density) / 2
+	// TODO: List of possible Materials for each Asteroid Size to avoid masses > 1000000 tons
+	[Tooltip("Possible Densities for Asteroids depending on their Material")]
+	[SerializeField] private float[] densities = { };
 	[Tooltip("Maximum Number of Asteroids allowed in the Scene at once")]
 	[SerializeField] private uint maxAsteroids = 200;
 	[Tooltip("Determines how often new Asteroids can be spawned in Ingame Seconds")]
@@ -22,6 +26,7 @@ public class AsteroidSpawner : MonoBehaviour
 	[SerializeField] private float spawnHeight = 1000.0f;
 	[Tooltip("Approach Velocity of freshly spawned Asteroids")]
 	[SerializeField] private float approachSpeed = 0.2f;
+	private GravityWellController gravityWellController = null;
 	private float[] asteroidBeltChances = null;
 	private float totalAsteroidBeltChances = 0.0f;
 	private Collider2D[] overlapColliders = null;
@@ -32,6 +37,9 @@ public class AsteroidSpawner : MonoBehaviour
 		{
 			waitForSpawnInterval = new WaitForSeconds(spawnInterval);
 		}
+
+		gravityWellController = GravityWellController.GetInstance();
+		gravityWellController.SetAsteroidAltitudeConstraints(asteroidBeltHeights);
 
 		asteroidBeltChances = new float[asteroidBeltHeights.Length];
 		for(int i = 0; i < asteroidBeltHeights.Length; ++i)
@@ -52,7 +60,7 @@ public class AsteroidSpawner : MonoBehaviour
 		{
 			yield return waitForSpawnInterval;
 
-			if(Time.timeScale > 0.0f && AsteroidCount < maxAsteroids)
+			if(AsteroidCount < maxAsteroids)
 			{
 				float beltRandom = Random.Range(0.0f, totalAsteroidBeltChances);
 				for(int i = 0; i < asteroidBeltHeights.Length; ++i)
@@ -75,7 +83,7 @@ public class AsteroidSpawner : MonoBehaviour
 		int overlapCollidersCount = Physics2D.OverlapCircleNonAlloc(position, spawnAreaRadius, overlapColliders);
 		for(int i = 0; i < overlapCollidersCount; ++i)
 		{
-			if(overlapColliders[i].tag == "Asteroid")
+			if(overlapColliders[i].gameObject.layer == 10)
 			{
 				yield break;
 			}
@@ -84,27 +92,29 @@ public class AsteroidSpawner : MonoBehaviour
 		++AsteroidCount;
 		GravityController asteroid = GameObject.Instantiate<GravityController>(asteroidPrefabs[Random.Range(0, asteroidPrefabs.Length - 1)],
 			new Vector3(position.x, position.y, -spawnHeight), Quaternion.identity);
-		asteroid.GetComponent<AsteroidController>().HeightConstraints = asteroidBeltHeights[asteroidBeltIndex];
+		asteroid.gameObject.layer = 8;
+
+		Rigidbody2D rigidbody = asteroid.GetComponent<Rigidbody2D>();
+		gravityWellController.AddGravityObject(rigidbody, asteroidBeltIndex);
+		rigidbody.mass *= densities[Random.Range(0, densities.Length)];
+
 		asteroid.SetOptimalOrbitalVelocity();
 
-		Transform asteroidTransform = asteroid.transform;
+		Transform asteroidTransform = asteroid.GetComponent<Transform>();
 		float asteroidExtents = asteroidTransform.GetComponent<Collider2D>().bounds.extents.x;
 		Vector3 asteroidSize = asteroidTransform.localScale;
 		float asteroidHeight = -asteroid.transform.position.z;
-		while(asteroidHeight > 0.0002f && asteroid.gameObject.layer != 10)																	// Check if Asteroid is still in Approach and not decaying yet
+		while(asteroidHeight > 0.0002f && asteroid.gameObject.layer != 9)                                                                   // Check if Asteroid is still in Approach and not decaying yet
 		{
-			if(Time.timeScale > 0.0f)
+			if(asteroidHeight < asteroidExtents)
 			{
-				if(asteroidHeight < asteroidExtents)
-				{
-					asteroid.gameObject.layer = 9;
-				}
-
-				asteroidTransform.position += new Vector3(0.0f, 0.0f, asteroidHeight * approachSpeed * Time.deltaTime);
-				asteroidHeight = -asteroid.transform.position.z;
-				float currentSize = 1.0f - (asteroidHeight / spawnHeight);
-				asteroidTransform.localScale = asteroidSize * currentSize;
+				asteroid.gameObject.layer = 10;
 			}
+
+			asteroidTransform.position += new Vector3(0.0f, 0.0f, asteroidHeight * approachSpeed * Time.deltaTime);
+			asteroidHeight = -asteroidTransform.position.z;
+			float currentSize = 1.0f - (asteroidHeight / spawnHeight);
+			asteroidTransform.localScale = asteroidSize * currentSize;
 
 			yield return null;
 		}

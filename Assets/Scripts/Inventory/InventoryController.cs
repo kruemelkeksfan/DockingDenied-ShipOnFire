@@ -124,6 +124,7 @@ public class InventoryController : MonoBehaviour, IListener
 			}
 			else
 			{
+				// TODO: Fix GetFreeCapacity() for Fluids
 				freeCapacity += container.GetFreeCapacity();
 			}
 		}

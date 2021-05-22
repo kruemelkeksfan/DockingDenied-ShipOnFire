@@ -740,6 +740,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204191, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 5754137889621204191, guid: 563dc166c0dffa8498e07f185cb0614a,
+        type: 3}
       propertyPath: essentialModules.Array.size
       value: 3
       objectReference: {fileID: 0}
@@ -749,6 +754,11 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8808181452168659175, guid: 2fca3038c9958a1488b5094e0977d99f,
         type: 3}
+    - target: {fileID: 6188606278163628312, guid: 563dc166c0dffa8498e07f185cb0614a,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 563dc166c0dffa8498e07f185cb0614a, type: 3}
 --- !u!1 &437986064
@@ -884,7 +894,9 @@ MonoBehaviour:
   - {fileID: 6137225308136315882, guid: 995a724cde47723428d487c6b7a91ada, type: 3}
   - {fileID: 5115176918420387598, guid: 99c1619453d83c740a1ccff3e1e7fa00, type: 3}
   - {fileID: 2690796472479987618, guid: f06c6a2e9edd1bb46936d4679e51dd7f, type: 3}
-  maxAsteroids: 400
+  densities:
+  - 1
+  maxAsteroids: 600
   spawnInterval: 1
   asteroidBeltHeights:
   - min: 348
@@ -1349,6 +1361,18 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bd6fa0c6b17d50549bb29ca8eef5e998, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  altitudeCheckInterval: 5
+  decayHeight: 100
+  clearSpeed: 0.002
+  surfaceAltitude: 250
+  atmossphereEntryAltitude: 320
+  destructionAltitude: 280
+  globalAltitudeConstraint:
+    min: 320
+    max: 10000
+  atmossphericDensity: 0.2
+  plasmaParticleSystemPrefab: {fileID: 2736846745620259419, guid: 11b17e94e5d60294898ba61c533a9b55,
+    type: 3}
 --- !u!224 &507596352 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8466474887764416740, guid: 9595c6b144392064daf476eb9f4ae3d8,
@@ -4238,8 +4262,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hotkeyCount: 10
-  buildingMenu: {fileID: 2000540775}
-  inventoryMenu: {fileID: 0}
 --- !u!114 &1360578268 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 5754137889621204191, guid: 563dc166c0dffa8498e07f185cb0614a,
@@ -4566,7 +4588,7 @@ PrefabInstance:
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_Mode
-      value: 1
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
