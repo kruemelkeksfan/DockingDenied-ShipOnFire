@@ -6,13 +6,25 @@ public class ContainerSingle : Container
 {
 	public override bool Deposit(string goodName, uint amount)
 	{
-		if(loads.Count < 1 || loads.ContainsKey(goodName))
+		if(loads.Count <= 0 || loads.ContainsKey(goodName))
 		{
 			return base.Deposit(goodName, amount);
 		}
 		else
 		{
 			return false;
+		}
+	}
+
+	public override uint GetFreeCapacity(string goodName)
+	{
+		if(loads.Count <= 0 || loads.ContainsKey(goodName))
+		{
+			return freeCapacity;
+		}
+		else
+		{
+			return 0;
 		}
 	}
 }

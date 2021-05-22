@@ -104,7 +104,7 @@ public class Container : Module
 		return state;
 	}
 
-	public uint GetFreeCapacity()
+	public virtual uint GetFreeCapacity(string goodName)
 	{
 		return freeCapacity;
 	}

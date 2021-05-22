@@ -498,7 +498,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		if(amountField != null && totalPrice <= money)
 		{
-			amountField.text = Mathf.Min((int)availableAmount, (int)buyer.GetFreeCapacity(goodManager.GetGood(goodName).state)).ToString();
+			amountField.text = Mathf.Min((int)availableAmount, (int)buyer.GetFreeCapacity(goodManager.GetGood(goodName))).ToString();
 		}
 
 		return false;
@@ -540,21 +540,26 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		return true;
 	}
 
+	// Works only for Solids
 	public bool SellDeconstructionMaterials(GoodManager.Load[] materials)
 	{
-		uint solidSum = 0;
-		uint fluidSum = 0;
+		if(materials.Length <= 0)
+		{
+			return true;
+		}
+
+		uint sum = 0;
 		uint[] supplyAmounts = new uint[materials.Length];
 		int totalPrice = 0;
 		for(int i = 0; i < materials.Length; ++i)
 		{
 			if(goodManager.GetGood(materials[i].goodName).state == GoodManager.State.solid)
 			{
-				solidSum += materials[i].amount;
+				sum += materials[i].amount;
 			}
 			else
 			{
-				fluidSum += materials[i].amount;
+				return false;
 			}
 
 			supplyAmounts[i] = inventoryController.GetGoodAmount(materials[i].goodName);
@@ -562,14 +567,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			++i;
 		}
 
-		if(solidSum > inventoryController.GetFreeCapacity(GoodManager.State.solid))
+		if(sum > inventoryController.GetFreeCapacity(goodManager.GetGood(materials[0].goodName)))
 		{
-			InfoController.GetInstance().AddMessage("Not enough Solid Storage Capacity available in this Station!");
-			return false;
-		}
-		else if(fluidSum > inventoryController.GetFreeCapacity(GoodManager.State.fluid))
-		{
-			InfoController.GetInstance().AddMessage("Not enough Fluid Storage Capacity available in this Station!");
+			InfoController.GetInstance().AddMessage("Not enough Storage Capacity available in this Station!");
 			return false;
 		}
 

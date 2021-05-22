@@ -124,8 +124,7 @@ public class InventoryController : MonoBehaviour, IListener
 			}
 			else
 			{
-				// TODO: Fix GetFreeCapacity() for Fluids
-				freeCapacity += container.GetFreeCapacity();
+				freeCapacity += container.GetFreeCapacity(goodName);
 			}
 		}
 
@@ -133,7 +132,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			foreach(Container container in containers[state])
 			{
-				uint partialAmount = (uint)Mathf.Min((int)container.GetFreeCapacity(), (int)(amount * (uint)Mathf.CeilToInt(goodManager.GetGood(goodName).volume)));
+				uint partialAmount = (uint)Mathf.Min((int)container.GetFreeCapacity(goodName), (int)(amount * (uint)Mathf.CeilToInt(goodManager.GetGood(goodName).volume)));
 				if(partialAmount > 0 && container.Deposit(goodName, partialAmount))
 				{
 					amount -= partialAmount;
@@ -155,29 +154,29 @@ public class InventoryController : MonoBehaviour, IListener
 		}
 	}
 
+	// Works only for Solids
 	public bool DepositBulk(GoodManager.Load[] goods)
 	{
-		uint solidSum = 0;
-		uint fluidSum = 0;
+		if(goods.Length <= 0)
+		{
+			return true;
+		}
+
+		uint sum = 0;
 		foreach(GoodManager.Load good in goods)
 		{
 			if(goodManager.GetGood(good.goodName).state == GoodManager.State.solid)
 			{
-				solidSum += good.amount;
+				sum += good.amount;
 			}
 			else
 			{
-				fluidSum += good.amount;
+				return false;
 			}
 		}
-		if(solidSum > GetFreeCapacity(GoodManager.State.solid))
+		if(sum > GetFreeCapacity(goodManager.GetGood(goods[0].goodName)))
 		{
-			InfoController.GetInstance().AddMessage("Not enough Solid Storage Capacity available in this Spacecrafts Inventory!");
-			return false;
-		}
-		else if(fluidSum > GetFreeCapacity(GoodManager.State.fluid))
-		{
-			InfoController.GetInstance().AddMessage("Not enough Fluid Storage Capacity available in this Spacecrafts Inventory!");
+			InfoController.GetInstance().AddMessage("Not enough Storage Capacity available in this Spacecrafts Inventory!");
 			return false;
 		}
 
@@ -339,12 +338,12 @@ public class InventoryController : MonoBehaviour, IListener
 		return money;
 	}
 
-	public uint GetFreeCapacity(GoodManager.State state)
+	public uint GetFreeCapacity(GoodManager.Good good)
 	{
 		uint capacity = 0;
-		foreach(Container container in containers[state])
+		foreach(Container container in containers[good.state])
 		{
-			capacity += container.GetFreeCapacity();
+			capacity += container.GetFreeCapacity(good.goodName);
 		}
 		return capacity;
 	}
