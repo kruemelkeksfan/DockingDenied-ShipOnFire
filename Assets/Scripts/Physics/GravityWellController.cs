@@ -67,13 +67,15 @@ public class GravityWellController : MonoBehaviour, IListener
 		}
 
 		position = transform.position;
-		gravitationalParameter = (float)(gameObject.GetComponent<Rigidbody2D>().mass * GRAVITY_CONSTANT * 1000000000000000000000000.0);                         // Celestial Body Mass is given in 10^24 KGs, to accommodate them in a float
+		gravitationalParameter = (float)(gameObject.GetComponent<Rigidbody2D>().mass * GRAVITY_CONSTANT * 1000000000000000000000000.0);										// Celestial Body Mass is given in 10^24 KGs, to accommodate them in a float
 		gravityObjects = new Dictionary<Rigidbody2D, AsteroidRecord?>();
 		deadGravityObjects = new HashSet<Rigidbody2D>();
 
-		globalAltitudeConstraint = new MinMax(globalAltitudeConstraint.Min * globalAltitudeConstraint.Min, globalAltitudeConstraint.Max * globalAltitudeConstraint.Max);  // Square to avoid Mathf.sqrt() later on
+		globalAltitudeConstraint = new MinMax(globalAltitudeConstraint.Min * globalAltitudeConstraint.Min, globalAltitudeConstraint.Max * globalAltitudeConstraint.Max);	// Square to avoid Mathf.sqrt() later on
 
-		scaleAltitude = atmossphereEntryAltitude - surfaceAltitude;
+		scaleAltitude = atmossphereEntryAltitude - surfaceAltitude;																											// According to Formula Scale Height is the Height at which
+																																											// 1/e of the Air Density of the Surface is present,
+																																											// so treating it as the edge of the Atmossphere is a bit overdrawn
 
 		instance = this;
 	}
@@ -143,6 +145,7 @@ public class GravityWellController : MonoBehaviour, IListener
 						}
 					}
 
+					// TODO: Different Mechanism for Objects which leave the Orbit (despawn when they reach a ridiculous Distance from the Planet and are not in Sight)
 					StartCoroutine(Despawn(gravityObject, gravityObjects[gravityObject]));
 					deadGravityObjects.Add(gravityObject);
 				}
@@ -189,7 +192,7 @@ public class GravityWellController : MonoBehaviour, IListener
 				float drag = atmossphericDensity * Mathf.Exp(-(orbitalAltitude - surfaceAltitude) / scaleAltitude);														// Drag based on an Approximation of atmosspheric Density
 				gravityObject.velocity *= 1.0f - Mathf.Min((gravityObject.velocity.sqrMagnitude * drag * Time.deltaTime), 1.0f);
 			}
-			else if(orbitalAltitude * orbitalAltitude > globalAltitudeConstraint.Min)
+			else if(plasmaParticles != null && orbitalAltitude * orbitalAltitude > globalAltitudeConstraint.Min)
 			{
 				while(asteroidRecord.HasValue && gravityObjectTransform.position.z > 0.0f)
 				{

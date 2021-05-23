@@ -64,6 +64,7 @@ public class Spacecraft : MonoBehaviour
 		GravityWellController.GetInstance().RemoveGravityObject(GetComponent<Rigidbody2D>());
 		ToggleController.GetInstance().RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 
+		// TODO: Switch to other Player Spacecraft if available
 		if(this == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
 		{
 			GameController.GetInstance().Restart("Game Over...just one more Round...");
