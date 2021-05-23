@@ -69,10 +69,28 @@ public class GoodManager : MonoBehaviour
 	private void Awake()
 	{
 		goodDictionary = new Dictionary<string, Good>();
+		/*int solidConsumptionSum = 0;
+		int solidCount = 0;
+		int fluidConsumptionSum = 0;
+		int fluidCount = 0;*/
 		foreach(Good good in goods)
 		{
 			goodDictionary.Add(good.goodName, good);
+
+			/*if(good.state == State.solid)
+			{
+				solidConsumptionSum += good.consumption;
+				++solidCount;
+			}
+			else
+			{
+				fluidConsumptionSum += good.consumption;
+				++fluidCount;
+			}*/
 		}
+
+		/*Debug.Log("Average Solid Consumption: " + ((float) solidConsumptionSum / (float) solidCount) + ", " + solidCount + " Goods");
+		Debug.Log("Average Fluid Consumption: " + ((float) fluidConsumptionSum / (float) fluidCount) + ", " + fluidCount + " Goods");*/
 
 		instance = this;
 	}
