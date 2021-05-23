@@ -38,10 +38,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[Tooltip("Maximum Time in Seconds before Docking Permission expires")]
 	[SerializeField] private float dockingTimeout = 600.0f;
 	[SerializeField] private float stationUpdateInterval = 600.0f;
-	[Tooltip("Determines the initial Amount of this Good in the Station, depending on the Consumption.")]
-	[SerializeField] private float startingStockFactor = 8.0f;
 	[Tooltip("Determines the maximum Amount of this Good this Station will stockpile by itself, depending on the Consumption.")]
-	[SerializeField] private float maxGoodStockFactor = 8.0f;
+	[SerializeField] private float maxGoodStockFactor = 12.0f;
 	[Tooltip("Minimum Money Change of the Station per Economy Update.")]
 	[SerializeField] private int minProfit = -100;
 	[Tooltip("Maximum Money Change of the Station per Economy Update.")]
@@ -109,7 +107,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
 		foreach(string goodName in goods.Keys)
 		{
-			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * startingStockFactor));
+			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * maxGoodStockFactor));
 		}
 
 		spacecraft.AddUpdateListener(this);
@@ -619,10 +617,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
 			foreach(string goodName in goods.Keys)
 			{
-				inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, (int)stock));
+				inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, inventoryController.GetGoodAmount(goodName)));
 
-				uint stock = inventoryController.GetGoodAmount(goodName);
-				if(stock < goods[goodName].consumption * maxGoodStockFactor)
+				if(inventoryController.GetGoodAmount(goodName) < goods[goodName].consumption * maxGoodStockFactor)
 				{
 					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(1, goods[goodName].consumption * 2));
 				}
