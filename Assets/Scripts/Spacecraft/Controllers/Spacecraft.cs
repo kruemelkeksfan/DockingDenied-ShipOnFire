@@ -23,10 +23,14 @@ public class Spacecraft : MonoBehaviour
 	private Dictionary<Vector2Int, Module> modules = null;
 	private HashSet<IUpdateListener> updateListeners = null;
 	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
+	private BuildingMenu buildingMenu = null;
 	private new Transform transform = null;
 	private InventoryController inventoryController = null;
 	private new Rigidbody2D rigidbody = null;
 	private HashSet<Thruster>[] thrusters = null;
+	private bool calculateCollider = false;
+	private float halfGridSize = 0.0f;
+	private PolygonCollider2D spacecraftCollider = null;
 
 	private void Awake()
 	{
@@ -48,6 +52,10 @@ public class Spacecraft : MonoBehaviour
 
 	private void Start()
 	{
+		buildingMenu = BuildingMenu.GetInstance();
+		halfGridSize = buildingMenu.GetGridSize() * 0.5f;
+		spacecraftCollider = GetComponent<PolygonCollider2D>();
+
 		if(modules.Count <= 0)                                                                      // If no Blueprint was loaded during Awake()
 		{
 			GameObject.Instantiate<Module>(commandModulePrefab, transform).Build(Vector2Int.zero);
@@ -76,6 +84,12 @@ public class Spacecraft : MonoBehaviour
 		foreach(IUpdateListener listener in updateListeners)
 		{
 			listener.UpdateNotify();
+		}
+
+		if(calculateCollider)                                           // Do this in Update instead of FixedUpdate(), since it might take some Time
+		{
+			CalculateSpacecraftCollider();
+			calculateCollider = false;
 		}
 	}
 
@@ -122,15 +136,6 @@ public class Spacecraft : MonoBehaviour
 		foreach(Thruster thruster in inactiveThrusters)
 		{
 			thruster.SetThrottle(0.0f);
-		}
-	}
-
-	private void SetThrusterGroupThrottle(ThrusterGroup thrusterGroup, float throttle, HashSet<Thruster> inactiveThrusters)
-	{
-		foreach(Thruster thruster in thrusters[(int)thrusterGroup])
-		{
-			thruster.SetThrottle(throttle);
-			inactiveThrusters.Remove(thruster);
 		}
 	}
 
@@ -199,6 +204,84 @@ public class Spacecraft : MonoBehaviour
 		}
 	}
 
+	private void SetThrusterGroupThrottle(ThrusterGroup thrusterGroup, float throttle, HashSet<Thruster> inactiveThrusters)
+	{
+		foreach(Thruster thruster in thrusters[(int)thrusterGroup])
+		{
+			thruster.SetThrottle(throttle);
+			inactiveThrusters.Remove(thruster);
+		}
+	}
+
+	private void CalculateSpacecraftCollider()
+	{
+		// Find Maximum Y Value of this Spacecrafts Modules
+		int maxY = 0;
+		foreach(Vector2Int maxPosition in modules.Keys)
+		{
+			if(maxPosition.y > maxY)
+			{
+				maxY = maxPosition.y;
+			}
+		}
+
+		// Go from Top Bounding Border of the Spacecraft downwards until you find the topmost Module at X = 0
+		Vector2Int position = new Vector2Int(0, maxY);
+		while(!modules.ContainsKey(position) || (position != modules[position].GetPosition() && modules[position].HasOverlappingReservePositions()))
+		{
+			position += Vector2Int.down;
+		}
+
+		// Set some Variables (helpful Comment tm)
+		// We will go around the Vessel in clockwise Direction, starting at the Top, therefore the first scanDirection is Right
+		List<Vector2> points = new List<Vector2>();
+		int scanDirectionIndex = Directions.RIGHT;
+		int borderNormalIndex = (scanDirectionIndex + 3) % 4;
+		do
+		{
+			// Go along the Modules in scanDirection, until you are either not standing on a Module anymore or there is a solid Space in the Direction there previously was empty Space
+			while(CheckBorderPosition(position + Directions.VECTORS[scanDirectionIndex], position + Directions.VECTORS[scanDirectionIndex] + Directions.VECTORS[borderNormalIndex]))
+			{
+				position += Directions.VECTORS[scanDirectionIndex];
+			}
+
+			// Add the last Corner which is known to border empty Space and a Module to points
+			points.Add(buildingMenu.GridToLocalPosition(position) + (Vector3)(((Vector2)Directions.VECTORS[scanDirectionIndex] * halfGridSize) + ((Vector2)Directions.VECTORS[borderNormalIndex] * halfGridSize)));
+
+			// Turn into a new Scan Direction, 90° from the previous Scan Direction, never forward (known to lead into the Vessels Interior or out into Space) or backward
+			// Since we circle the Vessel clockwise, we will prefer to turn left to cover the whole Vessel
+			if(CheckBorderPosition(position + Directions.VECTORS[scanDirectionIndex] + Directions.VECTORS[(scanDirectionIndex + 3) % 4], position + Directions.VECTORS[borderNormalIndex]))
+			{
+				position += Directions.VECTORS[scanDirectionIndex];
+				scanDirectionIndex = (scanDirectionIndex + 3) % 4;
+				borderNormalIndex = (borderNormalIndex + 3) % 4;
+				position += Directions.VECTORS[scanDirectionIndex];
+			}
+			else if(CheckBorderPosition(position, position + Directions.VECTORS[(borderNormalIndex + 1) % 4]))
+			{
+				scanDirectionIndex = (scanDirectionIndex + 1) % 4;
+				borderNormalIndex = (borderNormalIndex + 1) % 4;
+			}
+			else
+			{
+				Debug.LogError("Got stuck while Calculating Spacecraft Collider!");
+				break;
+			}
+		}
+		while(points.Count < 4 || points[0] != points[points.Count - 1]);
+		
+		// Remove last Point because it is identical with the first
+		points.RemoveAt(points.Count - 1);
+
+		spacecraftCollider.SetPath(0, points);
+	}
+
+	private bool CheckBorderPosition(Vector2Int position, Vector2Int borderingPosition)
+	{
+		return modules.ContainsKey(position) && (position == modules[position].GetPosition() || !modules[position].HasOverlappingReservePositions())
+				&& (!modules.ContainsKey(borderingPosition) || (borderingPosition != modules[borderingPosition].GetPosition() && modules[borderingPosition].HasOverlappingReservePositions()));
+	}
+
 	public Module GetModule(Vector2Int position)
 	{
 		if(modules.ContainsKey(position))
@@ -229,11 +312,13 @@ public class Spacecraft : MonoBehaviour
 	public void AddModule(Vector2Int position, Module module)
 	{
 		modules[position] = module;
+		calculateCollider = true;
 	}
 
-	public bool RemoveModule(Vector2Int position)
+	public void RemoveModule(Vector2Int position)
 	{
-		return modules.Remove(position);
+		modules.Remove(position);
+		calculateCollider = true;
 	}
 
 	public void AddUpdateListener(IUpdateListener listener)

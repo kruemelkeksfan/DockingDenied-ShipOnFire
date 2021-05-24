@@ -14,7 +14,6 @@ public class BuildingMenu : MonoBehaviour
 		public int index;
 		public Module module;
 		public Transform transform;
-		public Collider2D collider;
 		public Vector3 scale;
 
 		public CurrentModule(int index, Module module)
@@ -26,13 +25,11 @@ public class BuildingMenu : MonoBehaviour
 			if(module != null)
 			{
 				transform = module.transform;
-				collider = module.GetComponentInChildren<Collider2D>();
 				scale = transform.localScale;
 			}
 			else
 			{
 				transform = null;
-				collider = null;
 				scale = Vector3.one;
 			}
 		}
@@ -197,7 +194,6 @@ public class BuildingMenu : MonoBehaviour
 					if(cheaterMode || (constructor = FindBuildingConstructor(currentModule.transform.position, currentModule.module.GetBuildingCosts())) != null)
 					{
 						currentModule.module.Build(gridPosition);
-						currentModule.collider.enabled = true;
 						currentModule.transform.localScale = currentModule.scale;
 
 						constructor?.StartConstruction(currentModule.transform.position);
@@ -314,7 +310,6 @@ public class BuildingMenu : MonoBehaviour
 		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], spacecraftTransform));
 		currentModule.transform.localScale *= 1.02f;
 		currentModule.module.Rotate(rotation);
-		currentModule.collider.enabled = false;
 	}
 
 	public void ToggleErase()
@@ -463,6 +458,11 @@ public class BuildingMenu : MonoBehaviour
 	public Vector3 GridToLocalPosition(Vector2Int position)
 	{
 		return ((Vector2)position) * buildingGridSize;
+	}
+
+	public float GetGridSize()
+	{
+		return buildingGridSize;
 	}
 
 	public Dictionary<string, Module> GetModulePrefabDictionary()

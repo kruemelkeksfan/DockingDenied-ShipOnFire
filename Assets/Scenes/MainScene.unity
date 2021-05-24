@@ -833,7 +833,7 @@ MonoBehaviour:
   - Nadazero
   - Pantafive
   numberSuffixChance: 0.1
-  spaceStationPrefab: {fileID: 5754137889621204191, guid: dee246da73e76bf4e8b3902e583170be,
+  spaceStationPrefab: {fileID: 6657367023772112432, guid: 314acf0d365986c4498c6e74ae0a7bb4,
     type: 3}
   stationBlueprints:
   - {fileID: 4900000, guid: f4edab895be329a468cd1215ad313a04, type: 3}
