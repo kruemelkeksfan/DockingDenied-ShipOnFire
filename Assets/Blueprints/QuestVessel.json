@@ -21,9 +21,9 @@
             "hotkey": -1
         },
         {
-            "type": "Solid Container",
+            "type": "Fluid Container",
             "position": {
-                "x": 0,
+                "x": 1,
                 "y": -2
             },
             "rotation": 0.0,
@@ -80,33 +80,33 @@
             "actionName": "Front Port",
             "hotkey": 0
         },
-      {
-        "type": "Docking Port",
-        "position": {
-          "x": 0,
-          "y": -3
-        },
-        "rotation": 180.0,
-        "actionName": "Back Port",
-        "hotkey": 1
-      },
         {
-            "type": "Shield Generator",
+            "type": "Docking Port",
             "position": {
-                "x": 1,
-                "y": -2
+                "x": 0,
+                "y": -3
             },
             "rotation": 180.0,
-            "actionName": "",
-            "hotkey": -1
+            "actionName": "Back Port",
+            "hotkey": 1
         },
         {
-            "type": "Shield Generator",
+            "type": "Fluid Container",
             "position": {
                 "x": -1,
                 "y": -2
             },
-            "rotation": 180.0,
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Battery",
+            "position": {
+                "x": 0,
+                "y": -2
+            },
+            "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
         },
@@ -151,22 +151,22 @@
             "hotkey": -1
         },
         {
-            "type": "Thruster",
-            "position": {
-                "x": -2,
-                "y": 0
-            },
-            "rotation": 180.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Thruster",
+            "type": "Solar Module",
             "position": {
                 "x": 2,
                 "y": 0
             },
-            "rotation": 180.0,
+            "rotation": 270.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -2,
+                "y": 0
+            },
+            "rotation": 90.0,
             "actionName": "",
             "hotkey": -1
         },

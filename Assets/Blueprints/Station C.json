@@ -1,16 +1,6 @@
 {
     "moduleData": [
         {
-            "type": "Constructor",
-            "position": {
-                "x": 0,
-                "y": -1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
             "type": "Command Module",
             "position": {
                 "x": 0,
@@ -21,7 +11,17 @@
             "hotkey": -1
         },
         {
-            "type": "Fluid Container",
+            "type": "Battery",
+            "position": {
+                "x": -1,
+                "y": 0
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Battery",
             "position": {
                 "x": 1,
                 "y": 0
@@ -31,97 +31,7 @@
             "hotkey": -1
         },
         {
-            "type": "Fluid Container",
-            "position": {
-                "x": 1,
-                "y": -1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": -1,
-                "y": 0
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": -1,
-                "y": -1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": -2,
-                "y": 0
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": -2,
-                "y": -1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": 2,
-                "y": 0
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": 2,
-                "y": -1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": -2,
-                "y": 1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": -1,
-                "y": 1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
+            "type": "Constructor",
             "position": {
                 "x": 0,
                 "y": 1
@@ -131,7 +41,7 @@
             "hotkey": -1
         },
         {
-            "type": "Solid Container",
+            "type": "Fluid Container",
             "position": {
                 "x": 1,
                 "y": 1
@@ -141,137 +51,57 @@
             "hotkey": -1
         },
         {
-            "type": "Solid Container",
-            "position": {
-                "x": 2,
-                "y": 1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": 2,
-                "y": -2
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": 1,
-                "y": -2
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": 0,
-                "y": -2
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": -2,
-                "y": -2
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
+            "type": "Fluid Container",
             "position": {
                 "x": -1,
-                "y": -2
+                "y": 1
             },
             "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
         },
         {
-            "type": "Thruster",
-            "position": {
-                "x": -2,
-                "y": -3
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Thruster",
+            "type": "Fluid Container",
             "position": {
                 "x": 2,
-                "y": -3
+                "y": 1
             },
             "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
         },
         {
-            "type": "Thruster",
-            "position": {
-                "x": -2,
-                "y": 2
-            },
-            "rotation": 180.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Thruster",
+            "type": "Fluid Container",
             "position": {
                 "x": 2,
-                "y": 2
-            },
-            "rotation": 180.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": 0,
-                "y": 2
+                "y": 0
             },
             "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
         },
         {
-            "type": "Solid Container",
+            "type": "Fluid Container",
             "position": {
-                "x": 3,
-                "y": -2
+                "x": -2,
+                "y": 1
             },
             "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
         },
         {
-            "type": "Solid Container",
+            "type": "Fluid Container",
             "position": {
-                "x": -3,
-                "y": -2
+                "x": -2,
+                "y": 0
             },
             "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
         },
         {
-            "type": "Solid Container",
+            "type": "Fluid Container",
             "position": {
                 "x": -3,
                 "y": 1
@@ -281,7 +111,17 @@
             "hotkey": -1
         },
         {
-            "type": "Solid Container",
+            "type": "Fluid Container",
+            "position": {
+                "x": -3,
+                "y": 0
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
             "position": {
                 "x": 3,
                 "y": 1
@@ -293,8 +133,38 @@
         {
             "type": "Fluid Container",
             "position": {
-                "x": -4,
-                "y": -2
+                "x": 3,
+                "y": 0
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": 4,
+                "y": 1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": 4,
+                "y": 0
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": 5,
+                "y": 0
             },
             "rotation": 0.0,
             "actionName": "",
@@ -313,8 +183,8 @@
         {
             "type": "Fluid Container",
             "position": {
-                "x": 4,
-                "y": -2
+                "x": -4,
+                "y": 0
             },
             "rotation": 0.0,
             "actionName": "",
@@ -323,57 +193,197 @@
         {
             "type": "Fluid Container",
             "position": {
-                "x": 4,
-                "y": 1
+                "x": -5,
+                "y": 0
             },
             "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": 0,
-                "y": -3
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Thruster",
-            "position": {
-                "x": 5,
-                "y": -2
-            },
-            "rotation": 90.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Thruster",
-            "position": {
-                "x": 5,
-                "y": 1
-            },
-            "rotation": 90.0,
             "actionName": "",
             "hotkey": -1
         },
         {
             "type": "Docking Port",
             "position": {
-                "x": 3,
-                "y": -3
+                "x": -6,
+                "y": 3
             },
-            "rotation": 180.0,
-            "actionName": "R2",
+            "rotation": 0.0,
+            "actionName": "L1",
+            "hotkey": 0
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 6,
+                "y": 1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 6,
+                "y": 0
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -6,
+                "y": 1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -6,
+                "y": 0
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -6,
+                "y": -1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -6,
+                "y": 2
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 6,
+                "y": 2
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 6,
+                "y": -1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 6,
+                "y": -2
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -6,
+                "y": -2
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -7,
+                "y": 1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -7,
+                "y": -1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -7,
+                "y": 0
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 7,
+                "y": -1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 7,
+                "y": 0
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 7,
+                "y": 1
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Docking Port",
+            "position": {
+                "x": 6,
+                "y": 3
+            },
+            "rotation": 0.0,
+            "actionName": "R1",
             "hotkey": 0
         },
         {
             "type": "Docking Port",
             "position": {
-                "x": -3,
+                "x": -6,
                 "y": -3
             },
             "rotation": 180.0,
@@ -383,68 +393,168 @@
         {
             "type": "Docking Port",
             "position": {
-                "x": -3,
-                "y": 2
-            },
-            "rotation": 0.0,
-            "actionName": "L1",
-            "hotkey": 0
-        },
-        {
-            "type": "Docking Port",
-            "position": {
-                "x": 3,
-                "y": 2
-            },
-            "rotation": 0.0,
-            "actionName": "R1",
-            "hotkey": 0
-        },
-        {
-            "type": "Solar Module",
-            "position": {
-                "x": 3,
-                "y": -1
-            },
-            "rotation": 270.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solar Module",
-            "position": {
-                "x": 3,
-                "y": 0
-            },
-            "rotation": 270.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solar Module",
-            "position": {
-                "x": -3,
-                "y": 0
-            },
-            "rotation": 90.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solar Module",
-            "position": {
-                "x": -3,
-                "y": -1
-            },
-            "rotation": 90.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solar Module",
-            "position": {
-                "x": 4,
+                "x": 6,
                 "y": -3
+            },
+            "rotation": 180.0,
+            "actionName": "R2",
+            "hotkey": 0
+        },
+        {
+            "type": "Battery",
+            "position": {
+                "x": 5,
+                "y": 1
+            },
+            "rotation": 180.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Battery",
+            "position": {
+                "x": -5,
+                "y": 1
+            },
+            "rotation": 180.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Thruster",
+            "position": {
+                "x": 7,
+                "y": -2
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Thruster",
+            "position": {
+                "x": 7,
+                "y": 2
+            },
+            "rotation": 180.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Thruster",
+            "position": {
+                "x": -7,
+                "y": 2
+            },
+            "rotation": 180.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Thruster",
+            "position": {
+                "x": -7,
+                "y": -2
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -5,
+                "y": -1
+            },
+            "rotation": 270.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -5,
+                "y": -2
+            },
+            "rotation": 270.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -5,
+                "y": -3
+            },
+            "rotation": 270.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": 5,
+                "y": -1
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": 5,
+                "y": -2
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": 5,
+                "y": -3
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": 5,
+                "y": 2
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": 5,
+                "y": 3
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -5,
+                "y": 2
+            },
+            "rotation": 270.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -5,
+                "y": 3
             },
             "rotation": 270.0,
             "actionName": "",
@@ -453,7 +563,27 @@
         {
             "type": "Thruster",
             "position": {
-                "x": -5,
+                "x": 8,
+                "y": 0
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Thruster",
+            "position": {
+                "x": -8,
+                "y": 0
+            },
+            "rotation": 270.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": 8,
                 "y": 1
             },
             "rotation": 270.0,
@@ -463,8 +593,8 @@
         {
             "type": "Solar Module",
             "position": {
-                "x": 4,
-                "y": 2
+                "x": 8,
+                "y": -1
             },
             "rotation": 270.0,
             "actionName": "",
@@ -473,70 +603,60 @@
         {
             "type": "Solar Module",
             "position": {
-                "x": -4,
-                "y": 2
-            },
-            "rotation": 90.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solar Module",
-            "position": {
-                "x": -4,
-                "y": -3
-            },
-            "rotation": 90.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": -1,
-                "y": -3
-            },
-            "rotation": 180.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": 1,
-                "y": -3
-            },
-            "rotation": 180.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": -1,
-                "y": 2
-            },
-            "rotation": 180.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Fluid Container",
-            "position": {
-                "x": 1,
-                "y": 2
-            },
-            "rotation": 180.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Thruster",
-            "position": {
-                "x": -5,
+                "x": 8,
                 "y": -2
             },
             "rotation": 270.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": 8,
+                "y": 2
+            },
+            "rotation": 270.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -8,
+                "y": 1
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -8,
+                "y": 2
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -8,
+                "y": -1
+            },
+            "rotation": 90.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solar Module",
+            "position": {
+                "x": -8,
+                "y": -2
+            },
+            "rotation": 90.0,
             "actionName": "",
             "hotkey": -1
         }

@@ -161,22 +161,22 @@
             "hotkey": -1
         },
         {
-            "type": "Shield Generator",
+            "type": "Fluid Container",
             "position": {
-                "x": 0,
-                "y": 3
+                "x": 1,
+                "y": -5
             },
-            "rotation": 90.0,
+            "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
         },
         {
-            "type": "Shield Generator",
+            "type": "Fluid Container",
             "position": {
                 "x": 0,
-                "y": -4
+                "y": -5
             },
-            "rotation": 90.0,
+            "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
         },
@@ -361,30 +361,190 @@
             "hotkey": -1
         },
         {
-            "type": "Docking Port",
+            "type": "Solid Container",
             "position": {
-                "x": -2,
-                "y": -5
+                "x": -1,
+                "y": 5
             },
-            "rotation": 180.0,
-            "actionName": "L2",
-            "hotkey": 0
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
         },
         {
-            "type": "Docking Port",
+            "type": "Solid Container",
+            "position": {
+                "x": -2,
+                "y": 5
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 2,
+                "y": 5
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 1,
+                "y": 5
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 2,
+                "y": 4
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -2,
+                "y": 4
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
             "position": {
                 "x": 2,
                 "y": -5
             },
-            "rotation": 180.0,
-            "actionName": "R2",
-            "hotkey": 0
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -2,
+                "y": -5
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": -1,
+                "y": -5
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": 1,
+                "y": 4
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": 0,
+                "y": 4
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": -1,
+                "y": 4
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": 0,
+                "y": 3
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Fluid Container",
+            "position": {
+                "x": 0,
+                "y": -4
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -2,
+                "y": -6
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": -1,
+                "y": -6
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 1,
+                "y": -6
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
+        },
+        {
+            "type": "Solid Container",
+            "position": {
+                "x": 2,
+                "y": -6
+            },
+            "rotation": 0.0,
+            "actionName": "",
+            "hotkey": -1
         },
         {
             "type": "Docking Port",
             "position": {
                 "x": -2,
-                "y": 4
+                "y": 6
             },
             "rotation": 0.0,
             "actionName": "L1",
@@ -394,71 +554,31 @@
             "type": "Docking Port",
             "position": {
                 "x": 2,
-                "y": 4
+                "y": 6
             },
             "rotation": 0.0,
             "actionName": "R1",
             "hotkey": 0
         },
         {
-            "type": "Solid Container",
+            "type": "Docking Port",
             "position": {
-                "x": -1,
-                "y": -5
+                "x": -2,
+                "y": -7
             },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
+            "rotation": 180.0,
+            "actionName": "L2",
+            "hotkey": 0
         },
         {
-            "type": "Solid Container",
+            "type": "Docking Port",
             "position": {
-                "x": 0,
-                "y": -5
+                "x": 2,
+                "y": -7
             },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": 1,
-                "y": -5
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": -1,
-                "y": 4
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": 0,
-                "y": 4
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
-        },
-        {
-            "type": "Solid Container",
-            "position": {
-                "x": 1,
-                "y": 4
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
+            "rotation": 180.0,
+            "actionName": "R2",
+            "hotkey": 0
         }
     ]
 }
