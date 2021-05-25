@@ -81,7 +81,7 @@ public class QuestManager : MonoBehaviour, IListener
 
 	private void Awake()
 	{
-		// TODO: Give Vessels IDs (e.g. T3 for the third spawned Trading Ship) and use this ID in task descriptions instead of "a Trading Vesssel", this also allows to make just 1 "Destroy Vessel" Task, 1 Towing Task etc., also allows for towing Combat Vessels without introducing 9000 new Tasks
+		// TODO: Maybe separte Quest Type and Vessel Type, this also allows to make just 1 "Destroy Vessel" Task, 1 Towing Task etc., also allows for towing Combat Vessels without introducing 9000 new Tasks
 
 		QuestData questData = JsonUtility.FromJson<QuestData>(questDataFile.text);
 		backstories = questData.backstories;
@@ -92,13 +92,43 @@ public class QuestManager : MonoBehaviour, IListener
 		{
 			Debug.Log(i + ": " + backstories[i].description);
 		}
+		Debug.Log("--------------------");
 		for(int i = 0; i < questGivers.Length; ++i)
 		{
 			Debug.Log(i + ": " + questGivers[i].description);
 		}
+		Debug.Log("--------------------");
 		for(int i = 0; i < tasks.Length; ++i)
 		{
 			Debug.Log(i + ": " + tasks[i].description);
+		}
+		Debug.Log("--------------------");
+		for(int i = 0; i < backstories.Length; ++i)
+		{
+			for(int j = 0; j < backstories[i].questGivers.Length; ++j)
+			{
+				List<int> questGiverList = new List<int>(questGivers[backstories[i].questGivers[j]].tasks);
+				List<int> taskList = new List<int>();
+				foreach(int task in backstories[i].tasks)
+				{
+					if(questGiverList.Contains(task))
+					{
+						taskList.Add(task);
+					}
+				}
+				if(taskList.Count <= 0)
+				{
+					Debug.LogWarning("No valid Combination for Backstory " + i + " and Quest Giver " + j + "!");
+				}
+
+				for(int n = 0; n < taskList.Count; ++n)
+				{
+					Debug.Log(backstories[i].description);
+					Debug.Log(questGivers[backstories[i].questGivers[j]].description);
+					Debug.Log(tasks[taskList[n]].description);
+					Debug.Log("--------------------");
+				}
+			}
 		}*/
 
 		activeQuests = new Dictionary<SpaceStationController, Quest>(1);
@@ -133,7 +163,7 @@ public class QuestManager : MonoBehaviour, IListener
 	// (Example Algorithm for the last Part: Probability of a Quest Part = Amount of Times it was performed in the Past / All Quests performed in the Past
 	// => if >20%, use this Number, else equally distribute Chances,
 	// Always generate 1/3 Quests completely random to avoid Player getting locked up in Quests he does not like (any more))
-	public Quest GenerateQuest(SpaceStationController questStation)
+	public Quest GenerateQuest(SpaceStationController questStation, int attempt = 0)
 	{
 		Quest quest = new Quest();
 
@@ -157,7 +187,15 @@ public class QuestManager : MonoBehaviour, IListener
 		}
 		if(taskIntersection.Count < 1)
 		{
-			Debug.LogError("No valid Tasks for the Combination of Backstory " + quest.backstory + " and QuestGiver " + quest.questGiver + "!");
+			Debug.LogWarning("No valid Tasks for the Combination of Backstory " + quest.backstory + " and QuestGiver " + quest.questGiver + "!");
+			if(attempt < 5)
+			{
+				return GenerateQuest(questStation, attempt + 1);
+			}
+			else
+			{
+				return null;
+			}
 		}
 		quest.task = taskIntersection[UnityEngine.Random.Range(0, taskIntersection.Count)];
 

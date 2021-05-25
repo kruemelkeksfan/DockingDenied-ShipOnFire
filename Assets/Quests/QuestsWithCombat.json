@@ -1,0 +1,161 @@
+{
+    "backstories": [
+        {
+            "description": "Fugitives threaten the economic balance of the station.",
+            "questGivers": [0, 1, 2, 3, 4, 5, 6, 7],
+            "tasks": [0, 9, 10, 11, 12, 17]
+        },
+        {
+            "description": "Customs agency ships are inspecting trading vessels.",
+            "questGivers": [0, 1, 2, 5, 6, 7],
+            "tasks": [1, 3]
+        },
+        {
+            "description": "Pirate ships are threatening transport vessels.",
+            "questGivers": [0, 1, 2, 3, 4, 5, 6, 7],
+            "tasks": [2, 8, 11]
+        },
+        {
+            "description": "The engines of a vessel failed and life support systems are critical.",
+            "questGivers": [0, 1, 2, 3, 4, 5, 6, 7],
+            "tasks": [4, 5, 6, 7]
+        },
+        {
+            "description": "An enemy trading vessel is vulnerable and could be plundered.",
+            "questGivers": [0, 2, 6],
+            "tasks": [18]
+        },
+        {
+            "description": "An enemy combat vessel is passing through the area around the station unarmed.",
+            "questGivers": [0, 2, 4, 5, 6],
+            "tasks": [19]
+        },
+        {
+            "description": "An enemy combat vessel is patrolling the area.",
+            "questGivers": [0, 2, 4, 5, 6],
+            "tasks": [19]
+        },
+        {
+            "description": "An enemy attacked a civilian station and should be punished.",
+            "questGivers": [0, 1, 2, 3, 4, 5, 6, 7],
+            "tasks": [2, 19]
+        },
+        {
+            "description": "A spacecraft went missing in the sector of the station.",
+            "questGivers": [0, 1, 2, 3, 4, 5, 6, 7],
+            "tasks": [4, 5, 6, 7]
+        },
+        {
+            "description": "The station is running out of supplies and would pay a large price.",
+            "questGivers": [0, 1, 2, 3, 5, 6, 7],
+            "tasks": [9, 10, 11, 12, 13]
+        },
+        {
+            "description": "The station is abusing its workers and therefore selling some products very cheap.",
+            "questGivers": [0, 2, 6],
+            "tasks": [14, 15, 16, 17]
+        },
+        {
+            "description": "The station was attacked and needs some investments to get going again.",
+            "questGivers": [0, 1, 3, 4, 5, 6, 7],
+            "tasks": [17]
+        }
+    ],
+    "questGivers": [
+        {
+            "description": "A large syndicate known for opportunistic deals which drove many stations into poverty and supply shortages.",
+            "tasks": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19]
+        },
+        {
+            "description": "A merchant who is trying his best to make fair deals. He seems to be well respected by the local population.",
+            "tasks": [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
+        },
+        {
+            "description": "A ruthless politician who is known for enforcing his goals and silencing his opponents equally violently.",
+            "tasks": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+        },
+        {
+            "description": "A member of the council. As he comes toward you he kindly greets some people, most of which reply with a smile.",
+            "tasks": [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17]
+        },
+        {
+            "description": "An ambitious major who would prefer to be a commander.",
+            "tasks": [0, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19]
+        },
+        {
+            "description": "A man wearing a military uniform who looks deeply worried about something.",
+            "tasks": [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 19]
+        },
+        {
+            "description": "A man with a nervous gaze. The locals look after him disdainfully.",
+            "tasks": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19]
+        },
+        {
+            "description": "A woman in civilian clothes with a desperate facial expression. She is gesturing anxiously.",
+            "tasks": [2, 3, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17]
+        }
+    ],
+    "tasks": [
+        {
+            "description": "Destroy a Fugitive Vessel"
+        },
+        {
+            "description": "Destroy a Customs Agency Vessel"
+        },
+        {
+            "description": "Destroy a Pirate Vessel"
+        },
+        {
+            "description": "Bribe a Customs Vessels Crew"
+        },
+        {
+            "description": "Jump-start a helpless Vessel"
+        },
+        {
+            "description": "Supply 10 Oxygen to a helpless Vessel"
+        },
+        {
+            "description": "Plunder a helpless Vessel"
+        },
+        {
+            "description": "Tow a helpless Vessel to the Station"
+        },
+        {
+            "description": "Sell 40 Steel to Station"
+        },
+        {
+            "description": "Sell 50 Food to the Station"
+        },
+        {
+            "description": "Sell 20 Sanitary Products to the Station"
+        },
+        {
+            "description": "Sell 10 Medicine to the Station"
+        },
+        {
+            "description": "Sell 100 Oxygen to the Station"
+        },
+        {
+            "description": "Sell 100 Hydrogen to the Station"
+        },
+        {
+            "description": "Buy 40 Steel from the Station"
+        },
+        {
+            "description": "Buy 60 Silicon from the Station"
+        },
+        {
+            "description": "Buy 20 Drugs from the Station"
+        },
+        {
+            "description": "Buy Goods for at least 200$ from the Station"
+        },
+	   {
+            "description": "Plunder a Trading Vessel"
+        },
+	   {
+            "description": "Destroy a Combat Vessel"
+        }
+
+    ]
+}
