@@ -5,9 +5,10 @@ using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
+	private static string deathMessage = null;
+
 	private static GameController instance = null;
 	private ToggleController toggleController = null;
-	private string deathMessage = null;
 	private bool killScene = false;
 	private bool sceneDead = false;
 
@@ -18,15 +19,7 @@ public class GameController : MonoBehaviour
 
 	private void Awake()
 	{
-		if(instance != null)
-		{
-			GameObject.Destroy(gameObject);
-		}
-		else
-		{
-			GameObject.DontDestroyOnLoad(this.gameObject);
-			instance = this;
-		}
+		instance = this;
 	}
 
 	private void Update()
@@ -45,7 +38,17 @@ public class GameController : MonoBehaviour
 		{
 			sceneDead = true;
 			toggleController = null;
+			SceneManager.sceneLoaded += DisplayDeathMessage;
 			SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex, LoadSceneMode.Single);
+		}
+	}
+
+	private void DisplayDeathMessage(Scene scene, LoadSceneMode mode)
+	{
+		if(deathMessage != null)
+		{
+			InfoController.GetInstance().AddMessage(deathMessage);
+			deathMessage = null;
 		}
 	}
 
@@ -54,16 +57,9 @@ public class GameController : MonoBehaviour
 		if(!string.IsNullOrEmpty(message))
 		{
 			deathMessage = message;
-			SceneManager.sceneLoaded += DisplayDeathMessage;
 		}
 
 		killScene = true;
-	}
-
-	private void DisplayDeathMessage(Scene scene, LoadSceneMode mode)
-	{
-		InfoController.GetInstance().AddMessage(deathMessage);
-		deathMessage = null;
 	}
 
 	public void Quit()

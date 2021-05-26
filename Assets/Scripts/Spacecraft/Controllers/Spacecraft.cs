@@ -75,12 +75,6 @@ public class Spacecraft : MonoBehaviour
 			GravityWellController.GetInstance()?.RemoveGravityObject(rigidbody);
 		}
 		ToggleController.GetInstance()?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
-
-		// TODO: Switch to other Player Spacecraft if available
-		if(this == SpacecraftManager.GetInstance()?.GetLocalPlayerMainSpacecraft())
-		{
-			GameController.GetInstance().Restart("Game Over...just one more Round...");
-		}
 	}
 
 	private void Update()
@@ -102,6 +96,15 @@ public class Spacecraft : MonoBehaviour
 		foreach(IFixedUpdateListener listener in fixedUpdateListeners)
 		{
 			listener.FixedUpdateNotify();
+		}
+	}
+
+	public void Kill()
+	{
+		// TODO: Switch to other Player Spacecraft if available
+		if(this == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+		{
+			GameController.GetInstance().Restart("Game Over...just one more Round...");
 		}
 	}
 

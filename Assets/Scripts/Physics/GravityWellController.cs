@@ -215,7 +215,14 @@ public class GravityWellController : MonoBehaviour, IListener
 		{
 			--AsteroidSpawner.AsteroidCount;
 		}
-		GameObject.Destroy(gravityObject.gameObject);
+		if(gravityObject.gameObject == localPlayerMainSpacecraftObject)
+		{
+			gravityObject.GetComponent<Spacecraft>().Kill();
+		}
+		else
+		{
+			GameObject.Destroy(gravityObject.gameObject);
+		}
 	}
 
 	// Calculates the orbital Velocity to orbit at a given Height from the Vector from the GravityWell to the Orbiter.
