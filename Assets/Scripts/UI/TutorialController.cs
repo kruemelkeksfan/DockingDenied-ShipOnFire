@@ -7,6 +7,7 @@ public class TutorialController : MonoBehaviour
 	private delegate bool CancelCondition();
 
 	private static WaitForSecondsRealtime waitForTutorialUpdateInterval = null;
+	private static bool skipped = false;
 
 	[SerializeField] private float tutorialUpdateInterval = 1.0f;
 	[SerializeField] private GameObject buildingMenu = null;
@@ -34,7 +35,10 @@ public class TutorialController : MonoBehaviour
 		cameraTransform = Camera.main.GetComponent<Transform>();
 		startZoom = cameraTransform.position.z;
 
-		StartCoroutine(UpdateTutorial());
+		if(!skipped)
+		{
+			StartCoroutine(UpdateTutorial());
+		}
 	}
 
 	private IEnumerator UpdateTutorial()
@@ -222,6 +226,7 @@ public class TutorialController : MonoBehaviour
 	{
 		StopAllCoroutines();
 		skipButton.SetActive(false);
+		skipped = true;
 	}
 
 	private IEnumerator WaitForClear(CancelCondition cancelCondition)
