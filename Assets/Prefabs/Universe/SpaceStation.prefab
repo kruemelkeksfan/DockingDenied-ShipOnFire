@@ -238,7 +238,7 @@ MonoBehaviour:
   bulkDiscount: 0.002
   dockingTimeout: 600
   stationUpdateInterval: 600
-  maxGoodStockFactor: 8
+  maxGoodStockFactor: 12
   minProfit: -100
   maxProfit: 200
   stationMenu: {fileID: 6964516939826203779}
