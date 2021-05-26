@@ -70,10 +70,7 @@ public class TutorialController : MonoBehaviour
 		{
 			infoController.AddMessage("A Starter Ship should at least have:");
 			infoController.AddMessage("Some Solid Containers, a Docking Port, a Thruster in each Direction and a Solar Module");
-			yield return WaitForClear(delegate
-			{
-				return complete = complete || VerifyStartShipRequirements();
-			});
+			infoController.AddMessage("You can rotate Modules with Q and E");
 			infoController.AddMessage("Building Materials are automatically bought from the Station");
 			infoController.AddMessage("However their Stocks and your Money are limited, so don't get carried away");
 			yield return WaitForClear(delegate
@@ -142,10 +139,6 @@ public class TutorialController : MonoBehaviour
 		{
 			infoController.AddMessage("Zoom out and click the Name of the Station near you");
 			infoController.AddMessage("Then click 'Request Docking' in the Station Menu");
-			yield return WaitForClear(delegate
-			{
-				return false;
-			});
 			infoController.AddMessage("Docking Permissions stay active for 2 Minutes and are indicated by yellow Light emerging from the affected Port");
 			infoController.AddMessage("Activate your own Docking Port by pressing the Number Key displayed in the top left Corner of your Screen");
 			yield return WaitForClear(delegate
