@@ -408,9 +408,12 @@ public class BuildingMenu : MonoBehaviour
 			if(constructor.PositionInRange(position))
 			{
 				SpaceStationController spaceStationController = constructor.GetSpaceStationController();
-				if(spaceStationController != null && spaceStationController.BuyConstructionMaterials(materials))
+				if(spaceStationController != null)
 				{
-					return constructor;
+					if(spaceStationController.BuyConstructionMaterials(materials))
+					{
+						return constructor;
+					}
 				}
 				else if(constructor.GetInventoryController().WithdrawBulk(materials))
 				{
