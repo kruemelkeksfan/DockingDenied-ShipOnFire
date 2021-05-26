@@ -442,6 +442,11 @@ public class QuestManager : MonoBehaviour, IListener
 		return tasks[taskIndex].description;
 	}
 
+	public int GetActiveQuestCount()
+	{
+		return activeQuests.Count;
+	}
+
 	public Quest GetActiveQuest(SpaceStationController spaceStation)
 	{
 		if(activeQuests.ContainsKey(spaceStation))

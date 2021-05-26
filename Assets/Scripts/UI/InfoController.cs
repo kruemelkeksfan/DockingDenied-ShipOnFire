@@ -129,6 +129,11 @@ public class InfoController : MonoBehaviour, IListener
 		messages.Enqueue(messageRecord);
 	}
 
+	public int GetMessageCount()
+	{
+		return messages.Count;
+	}
+
 	public void SetBuildingCosts(GoodManager.Load[] buildingCosts)
 	{
 		if(buildingCosts != null)

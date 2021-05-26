@@ -88,17 +88,20 @@ public class SpacecraftBlueprintController
 			Dictionary<string, uint> costDictionary = new Dictionary<string, uint>();
 			foreach(ModuleData moduleData in spacecraftData.moduleData)
 			{
-				foreach(GoodManager.Load cost in modulePrefabDictionary[moduleData.type].GetBuildingCosts())
+				if(moduleData.type != "Command Module")
 				{
-					if(cost.amount > 0)
+					foreach(GoodManager.Load cost in modulePrefabDictionary[moduleData.type].GetBuildingCosts())
 					{
-						if(!costDictionary.ContainsKey(cost.goodName))
+						if(cost.amount > 0)
 						{
-							costDictionary[cost.goodName] = cost.amount;
-						}
-						else
-						{
-							costDictionary[cost.goodName] += cost.amount;
+							if(!costDictionary.ContainsKey(cost.goodName))
+							{
+								costDictionary[cost.goodName] = cost.amount;
+							}
+							else
+							{
+								costDictionary[cost.goodName] += cost.amount;
+							}
 						}
 					}
 				}

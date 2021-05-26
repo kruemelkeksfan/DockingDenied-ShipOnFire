@@ -89,4 +89,9 @@ public class ToggleController : MonoBehaviour
 			toggleObjects[groupName].Remove(toggleObject);
 		}
 	}
+
+	public bool IsGroupToggled(string groupName)
+	{
+		return !toggleObjects[groupName][0].activeSelf;
+	}
 }
