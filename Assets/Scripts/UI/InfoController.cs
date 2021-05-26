@@ -17,12 +17,13 @@ public class InfoController : MonoBehaviour, IListener
 	public static InfoController instance = null;
 
 	[SerializeField] private Text messageField = null;
+	[SerializeField] private float skippingMessageDuration = 0.2f;
 	[SerializeField] private float messageDuration = 6.0f;
 	[SerializeField] private Text controlHint = null;
 	[SerializeField] private Text resourceDisplay = null;
 	[SerializeField] private Text buildingResourceDisplay = null;
 	private Queue<Message> messages = null;
-	private float minTimestamp = 0.0f;
+	private float lastDequeue = 0.0f;
 	private Dictionary<string, uint> buildingCosts = null;
 	private InventoryController inventoryController = null;
 
@@ -49,9 +50,12 @@ public class InfoController : MonoBehaviour, IListener
 	// TODO: Put this into a Method which only gets called when a new Message is added or a Message Timestamp runs out (Coroutine)
 	private void Update()
 	{
-		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < Time.realtimeSinceStartup)
+		float messageDuration = Input.GetButton("Skip Info Log") ? skippingMessageDuration : this.messageDuration;
+
+		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < Time.realtimeSinceStartup && lastDequeue + messageDuration < Time.realtimeSinceStartup)
 		{
 			messages.Dequeue();
+			lastDequeue = Time.realtimeSinceStartup;
 		}
 
 		StringBuilder messageText = new StringBuilder();
@@ -123,8 +127,7 @@ public class InfoController : MonoBehaviour, IListener
 	{
 		Message messageRecord = new Message();
 		messageRecord.message = message;
-		messageRecord.timestamp = Mathf.Max(minTimestamp, Time.realtimeSinceStartup);
-		minTimestamp = messageRecord.timestamp + messageDuration;
+		messageRecord.timestamp = Time.realtimeSinceStartup;
 
 		messages.Enqueue(messageRecord);
 	}
