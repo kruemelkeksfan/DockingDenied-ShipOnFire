@@ -37,6 +37,7 @@ public class BuildingMenu : MonoBehaviour
 
 	private static BuildingMenu instance = null;
 
+	[SerializeField] private GameObject buildingResourceDisplay = null;
 	[SerializeField] private float buildingGridSize = 1.0f;
 	[SerializeField] private Button moduleButtonPrefab = null;
 	[SerializeField] private Button blueprintButtonPrefab = null;
@@ -119,8 +120,9 @@ public class BuildingMenu : MonoBehaviour
 		reservedZoneTransforms.Add(reservedZoneRenderers[0].GetComponent<Transform>());
 		reservedZoneTransforms[0].gameObject.SetActive(false);
 
-		blueprintMenu.gameObject.SetActive(false);
 		gameObject.SetActive(false);
+		buildingResourceDisplay.SetActive(false);
+		blueprintMenu.gameObject.SetActive(false);
 	}
 
 	private void Update()
@@ -256,7 +258,8 @@ public class BuildingMenu : MonoBehaviour
 	{
 		RefreshBlueprintList();
 		gameObject.SetActive(!gameObject.activeSelf);
-		blueprintMenu.gameObject.SetActive(!blueprintMenu.gameObject.activeSelf);
+		buildingResourceDisplay.SetActive(gameObject.activeSelf);
+		blueprintMenu.gameObject.SetActive(gameObject.activeSelf);
 		SelectModule(-1);
 		erase = false;
 		InputController.SetFlightControls(!gameObject.activeSelf);
