@@ -27,8 +27,13 @@ public class DockingPort : HotkeyModule
 
 		magnetParticles = gameObject.GetComponentInChildren<ParticleSystem>();
 		rigidbody = gameObject.GetComponentInParent<Rigidbody2D>();
+	}
 
+	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
+	{
+		base.Build(position, listenUpdates, listenFixedUpdates);
 		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
+		portNameField.text = GetActionName();
 	}
 
 	public override void Deconstruct()
