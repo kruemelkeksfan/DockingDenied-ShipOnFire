@@ -286,6 +286,7 @@ public class InventoryController : MonoBehaviour, IListener
 			}
 
 			int consumerCounter = 0;
+			consumerIndex = energyConsumers.Count > 0 ? (consumerIndex + 1) % energyConsumers.Count : 0;
 			while(energy > 0.0f && consumerCounter < energyConsumers.Count)
 			{
 				energy = energyConsumers[consumerIndex].Charge(energy);
@@ -299,7 +300,6 @@ public class InventoryController : MonoBehaviour, IListener
 				}
 
 				++consumerCounter;
-				consumerIndex = (consumerIndex + 1) % energyConsumers.Count;
 			}
 
 			storedEnergy = 0.0f;
