@@ -69,11 +69,15 @@ public class Spacecraft : MonoBehaviour
 
 	private void OnDestroy()
 	{
-		GravityWellController.GetInstance().RemoveGravityObject(GetComponent<Rigidbody2D>());
-		ToggleController.GetInstance().RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+		Rigidbody2D rigidbody = GetComponent<Rigidbody2D>();
+		if(rigidbody != null)
+		{
+			GravityWellController.GetInstance()?.RemoveGravityObject(rigidbody);
+		}
+		ToggleController.GetInstance()?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 
 		// TODO: Switch to other Player Spacecraft if available
-		if(this == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+		if(this == SpacecraftManager.GetInstance()?.GetLocalPlayerMainSpacecraft())
 		{
 			GameController.GetInstance().Restart("Game Over...just one more Round...");
 		}
@@ -215,6 +219,12 @@ public class Spacecraft : MonoBehaviour
 
 	private void CalculateSpacecraftCollider()
 	{
+		if(modules.Count <= 0)
+		{
+			spacecraftCollider.SetPath(0, new Vector2[] { Vector2.zero });
+			return;
+		}
+
 		// Find Maximum Y Value of this Spacecrafts Modules
 		int maxY = 0;
 		foreach(Vector2Int maxPosition in modules.Keys)

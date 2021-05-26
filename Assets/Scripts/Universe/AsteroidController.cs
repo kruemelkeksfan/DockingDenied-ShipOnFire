@@ -12,7 +12,10 @@ public class AsteroidController : MonoBehaviour
 	{
 		gravityWellController = GravityWellController.GetInstance();
 		rigidbody = GetComponent<Rigidbody2D>();
-		gravityWellController.RemoveGravityObject(rigidbody);
+		if(rigidbody != null)
+		{
+			gravityWellController?.RemoveGravityObject(rigidbody);
+		}
 	}
 
 	private void OnCollisionEnter2D(Collision2D collision)

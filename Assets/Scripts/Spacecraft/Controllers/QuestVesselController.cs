@@ -54,7 +54,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	private void OnDestroy()
 	{
-		ToggleController.GetInstance().RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
+		ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
 	}
 
 	public void UpdateNotify()

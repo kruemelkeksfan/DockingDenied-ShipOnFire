@@ -117,7 +117,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private void OnDestroy()
 	{
-		ToggleController.GetInstance().RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
+		ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
 	}
 
 	public void UpdateNotify()
