@@ -122,18 +122,27 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void UpdateNotify()
 	{
-		Vector2 screenPoint;
-		RectTransformUtility.ScreenPointToLocalPointInRectangle(uiTransform, camera.WorldToScreenPoint(transform.position), null, out screenPoint);
-		mapMarker.anchoredPosition = screenPoint;
-
-		float distance = (transform.position - localPlayerMainTransform.position).magnitude;
-		if(distance > decimalDigitThreshold)
+		if(Vector3.Dot(camera.transform.forward, transform.position - camera.transform.position) >= 0.0f)
 		{
-			mapMarkerDistance.text = distance.ToString("F0") + "km";
+			mapMarker.gameObject.SetActive(true);
+
+			Vector2 screenPoint;
+			RectTransformUtility.ScreenPointToLocalPointInRectangle(uiTransform, camera.WorldToScreenPoint(transform.position), null, out screenPoint);
+			mapMarker.anchoredPosition = screenPoint;
+
+			float distance = (transform.position - localPlayerMainTransform.position).magnitude;
+			if(distance > decimalDigitThreshold)
+			{
+				mapMarkerDistance.text = distance.ToString("F0") + "km";
+			}
+			else
+			{
+				mapMarkerDistance.text = distance.ToString("F2") + "km";
+			}
 		}
 		else
 		{
-			mapMarkerDistance.text = distance.ToString("F2") + "km";
+			mapMarker.gameObject.SetActive(false);
 		}
 	}
 
