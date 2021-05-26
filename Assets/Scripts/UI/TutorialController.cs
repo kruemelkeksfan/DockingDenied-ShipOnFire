@@ -6,11 +6,11 @@ public class TutorialController : MonoBehaviour
 {
 	private delegate bool CancelCondition();
 
-	private static TutorialController instance = null;
 	private static WaitForSecondsRealtime waitForTutorialUpdateInterval = null;
 
 	[SerializeField] private float tutorialUpdateInterval = 1.0f;
 	[SerializeField] private GameObject buildingMenu = null;
+	[SerializeField] private GameObject skipButton = null;
 	private InfoController infoController = null;
 	private ToggleController toggleController = null;
 	private SpacecraftManager spacecraftManager = null;
@@ -18,19 +18,6 @@ public class TutorialController : MonoBehaviour
 	private Transform cameraTransform = null;
 	private float startZoom = 0.0f;
 	private bool complete = false;
-
-	private void Awake()
-	{
-		if(instance != null)
-		{
-			GameObject.Destroy(gameObject);
-		}
-		else
-		{
-			GameObject.DontDestroyOnLoad(this.gameObject);
-			instance = this;
-		}
-	}
 
 	private void Start()
 	{
@@ -53,6 +40,8 @@ public class TutorialController : MonoBehaviour
 	private IEnumerator UpdateTutorial()
 	{
 		yield return waitForTutorialUpdateInterval;
+
+		skipButton.SetActive(true);
 
 		infoController.AddMessage("Welcome to Space!");
 
@@ -234,6 +223,12 @@ public class TutorialController : MonoBehaviour
 		{
 			infoController.AddMessage("Quests usually reward you with Money and Materials which you can Trade and use to expand your Spacecraft");
 		}
+	}
+
+	public void SkipTutorial()
+	{
+		StopAllCoroutines();
+		skipButton.SetActive(false);
 	}
 
 	private IEnumerator WaitForClear(CancelCondition cancelCondition)
