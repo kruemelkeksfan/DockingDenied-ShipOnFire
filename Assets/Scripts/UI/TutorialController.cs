@@ -215,6 +215,14 @@ public class TutorialController : MonoBehaviour
 			return false;
 		});
 		infoController.AddMessage("If a Quest requires you to find and dock to a Vessel, zoom out until you find the red Quest Vessel Marker");
+		yield return WaitForClear(delegate
+		{
+			return false;
+		});
+		infoController.AddMessage("You can toggle Velocity Markers in the Top Bar");
+		infoController.AddMessage("The blue Line shows your current Velocity");
+		infoController.AddMessage("The red Line shows the current Velocity of the last Station or Objective you clicked");
+		infoController.AddMessage("The green Line shows the optimal Orbiting Velocity at your current Altitude");
 
 		if(questManager.GetActiveQuestCount() <= 0)
 		{

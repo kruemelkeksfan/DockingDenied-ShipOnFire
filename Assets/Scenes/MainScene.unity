@@ -4518,7 +4518,7 @@ MonoBehaviour:
   navVectorPrefab: {fileID: 7898308147322084694, guid: 8bc72640502ee1e41b51a40ca422e1d0,
     type: 3}
   targetNavVectorColor: {r: 1, g: 0, b: 0, a: 0.2509804}
-  planetNavVectorColor: {r: 0, g: 0, b: 1, a: 0.2509804}
+  planetNavVectorColor: {r: 0, g: 1, b: 0, a: 0.2509804}
 --- !u!4 &1360578271 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,

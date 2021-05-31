@@ -15,7 +15,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	[SerializeField] private Color targetVectorColor = Color.red;
 	[SerializeField] private RectTransform navVectorPrefab = null;
 	[SerializeField] private Color targetNavVectorColor = Color.red;
-	[SerializeField] private Color planetNavVectorColor = Color.blue;
+	[SerializeField] private Color planetNavVectorColor = Color.green;
 	private ToggleController toggleController = null;
 	private GravityWellController gravityWellController = null;
 	private Spacecraft spacecraft = null;
