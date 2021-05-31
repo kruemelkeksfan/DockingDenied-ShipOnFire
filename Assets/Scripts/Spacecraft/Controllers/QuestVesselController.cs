@@ -23,7 +23,9 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	private Spacecraft localPlayerSpacecraft = null;
 	private Transform localPlayerSpacecraftTransform = null;
 	private InventoryController localPlayerMainInventory = null;
+	private PlayerSpacecraftUIController playerSpacecraftController = null;
 	private new Camera camera = null;
+	private Transform cameraTransform = null;
 	private DockingPort[] dockingPorts = null;
 	private QuestManager.Quest quest = null;
 	private bool interactable = false;
@@ -36,6 +38,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		spacecraft = GetComponent<Spacecraft>();
 		transform = spacecraft.GetTransform();
 		camera = Camera.main;
+		cameraTransform = camera.GetComponent<Transform>();
 		dockingPorts = GetComponentsInChildren<DockingPort>();
 		foreach(DockingPort port in dockingPorts)
 		{
@@ -47,6 +50,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		localPlayerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
 		localPlayerSpacecraftTransform = localPlayerSpacecraft.GetTransform();
 		localPlayerMainInventory = localPlayerSpacecraft.GetComponent<InventoryController>();
+		playerSpacecraftController = localPlayerSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
 		spacecraft.AddUpdateListener(this);
@@ -59,18 +63,25 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void UpdateNotify()
 	{
-		Vector2 screenPoint;
-		RectTransformUtility.ScreenPointToLocalPointInRectangle(uiTransform, camera.WorldToScreenPoint(transform.position), null, out screenPoint);
-		mapMarker.anchoredPosition = screenPoint;
-
-		float distance = (transform.position - localPlayerSpacecraftTransform.position).magnitude;
-		if(distance > decimalDigitThreshold)
+		Vector2? uiPoint = ScreenUtility.WorldToUIPoint(transform.position, camera, cameraTransform, uiTransform);
+		if(uiPoint.HasValue)
 		{
-			mapMarkerDistance.text = distance.ToString("F0") + "km";
+			mapMarker.localScale = Vector3.one;
+			mapMarker.anchoredPosition = uiPoint.Value;
+
+			float distance = (transform.position - localPlayerSpacecraftTransform.position).magnitude;
+			if(distance > decimalDigitThreshold)
+			{
+				mapMarkerDistance.text = distance.ToString("F0") + "km";
+			}
+			else
+			{
+				mapMarkerDistance.text = distance.ToString("F2") + "km";
+			}
 		}
 		else
 		{
-			mapMarkerDistance.text = distance.ToString("F2") + "km";
+			mapMarker.localScale = Vector3.zero;
 		}
 	}
 
@@ -101,11 +112,13 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		localPlayerSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
 		localPlayerSpacecraftTransform = localPlayerSpacecraft.GetTransform();
 		localPlayerMainInventory = localPlayerSpacecraft.GetComponent<InventoryController>();
+		playerSpacecraftController = localPlayerSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 	}
 
 	public void ToggleQuestVesselMenu()
 	{
 		questVesselMenu.SetActive(!questVesselMenu.activeSelf);
+		playerSpacecraftController.SetTarget(gameObject.GetComponent<Rigidbody2D>());
 	}
 
 	public void UpdateQuestVesselMenu()

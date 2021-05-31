@@ -23,6 +23,7 @@ public class GravityController : MonoBehaviour
 		// https://answers.unity.com/questions/631201/draw-an-ellipse-in-unity-3d.html
 	}
 
+	// TODO: Remove
 	// Calculates the required orbital Velocity for a circular Orbit at the current Height of this Orbiter.
 	public Vector2 CalculateOptimalOrbitalVelocity()
 	{
@@ -31,18 +32,7 @@ public class GravityController : MonoBehaviour
 			gravityWell = GravityWellController.GetInstance();
 		}
 
-		Vector2 orbitalDirection = gravityWell.GetPosition() - (Vector2)transform.position;
-		float orbitalHeight = orbitalDirection.magnitude;
-		Vector2 orbitalVelocity = gravityWell.CalculateOrbitalVelocity(orbitalHeight, orbitalDirection, orbitalHeight);
-
-		if(Vector2.Dot(rigidbody.velocity, orbitalVelocity) > 0.0f)                                                         // Turn the Target Velocity around, if the Orbiter is already going into the other Direction
-		{
-			return orbitalVelocity;
-		}
-		else
-		{
-			return -orbitalVelocity;
-		}
+		return gravityWell.CalculateOptimalOrbitalVelocity(rigidbody);
 	}
 
 	public Vector2 CalculateApsides()

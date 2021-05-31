@@ -64,7 +64,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private Spacecraft localPlayerMainSpacecraft = null;
 	private Transform localPlayerMainTransform = null;
 	private InventoryController localPlayerMainInventory = null;
+	private PlayerSpacecraftUIController playerSpacecraftController = null;
 	private new Camera camera = null;
+	private Transform cameraTransform = null;
 	private DockingPort[] dockingPorts = null;
 	private Dictionary<DockingPort, Spacecraft> expectedDockings = null;
 	private HashSet<Spacecraft> dockedSpacecraft = null;
@@ -88,6 +90,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		transform = spacecraft.GetTransform();
 		inventoryController = GetComponent<InventoryController>();
 		camera = Camera.main;
+		cameraTransform = camera.GetComponent<Transform>();
 		dockingPorts = GetComponentsInChildren<DockingPort>();
 		foreach(DockingPort port in dockingPorts)
 		{
@@ -102,6 +105,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		localPlayerMainSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
 		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
 		localPlayerMainInventory = localPlayerMainSpacecraft.GetComponent<InventoryController>();
+		playerSpacecraftController = localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
 		Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
@@ -118,17 +122,16 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private void OnDestroy()
 	{
 		ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
+		spacecraft.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()
 	{
-		if(Vector3.Dot(camera.transform.forward, transform.position - camera.transform.position) >= 0.0f)
+		Vector2? uiPoint = ScreenUtility.WorldToUIPoint(transform.position, camera, cameraTransform, uiTransform);
+		if(uiPoint.HasValue)
 		{
-			mapMarker.gameObject.SetActive(true);
-
-			Vector2 screenPoint;
-			RectTransformUtility.ScreenPointToLocalPointInRectangle(uiTransform, camera.WorldToScreenPoint(transform.position), null, out screenPoint);
-			mapMarker.anchoredPosition = screenPoint;
+			mapMarker.localScale = Vector3.one;
+			mapMarker.anchoredPosition = uiPoint.Value;
 
 			float distance = (transform.position - localPlayerMainTransform.position).magnitude;
 			if(distance > decimalDigitThreshold)
@@ -142,7 +145,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 		else
 		{
-			mapMarker.gameObject.SetActive(false);
+			mapMarker.localScale = Vector3.zero;
 		}
 	}
 
@@ -187,11 +190,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		localPlayerMainSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
 		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
 		localPlayerMainInventory = localPlayerMainSpacecraft.GetComponent<InventoryController>();
+		playerSpacecraftController = localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 	}
 
 	public void ToggleStationMenu()                                     // ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
 	{
 		stationMenu.SetActive(!stationMenu.activeSelf);
+		playerSpacecraftController.SetTarget(gameObject.GetComponent<Rigidbody2D>());
 		InputController.SetFlightControls(!stationMenu.activeSelf);
 	}
 

@@ -31,7 +31,7 @@ public class GameController : MonoBehaviour
 
 		if(Input.GetButtonUp("Main Menu"))
 		{
-			toggleController.ToggleGroup("MainMenu");
+			toggleController.Toggle("MainMenu");
 		}
 
 		if(killScene && ! sceneDead)

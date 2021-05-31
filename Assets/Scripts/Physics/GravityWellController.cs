@@ -225,25 +225,40 @@ public class GravityWellController : MonoBehaviour, IListener
 		}
 	}
 
-	// Calculates the orbital Velocity to orbit at a given Height from the Vector from the GravityWell to the Orbiter.
-	public Vector2 CalculateOrbitalVelocity(float targetHeight, Vector2 currentOrbitalDirection, float currentOrbitalHeight = -1.0f)
+	// Calculates the required orbital Velocity for a circular Orbit at the current Height of this Orbiter.
+	public Vector2 CalculateOptimalOrbitalVelocity(Rigidbody2D orbiter)
 	{
-		if(currentOrbitalHeight < 0.0f)
+		Vector2 orbitalVelocity = CalculateOptimalOrbitalVelocity(position - orbiter.position);
+
+		if(Vector2.Dot(orbiter.velocity, orbitalVelocity) > 0.0f)                                                         // Turn the Target Velocity around, if the Orbiter is already going into the other Direction
 		{
-			currentOrbitalHeight = currentOrbitalDirection.magnitude;
+			return orbitalVelocity;
 		}
-		if(targetHeight <= 0.0f || currentOrbitalHeight <= 0.0f)
+		else
 		{
-			Debug.LogWarning("Invalid Call of CalculateOrbitalVelocity() in GravityController with either targetHeight " + targetHeight + " or " + " currentOrbitalHeight " + currentOrbitalHeight + " being 0!");
+			return -orbitalVelocity;
+		}
+	}
+
+	// Calculates the orbital Velocity to orbit at a given Height from the Vector from the GravityWell to the Orbiter.
+	public Vector2 CalculateOptimalOrbitalVelocity(Vector2 orbitalDirection, float altitude = -1.0f)
+	{
+		if(altitude < 0.0f)
+		{
+			altitude = orbitalDirection.magnitude;
+		}
+		if(altitude <= 0.0f)
+		{
+			Debug.LogWarning("Invalid Call of CalculateOrbitalVelocity() in GravityController with altitude " + altitude + " being 0!");
 			return Vector2.zero;
 		}
 
 		// See: https://www.satsig.net/orbit-research/orbit-height-and-speed.htm
-		// Velocity = square root of (Gravitational constant times Mass of main body / radius)
-		return (new Vector2(-currentOrbitalDirection.y, currentOrbitalDirection.x) / currentOrbitalHeight)
+		// Velocity = sqrt(Gravitational Constant * Mass of Main Body / Radius)
+		return (new Vector2(-orbitalDirection.y, orbitalDirection.x) / altitude)
 			* Mathf.Sqrt(gravitationalParameter
-			/ (targetHeight * 1000.0f))                                                                         // Convert from km to m
-			/ 1000.0f;                                                                                          // Convert back from m/s to km/s
+			/ (altitude * 1000.0f))																											// Convert from km to m
+			/ 1000.0f;																														// Convert back from m/s to km/s
 	}
 
 	public void AddGravityObject(Rigidbody2D gravityObject, int asteroidBeltIndex = -1)

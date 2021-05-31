@@ -19,12 +19,39 @@ public class ToggleController : MonoBehaviour
 		public Text text;
 	}
 
+	private class ToggleGroup
+	{
+		public HashSet<GameObject> toggleObjects;
+		public Text text;
+		public bool active;
+
+		public ToggleGroup(Text text)
+		{
+			toggleObjects = new HashSet<GameObject>();
+			this.text = text;
+			active = text.text.Contains("Hide");
+		}
+
+		public ToggleGroup(GameObject toggleObject)
+		{
+			toggleObjects = new HashSet<GameObject>();
+			text = null;
+			active = text != null && text.text.Contains("Hide");
+
+			toggleObjects.Add(toggleObject);
+		}
+
+		public void Toggle()
+		{
+			active = !active;
+		}
+	}
+
 	private static ToggleController instance = null;
 
 	[SerializeField] private InitToggleObject[] initToggleObjects = { };
 	[SerializeField] private InitToggleText[] initToggleTexts = { };
-	private Dictionary<string, List<GameObject>> toggleObjects = null;
-	private Dictionary<string, Text> toggleTexts = null;
+	private Dictionary<string, ToggleGroup> toggleGroups = null;
 
 	public static ToggleController GetInstance()
 	{
@@ -33,65 +60,62 @@ public class ToggleController : MonoBehaviour
 
 	private void Awake()
 	{
-		toggleObjects = new Dictionary<string, List<GameObject>>();
+		toggleGroups = new Dictionary<string, ToggleGroup>();
+
+		foreach(InitToggleText initToggleText in initToggleTexts)
+		{
+			toggleGroups.Add(initToggleText.groupName, new ToggleGroup(initToggleText.text));
+		}
+
 		foreach(InitToggleObject toggleObject in initToggleObjects)
 		{
 			AddToggleObject(toggleObject.groupName, toggleObject.toggleObject);
 		}
 
-		toggleTexts = new Dictionary<string, Text>(initToggleTexts.Length);
-		foreach(InitToggleText initToggleText in initToggleTexts)
-		{
-			toggleTexts.Add(initToggleText.groupName, initToggleText.text);
-		}
-
 		instance = this;
 	}
 
-	public void ToggleGroup(string groupName)
+	public void Toggle(string groupName)
 	{
-		if(toggleObjects[groupName].Count > 0)
+		toggleGroups[groupName].Toggle();
+
+		foreach(GameObject toggleObject in toggleGroups[groupName].toggleObjects)
 		{
-			bool activate = !toggleObjects[groupName][0].activeSelf;
+			toggleObject.SetActive(toggleGroups[groupName].active);
+		}
 
-			foreach(GameObject toggleObject in toggleObjects[groupName])
+		if(toggleGroups[groupName].text != null)
+		{
+			if(toggleGroups[groupName].active)
 			{
-				toggleObject.SetActive(activate);
+				toggleGroups[groupName].text.text = toggleGroups[groupName].text.text.Replace("Show", "Hide");
 			}
-
-			if(toggleTexts.ContainsKey(groupName))
+			else
 			{
-				if(activate)
-				{
-					toggleTexts[groupName].text = toggleTexts[groupName].text.Replace("Show", "Hide");
-				}
-				else
-				{
-					toggleTexts[groupName].text = toggleTexts[groupName].text.Replace("Hide", "Show");
-				}
+				toggleGroups[groupName].text.text = toggleGroups[groupName].text.text.Replace("Hide", "Show");
 			}
 		}
 	}
 
 	public void AddToggleObject(string groupName, GameObject toggleObject)
 	{
-		if(!toggleObjects.ContainsKey(groupName))
+		if(!toggleGroups.ContainsKey(groupName))
 		{
-			toggleObjects.Add(groupName, new List<GameObject>());
+			toggleGroups.Add(groupName, new ToggleGroup(toggleObject));
 		}
-		toggleObjects[groupName].Add(toggleObject);
+		else
+		{
+			toggleGroups[groupName].toggleObjects.Add(toggleObject);
+		}
 	}
 
 	public void RemoveToggleObject(string groupName, GameObject toggleObject)
 	{
-		if(toggleObjects.ContainsKey(groupName))
-		{
-			toggleObjects[groupName].Remove(toggleObject);
-		}
+		toggleGroups[groupName].toggleObjects.Remove(toggleObject);
 	}
 
 	public bool IsGroupToggled(string groupName)
 	{
-		return !toggleObjects[groupName][0].activeSelf;
+		return toggleGroups[groupName].active;
 	}
 }
