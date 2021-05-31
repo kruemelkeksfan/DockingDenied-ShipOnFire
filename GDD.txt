@@ -2,5 +2,33 @@ Future Modules:
 Fuel Cells for Electric Energy
 Hydrolysis Module (Hydrogen-/Oxygen Generator)
 (Thermo-) Nuclear Reactors for Electric Energy
-Battery
 Rocket Thruster
+
+Multiplayer:
+Enum method = { Spawn, Despawn, UpdatePosition, ... }
+method-index gets send over network instead of string name
+method-struct with delegate (delegate calls the real method), parameter- and maybe returntype-info (how do these infos look like?)
+create array with method-structs at startup
+index will be method-enum-index, value the corresponding struct
+see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for delegates
+when receiving index and parameters over network, start delegate
+
+Tester Feedback:
+0.1
+-Ship Position/Direction Marker
+-Velocity Markers
+-Show Orientation Help Lines toward Planets/Targets
+-Map Markers are shown in wrong Positions when they are behind Camera
+-Port Name Toggling does not work after selecting Docking Port in Building Menu
+-Hint on Module turning with Q/E in Tutorial
+-Less Pauses between Tutorial Messages
+-Dont restart Tutorial on Game Restart when it had been turned off
+-Resource Cost Display shows up in the wrong Position
+-Button to clear the Info Log
+-Can build Modules even when out of Money
+
+-Dont allow opening of multiple Station Menus at once
+-Close Menus with Esc
+-Reduce Amount of Error Messages when Module building fails
+-Module Blueprints skip between 2 Positions when Cursor is near a Grid Cell Boundary
+-Autorun Button
