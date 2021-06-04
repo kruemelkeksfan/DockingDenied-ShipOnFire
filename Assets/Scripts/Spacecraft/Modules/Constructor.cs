@@ -75,7 +75,7 @@ public class Constructor : Module
 			yield return waitForEndOfFrame;
 		}
 		
-		GameObject.Destroy(constructionBeam);
+		GameObject.Destroy(constructionBeam.gameObject);
 	}
 
 	public InventoryController GetInventoryController()

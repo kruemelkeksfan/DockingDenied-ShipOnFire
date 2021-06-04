@@ -203,7 +203,7 @@ public class GravityWellController : MonoBehaviour, IListener
 				gravityObject.drag = 0.0f;
 				gravityObject.gameObject.layer = previousLayer;
 				deadGravityObjects.Remove(gravityObject);
-				GameObject.Destroy(plasmaParticles);
+				GameObject.Destroy(plasmaParticles.gameObject);
 
 				yield break;
 			}
