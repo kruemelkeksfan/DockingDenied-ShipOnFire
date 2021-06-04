@@ -21,14 +21,10 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private static WaitForSecondsRealtime waitASecond = null;
 	private static WaitForSeconds waitForStationUpdateInterval = null;
 	private static WaitForSeconds waitForDockingTimeout = null;
 
-	[SerializeField] private RectTransform uiTransform = null;
-	[SerializeField] private RectTransform mapMarker = null;
-	[SerializeField] private Text mapMarkerName = null;
-	[SerializeField] private Text mapMarkerDistance = null;
+	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[Tooltip("Distance up from which no more digital Digits will be displayed")]
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
 	[Tooltip("Maximum Distance from which a Docking Permission can be granted")]
@@ -44,50 +40,47 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private int minProfit = -100;
 	[Tooltip("Maximum Money Change of the Station per Economy Update.")]
 	[SerializeField] private int maxProfit = 200;
-	[SerializeField] private GameObject stationMenu = null;
-	[SerializeField] private Text stationName = null;
-	[SerializeField] private GameObject questMenu = null;
 	[SerializeField] private RectTransform questEntryPrefab = null;
-	[SerializeField] private RectTransform questContentPane = null;
-	[SerializeField] private GameObject tradingMenu = null;
 	[SerializeField] private RectTransform tradingEntryPrefab = null;
-	[SerializeField] private RectTransform tradingContentPane = null;
-	[SerializeField] private GameObject emptyListIndicator = null;
-	[SerializeField] private Text playerMoneyField = null;
-	[SerializeField] private Text stationMoneyField = null;
-	[SerializeField] private Text nextUpdateField = null;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
+	private MenuController menuController = null;
 	private Spacecraft spacecraft = null;
 	private new Transform transform = null;
+	private new Rigidbody2D rigidbody = null;
 	private InventoryController inventoryController = null;
+	private RectTransform uiTransform = null;
 	private Spacecraft localPlayerMainSpacecraft = null;
 	private Transform localPlayerMainTransform = null;
 	private InventoryController localPlayerMainInventory = null;
 	private PlayerSpacecraftUIController playerSpacecraftController = null;
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
+	private RectTransform mapMarker = null;
+	private Text mapMarkerName = null;
+	private Text mapMarkerDistance = null;
+	private string stationName = null;
 	private DockingPort[] dockingPorts = null;
 	private Dictionary<DockingPort, Spacecraft> expectedDockings = null;
 	private HashSet<Spacecraft> dockedSpacecraft = null;
-	private float lastStationUpdate = 0.0f;
 	private QuestManager.Quest[] questSelection = null;
 	private bool updateQuestSelection = true;
+	private float lastStationUpdate = 0.0f;
+	private Dictionary<string, GoodTradingInfo> tradingInventory;
+	private List<string> goodNames = null;
 
 	private void Start()
 	{
-		if(waitASecond == null || waitForStationUpdateInterval == null || waitForDockingTimeout == null)
+		if(waitForStationUpdateInterval == null || waitForDockingTimeout == null)
 		{
-			waitASecond = new WaitForSecondsRealtime(1.0f);
 			waitForStationUpdateInterval = new WaitForSeconds(stationUpdateInterval);
 			waitForDockingTimeout = new WaitForSeconds(dockingTimeout);
 		}
 
-		ToggleController.GetInstance().AddToggleObject("SpacecraftMarkers", mapMarker.gameObject);
-
 		maxApproachDistance *= maxApproachDistance;
 		spacecraft = GetComponent<Spacecraft>();
 		transform = spacecraft.GetTransform();
+		rigidbody = GetComponent<Rigidbody2D>();
 		inventoryController = GetComponent<InventoryController>();
 		camera = Camera.main;
 		cameraTransform = camera.GetComponent<Transform>();
@@ -98,6 +91,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 		expectedDockings = new Dictionary<DockingPort, Spacecraft>();
 		dockedSpacecraft = new HashSet<Spacecraft>();
+
+		tradingInventory = new Dictionary<string, GoodTradingInfo>();
+		goodNames = new List<string>();
 
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
@@ -121,8 +117,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private void OnDestroy()
 	{
-		ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
-		spacecraft.RemoveUpdateListener(this);
+		if(mapMarker != null)
+		{
+			ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
+			GameObject.Destroy(mapMarker.gameObject);
+		}
+
+		spacecraft?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()
@@ -180,7 +181,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 		if(otherPort.GetComponentInParent<Spacecraft>() == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
 		{
-			stationMenu.SetActive(false);
+			menuController.CloseStationMenu(this);
 			InfoController.GetInstance().AddMessage("Undocking successful, good Flight!");
 		}
 	}
@@ -193,34 +194,10 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		playerSpacecraftController = localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 	}
 
-	public void ToggleStationMenu()                                     // ToggleController would need to know the Name of the Station and therefore a Method here would be necessary anyways
+	public void ToggleStationMenu()
 	{
-		stationMenu.SetActive(!stationMenu.activeSelf);
-		playerSpacecraftController.SetTarget(gameObject.GetComponent<Rigidbody2D>());
-		InputController.SetFlightControls(!stationMenu.activeSelf);
-	}
-
-	public void ToggleQuestMenu()
-	{
-		questMenu.SetActive(!questMenu.activeSelf);
-		InputController.SetFlightControls(!questMenu.activeSelf);
-		ToggleStationMenu();
-	}
-
-	public void ToggleTradingMenu()
-	{
-		tradingMenu.SetActive(!tradingMenu.activeSelf);
-		if(tradingMenu.activeSelf)
-		{
-			StartCoroutine(UpdateNextUpdateField());
-		}
-		InputController.SetFlightControls(!tradingMenu.activeSelf);
-		ToggleStationMenu();
-	}
-
-	public void RequestPlayerDocking()
-	{
-		RequestDocking(localPlayerMainSpacecraft);
+		playerSpacecraftController.SetTarget(rigidbody);
+		menuController.ToggleStationMenu(this, stationName);
 	}
 
 	public void RequestDocking(Spacecraft requester, bool aiRequest = false)
@@ -285,149 +262,94 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void UpdateQuests()
 	{
-		// TODO: Enable/Disable QuestPanels instead of Spawning/Despawning
-		for(int i = 1; i < questContentPane.childCount; ++i)
+		if(menuController.StationIsQuesting(this))
 		{
-			GameObject.Destroy(questContentPane.GetChild(i).gameObject);
-		}
-
-		QuestManager.Quest activeQuest = questManager.GetActiveQuest(this);
-		if(activeQuest != null)
-		{
-			questSelection = null;
-
-			RectTransform questPanel = GenerateQuestPanel(activeQuest);
-			Button completeButton = questPanel.GetChild(8).GetComponent<Button>();
-			if(activeQuest.progress < 1.0f)
+			QuestManager.Quest activeQuest = questManager.GetActiveQuest(this);
+			if(activeQuest != null)
 			{
-				completeButton.interactable = false;
-				completeButton.GetComponentInChildren<Text>().text = Mathf.FloorToInt(activeQuest.progress * 100.0f) + "%";
+				questSelection = null;
+				menuController.UpdateQuest(this, activeQuest, 1, true, dockedSpacecraft.Contains(localPlayerMainSpacecraft));
 			}
 			else
 			{
-				if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))
+				if(questSelection == null || updateQuestSelection)
 				{
-					completeButton.interactable = true;
-					completeButton.GetComponentInChildren<Text>().text = "Complete";
-					completeButton.onClick.AddListener(delegate
-					{
-						questManager.CompleteQuest(this);
-						UpdateQuests();
-					});
+					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this), questManager.GenerateQuest(this), questManager.GenerateQuest(this) };
+					updateQuestSelection = false;
 				}
-				else
-				{
-					completeButton.interactable = false;
-					completeButton.GetComponentInChildren<Text>().text = "Get back here!";
-				}
-			}
-		}
-		else
-		{
-			if(questSelection == null || updateQuestSelection)
-			{
-				questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this), questManager.GenerateQuest(this), questManager.GenerateQuest(this) };
-				updateQuestSelection = false;
-			}
 
-			for(int i = -1; i <= 1; ++i)
-			{
-				Button acceptButton = GenerateQuestPanel(questSelection[i + 1], i).GetChild(8).GetComponent<Button>();
-				acceptButton.interactable = true;
-				acceptButton.GetComponentInChildren<Text>().text = "Accept";
-				QuestManager.Quest localQuest = questSelection[i + 1];
-				acceptButton.onClick.AddListener(delegate
+				for(int i = 0; i < 3; ++i)
 				{
-					questManager.AcceptQuest(localQuest);
-					UpdateQuests();
-				});
+					menuController.UpdateQuest(this, questSelection[i], i, false);
+				}
 			}
 		}
 	}
 
-	// TODO: Maybe outsource this to TradingScreenController and StationEconomyController Classes
 	public void UpdateTrading()
 	{
-		playerMoneyField.text = localPlayerMainInventory.GetMoney() + "$";
-		stationMoneyField.text = inventoryController.GetMoney() + "$";
-
-		Dictionary<string, string> amountSettings = new Dictionary<string, string>(tradingContentPane.childCount - 1);
-		for(int i = 2; i < tradingContentPane.childCount; ++i)
+		if(menuController.StationIsTrading(this))
 		{
-			Transform child = tradingContentPane.GetChild(i);
-			amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(5).GetComponent<InputField>().text;
-			GameObject.Destroy(child.gameObject);
-		}
-
-		Dictionary<string, GoodTradingInfo> tradingInventory = new Dictionary<string, GoodTradingInfo>();
-		Dictionary<string, uint> playerInventory = localPlayerMainInventory.GetInventoryContents();
-		Dictionary<string, uint> stationInventory = inventoryController.GetInventoryContents();
-		foreach(string goodName in playerInventory.Keys)
-		{
-			uint stationAmount = stationInventory.ContainsKey(goodName) ? stationInventory[goodName] : 0;
-			tradingInventory.Add(goodName, new GoodTradingInfo(playerInventory[goodName], stationAmount, CalculateGoodPrice(goodName, stationAmount)));
-		}
-		foreach(string goodName in stationInventory.Keys)
-		{
-			if(!tradingInventory.ContainsKey(goodName))
+			tradingInventory.Clear();
+			Dictionary<string, uint> playerInventory = localPlayerMainInventory.GetInventoryContents();
+			Dictionary<string, uint> stationInventory = inventoryController.GetInventoryContents();
+			foreach(string goodName in playerInventory.Keys)
 			{
-				tradingInventory.Add(goodName, new GoodTradingInfo(0, stationInventory[goodName], CalculateGoodPrice(goodName, stationInventory[goodName])));
+				uint stationAmount = stationInventory.ContainsKey(goodName) ? stationInventory[goodName] : 0;
+				tradingInventory.Add(goodName, new GoodTradingInfo(playerInventory[goodName], stationAmount, CalculateGoodPrice(goodName, stationAmount)));
 			}
-		}
-
-		int j = 0;
-		List<string> tradingInventoryKeys = new List<string>(tradingInventory.Keys);
-		tradingInventoryKeys.Sort();
-		foreach(string goodName in tradingInventoryKeys)
-		{
-			RectTransform tradingEntryRectTransform = GameObject.Instantiate<RectTransform>(tradingEntryPrefab, tradingContentPane);
-
-			tradingEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodName;
-			tradingEntryRectTransform.GetChild(1).GetComponent<Text>().text = tradingInventory[goodName].playerAmount.ToString();
-			tradingEntryRectTransform.GetChild(2).GetComponent<Text>().text = tradingInventory[goodName].stationAmount.ToString();
-			tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = tradingInventory[goodName].price.ToString();
-			tradingEntryRectTransform.GetChild(4).GetComponent<Text>().text = goodManager.GetGood(goodName).decription;
-
-			if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))
+			foreach(string goodName in stationInventory.Keys)
 			{
-				tradingEntryRectTransform.GetChild(5).gameObject.SetActive(true);
-				tradingEntryRectTransform.GetChild(6).gameObject.SetActive(true);
-				tradingEntryRectTransform.GetChild(7).gameObject.SetActive(true);
-
-				string localGoodName = goodName;
-				InputField localAmountField = tradingEntryRectTransform.GetChild(5).GetComponent<InputField>();
-				if(amountSettings.ContainsKey(goodName))
+				if(!tradingInventory.ContainsKey(goodName))
 				{
-					localAmountField.text = amountSettings[goodName];
+					tradingInventory.Add(goodName, new GoodTradingInfo(0, stationInventory[goodName], CalculateGoodPrice(goodName, stationInventory[goodName])));
 				}
-				InventoryController localPlayerInventory = localPlayerMainInventory;
-				InventoryController localStationInventory = inventoryController;
-				tradingEntryRectTransform.GetChild(6).GetComponent<Button>().onClick.AddListener(delegate
-				{
-					Trade(localGoodName, 0, localPlayerInventory, localStationInventory, tradingInventory[goodName].stationAmount, localAmountField);
-				});
-				tradingEntryRectTransform.GetChild(7).GetComponent<Button>().onClick.AddListener(delegate
-				{
-					Trade(localGoodName, 0, localStationInventory, localPlayerInventory, tradingInventory[goodName].stationAmount, localAmountField);
-				});
 			}
-			else
+
+			goodNames.Clear();
+			goodNames.AddRange(tradingInventory.Keys);
+			goodNames.Sort();
+			RectTransform[] tradingEntries = new RectTransform[goodNames.Count];
+			for(int i = 0; i < goodNames.Count; ++i)
 			{
-				tradingEntryRectTransform.GetChild(5).gameObject.SetActive(false);
-				tradingEntryRectTransform.GetChild(6).gameObject.SetActive(false);
-				tradingEntryRectTransform.GetChild(7).gameObject.SetActive(false);
+				RectTransform tradingEntryRectTransform = GameObject.Instantiate<RectTransform>(tradingEntryPrefab);
+
+				tradingEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodNames[i];
+				tradingEntryRectTransform.GetChild(1).GetComponent<Text>().text = tradingInventory[goodNames[i]].playerAmount.ToString();
+				tradingEntryRectTransform.GetChild(2).GetComponent<Text>().text = tradingInventory[goodNames[i]].stationAmount.ToString();
+				tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = tradingInventory[goodNames[i]].price.ToString();
+				tradingEntryRectTransform.GetChild(4).GetComponent<Text>().text = goodManager.GetGood(goodNames[i]).decription;
+
+				if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))
+				{
+					tradingEntryRectTransform.GetChild(5).gameObject.SetActive(true);
+					tradingEntryRectTransform.GetChild(6).gameObject.SetActive(true);
+					tradingEntryRectTransform.GetChild(7).gameObject.SetActive(true);
+
+					string localGoodName = goodNames[i];
+					InputField localAmountField = tradingEntryRectTransform.GetChild(5).GetComponent<InputField>();
+					InventoryController localPlayerInventory = localPlayerMainInventory;
+					InventoryController localStationInventory = inventoryController;
+					tradingEntryRectTransform.GetChild(6).GetComponent<Button>().onClick.AddListener(delegate
+					{
+						Trade(localGoodName, 0, localPlayerInventory, localStationInventory, tradingInventory[goodNames[i]].stationAmount, localAmountField);
+					});
+					tradingEntryRectTransform.GetChild(7).GetComponent<Button>().onClick.AddListener(delegate
+					{
+						Trade(localGoodName, 0, localStationInventory, localPlayerInventory, tradingInventory[goodNames[i]].stationAmount, localAmountField);
+					});
+				}
+				else
+				{
+					tradingEntryRectTransform.GetChild(5).gameObject.SetActive(false);
+					tradingEntryRectTransform.GetChild(6).gameObject.SetActive(false);
+					tradingEntryRectTransform.GetChild(7).gameObject.SetActive(false);
+				}
+
+				tradingEntries[i] = tradingEntryRectTransform;
 			}
 
-			++j;
-		}
-
-		if(tradingContentPane.childCount <= 2)
-		{
-			emptyListIndicator.SetActive(true);
-		}
-		else
-		{
-			emptyListIndicator.SetActive(false);
+			menuController.UpdateTrading(this, tradingEntries, inventoryController.GetMoney(), lastStationUpdate, stationUpdateInterval);
 		}
 	}
 
@@ -647,35 +569,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private RectTransform GenerateQuestPanel(QuestManager.Quest quest, int position = 0)
-	{
-		RectTransform questEntryRectTransform = GameObject.Instantiate<RectTransform>(questEntryPrefab, questContentPane);
-		questEntryRectTransform.anchoredPosition =
-			new Vector3((questEntryRectTransform.rect.width + 5) * position, questEntryRectTransform.anchoredPosition.y);
-
-		questEntryRectTransform.GetChild(1).GetComponent<Text>().text = questManager.GetBackstoryDescription(quest.backstory);
-		questEntryRectTransform.GetChild(3).GetComponent<Text>().text = questManager.GetQuestGiverDescription(quest.questGiver);
-		questEntryRectTransform.GetChild(5).GetComponent<Text>().text = questManager.GetTaskDescription(quest.task);
-
-		StringBuilder rewardString = new StringBuilder();
-		foreach(KeyValuePair<string, int> reward in quest.rewards)
-		{
-			rewardString.AppendLine(reward.Value + (reward.Key != "$" ? " " : "") + reward.Key);
-		}
-		questEntryRectTransform.GetChild(7).GetComponent<Text>().text = rewardString.ToString();
-
-		return questEntryRectTransform;
-	}
-
-	private IEnumerator UpdateNextUpdateField()
-	{
-		while(tradingMenu.activeSelf)
-		{
-			nextUpdateField.text = Mathf.FloorToInt((lastStationUpdate + (stationUpdateInterval / Time.timeScale)) - Time.realtimeSinceStartup) + " Seconds";
-			yield return waitASecond;
-		}
-	}
-
 	private int CalculateGoodPrice(string goodName, uint supplyAmount, int transactionAmount = 1)
 	{
 		++supplyAmount;
@@ -712,7 +605,18 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void SetStationName(string stationName)
 	{
+		menuController = MenuController.GetInstance();
+		uiTransform = menuController.GetUITransform();
+		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, uiTransform);
+		mapMarkerName = mapMarker.GetChild(0).GetComponent<Text>();
+		mapMarkerDistance = mapMarker.GetChild(1).GetComponent<Text>();
+		mapMarker.GetComponent<Button>().onClick.AddListener(delegate
+		{
+			ToggleStationMenu();
+		});
+		ToggleController.GetInstance().AddToggleObject("SpacecraftMarkers", mapMarker.gameObject);
+
 		mapMarkerName.text = stationName;
-		this.stationName.text = stationName;
+		this.stationName = stationName;
 	}
 }

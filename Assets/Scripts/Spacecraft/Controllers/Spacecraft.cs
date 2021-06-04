@@ -159,6 +159,8 @@ public class Spacecraft : MonoBehaviour
 			rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass));
 		}
 
+		// TODO: Recalculate Turning Thrusters
+
 		centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
 	}
 

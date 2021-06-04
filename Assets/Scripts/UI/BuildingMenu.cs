@@ -52,6 +52,7 @@ public class BuildingMenu : MonoBehaviour
 	[SerializeField] private string blueprintFolder = "Blueprints";
 	[SerializeField] private Spacecraft spacecraft = null;              // TODO: Get this from SpacecraftManager
 	[SerializeField] private Text cheaterModeText = null;
+	private MenuController menuController = null;
 	private SpacecraftManager spacecraftManager = null;
 	private InfoController infoController = null;
 	private float inverseBuildingGridSize = 1.0f;
@@ -63,7 +64,6 @@ public class BuildingMenu : MonoBehaviour
 	private List<MeshRenderer> reservedZoneRenderers = null;
 	private int activeReservedZones = 0;
 	private bool erase = false;
-	private HotkeyModule activeModuleSettings = null;
 	private string selectedBlueprintPath = null;
 	private GoodManager.Load[] selectedBlueprintCosts = null;
 	private Dictionary<string, Module> modulePrefabDictionary = null;
@@ -110,6 +110,7 @@ public class BuildingMenu : MonoBehaviour
 				});
 		}
 
+		menuController = MenuController.GetInstance();
 		spacecraftManager = SpacecraftManager.GetInstance();
 		infoController = InfoController.GetInstance();
 		spacecraftTransform = spacecraft.GetTransform();
@@ -238,15 +239,10 @@ public class BuildingMenu : MonoBehaviour
 					Module module = spacecraft.GetModule(gridPosition);
 					if(module != null)
 					{
-						HotkeyModule moduleSettings = module as HotkeyModule;
-						if(moduleSettings != null)
+						HotkeyModule hotkeyModule = module as HotkeyModule;
+						if(hotkeyModule != null)
 						{
-							if(activeModuleSettings != null && moduleSettings != activeModuleSettings)
-							{
-								activeModuleSettings.ToggleModuleSettingMenu(true);
-							}
-							moduleSettings.ToggleModuleSettingMenu();
-							activeModuleSettings = moduleSettings;
+							menuController.ToggleModuleMenu(hotkeyModule);
 						}
 					}
 				}
@@ -255,14 +251,22 @@ public class BuildingMenu : MonoBehaviour
 	}
 
 	public void ToggleBuildingMenu()
-	{
-		RefreshBlueprintList();
+	{	
 		gameObject.SetActive(!gameObject.activeSelf);
 		buildingResourceDisplay.SetActive(gameObject.activeSelf);
 		blueprintMenu.gameObject.SetActive(gameObject.activeSelf);
-		SelectModule(-1);
-		erase = false;
-		InputController.SetFlightControls(!gameObject.activeSelf);
+		
+		menuController.UpdateFlightControls();
+
+		if(gameObject.activeSelf)
+		{
+			RefreshBlueprintList();
+		}
+		else
+		{
+			SelectModule(-1);
+			erase = false;
+		}
 	}
 
 	public void ToggleCheaterMode()
@@ -281,10 +285,7 @@ public class BuildingMenu : MonoBehaviour
 
 	public void SelectModule(int moduleIndex)
 	{
-		if(activeModuleSettings != null)
-		{
-			activeModuleSettings.ToggleModuleSettingMenu(true);
-		}
+		menuController.CloseModuleMenu();
 
 		if(currentModule.index >= 0 && currentModule.module != null)
 		{
@@ -308,6 +309,20 @@ public class BuildingMenu : MonoBehaviour
 			infoController.SetBuildingCosts(null);
 		}
 	}
+
+	public bool DeselectModule()
+	{
+		if(currentModule.index >= 0)
+		{
+			SelectModule(-1);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
 	private void SpawnModule(int moduleIndex)
 	{
 		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], spacecraftTransform));

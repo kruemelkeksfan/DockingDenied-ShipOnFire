@@ -12,27 +12,13 @@ public class HotkeyModule : Module, IHotkeyListener
 	private string actionName = null;
 	private int hotkey = 0;
 
-	public void ToggleModuleSettingMenu(bool deactivate = false)
-	{
-		if(moduleSettingMenu != null)
-		{
-			if(deactivate)
-			{
-				moduleSettingMenu.SetActive(false);
-			}
-			else
-			{
-				moduleSettingMenu.SetActive(!moduleSettingMenu.activeSelf);
-			}
-		}
-	}
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		base.Build(position);
 
 		inputController = spacecraft.gameObject.GetComponent<InputController>();
-		ActionNameChanged();
-		HotkeyChanged();
+		SetActionName(actionNameField.text);
+		SetHotkey(hotkeySelection.value);
 	}
 
 	public override void Deconstruct()
@@ -40,16 +26,6 @@ public class HotkeyModule : Module, IHotkeyListener
 		inputController.RemoveHotkey(hotkey, this);
 
 		base.Deconstruct();
-	}
-
-	public void ActionNameChanged()
-	{
-		SetActionName(actionNameField.text);
-	}
-
-	public void HotkeyChanged()
-	{
-		SetHotkey(hotkeySelection.value);
 	}
 
 	public virtual void HotkeyDown()

@@ -20,7 +20,6 @@ public class InventoryScreenController : MonoBehaviour, IListener
 	{
 		UpdateInventory();
 		gameObject.SetActive(!gameObject.activeSelf);
-		InputController.SetFlightControls(!gameObject.activeSelf);
 	}
 
 	public void UpdateInventory()

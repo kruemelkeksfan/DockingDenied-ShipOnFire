@@ -37,7 +37,7 @@ public class KeyboardInputController : InputController
 	{
 		base.UpdateNotify();
 
-		if(flightControls >= 0 && !Input.GetButton("Rotate Camera"))
+		if(flightControls && !Input.GetButton("Rotate Camera"))
 		{
 			spacecraft.SetThrottles(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), Input.GetAxis("Rotate"));
 

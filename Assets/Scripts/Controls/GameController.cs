@@ -5,9 +5,10 @@ using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour
 {
-	private static string deathMessage = null;
-
 	private static GameController instance = null;
+	private static string deathMessage = null;
+	
+	private MenuController menuController = null;
 	private ToggleController toggleController = null;
 	private bool killScene = false;
 	private bool sceneDead = false;
@@ -22,6 +23,11 @@ public class GameController : MonoBehaviour
 		instance = this;
 	}
 
+	private void Start()
+	{
+		menuController = MenuController.GetInstance();
+	}
+
 	private void Update()
 	{
 		if(toggleController == null)
@@ -31,10 +37,10 @@ public class GameController : MonoBehaviour
 
 		if(Input.GetButtonUp("Main Menu"))
 		{
-			toggleController.Toggle("MainMenu");
+			menuController.ToggleMainMenu();
 		}
 
-		if(killScene && ! sceneDead)
+		if(killScene && !sceneDead)
 		{
 			sceneDead = true;
 			toggleController = null;

@@ -155,7 +155,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: Dock to a helpless Vessel and tow it to the Station
+  m_Text: 'TEST: Dock to a helpless Vessel and tow it to the Station'
 --- !u!1 &338995582954010392
 GameObject:
   m_ObjectHideFlags: 0
@@ -355,8 +355,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: The station is abusing its workers and therefore selling some products
-    very cheap.
+  m_Text: 'TEST: The station is abusing its workers and therefore selling some products
+    very cheap.'
 --- !u!1 &2684606151181019595
 GameObject:
   m_ObjectHideFlags: 0
@@ -590,8 +590,8 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: A member of the council. As he comes toward you he kindly greets some people,
-    most of which reply with a smile.
+  m_Text: 'TEST: A member of the council. As he comes toward you he kindly greets
+    some people, most of which reply with a smile.'
 --- !u!1 &7902797625228178379
 GameObject:
   m_ObjectHideFlags: 0
@@ -669,11 +669,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: '100$
-
-    5 Gold
-
-    30 Steel Ingredients'
+  m_Text: "TEST: \n5 Gold\n30 Steel Ingredients"
 --- !u!1001 &3281776664694306427
 PrefabInstance:
   m_ObjectHideFlags: 0

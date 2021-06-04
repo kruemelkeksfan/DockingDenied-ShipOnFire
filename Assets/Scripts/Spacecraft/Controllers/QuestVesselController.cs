@@ -3,29 +3,33 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingListener, IListener
 {
-	[SerializeField] private RectTransform uiTransform = null;
-	[SerializeField] private RectTransform mapMarker = null;
-	[SerializeField] private Text mapMarkerName = null;
-	[SerializeField] private Text mapMarkerDistance = null;
+	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[Tooltip("Distance up from which no more digital Digits will be displayed")]
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
-	[SerializeField] private GameObject questVesselMenu = null;
-	[SerializeField] private Text nameField = null;
-	[SerializeField] private Text progressField = null;
-	[SerializeField] private Text hintField = null;
-	[SerializeField] private Button interactButton = null;
+	private RectTransform uiTransform = null;
+	private MenuController menuController = null;
 	private Spacecraft spacecraft = null;
 	private new Transform transform = null;
+	private new Rigidbody2D rigidbody = null;
 	private Spacecraft localPlayerSpacecraft = null;
 	private Transform localPlayerSpacecraftTransform = null;
 	private InventoryController localPlayerMainInventory = null;
 	private PlayerSpacecraftUIController playerSpacecraftController = null;
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
+	private RectTransform mapMarker = null;
+	private Text mapMarkerName = null;
+	private Text mapMarkerDistance = null;
+	private string vesselName = null;
+	private string progress = null;
+	private string hint = null;
+	private string interactionLabel = null;
+	private UnityAction interaction = null;
 	private DockingPort[] dockingPorts = null;
 	private QuestManager.Quest quest = null;
 	private bool interactable = false;
@@ -33,10 +37,9 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	private void Start()
 	{
-		ToggleController.GetInstance().AddToggleObject("SpacecraftMarkers", mapMarker.gameObject);
-
 		spacecraft = GetComponent<Spacecraft>();
 		transform = spacecraft.GetTransform();
+		rigidbody = GetComponent<Rigidbody2D>();
 		camera = Camera.main;
 		cameraTransform = camera.GetComponent<Transform>();
 		dockingPorts = GetComponentsInChildren<DockingPort>();
@@ -58,7 +61,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	private void OnDestroy()
 	{
-		ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
+		if(mapMarker != null)
+		{
+			ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
+			GameObject.Destroy(mapMarker.gameObject);
+		}
 	}
 
 	public void UpdateNotify()
@@ -117,49 +124,50 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void ToggleQuestVesselMenu()
 	{
-		questVesselMenu.SetActive(!questVesselMenu.activeSelf);
-		playerSpacecraftController.SetTarget(gameObject.GetComponent<Rigidbody2D>());
+		playerSpacecraftController.SetTarget(rigidbody);
+		menuController.ToggleQuestVesselMenu(this, vesselName, progress, hint, interactionLabel, (quest.progress < 1.0f && interactable && playerDocked) ? interaction : null);
 	}
 
 	public void UpdateQuestVesselMenu()
 	{
-		progressField.text = "Progress: " + Mathf.FloorToInt(quest.progress * 100.0f) + "%";
+		progress = "Progress: " + Mathf.FloorToInt(quest.progress * 100.0f) + "%";
+		if(quest.progress >= 1.0f)
+		{
+			hint = "Dock to Station and open Quest Menu for Reward!";
+		}
 
-		if(quest.progress < 1.0f)
-		{
-			if(interactable && playerDocked)
-			{
-				interactButton.gameObject.SetActive(true);
-			}
-			else
-			{
-				interactButton.gameObject.SetActive(false);
-			}
-		}
-		else
-		{
-			hintField.text = "Dock to Station and open Quest Menu for Reward!";
-			interactButton.gameObject.SetActive(false);
-		}
+		menuController.UpdateQuestVesselMenu(this, vesselName, progress, hint, interactionLabel, (quest.progress < 1.0f && interactable && playerDocked) ? interaction : null);
 	}
 
 	public void SetQuest(QuestManager.Quest quest)
 	{
 		this.quest = quest;
+
+		menuController = MenuController.GetInstance();
+		uiTransform = menuController.GetUITransform();
+		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, uiTransform);
+		mapMarkerName = mapMarker.GetChild(0).GetComponent<Text>();
+		mapMarkerDistance = mapMarker.GetChild(1).GetComponent<Text>();
+		mapMarker.GetComponent<Button>().onClick.AddListener(delegate
+		{
+			ToggleQuestVesselMenu();
+		});
+		ToggleController.GetInstance().AddToggleObject("SpacecraftMarkers", mapMarker.gameObject);
+
 		mapMarkerName.text = quest.vesselType.ToString() + " Vessel";
-		nameField.text = mapMarkerName.text;
+		vesselName = mapMarkerName.text;
 
 		if(quest.taskType == QuestManager.TaskType.Destroy)
 		{
-			hintField.text = "Kill Me!";
+			hint = "Kill Me!";
 			interactable = false;
 		}
 		else if(quest.taskType == QuestManager.TaskType.Bribe)
 		{
-			hintField.text = "Dock to interact!";
+			hint = "Dock to interact!";
 			interactable = true;
-			interactButton.GetComponentInChildren<Text>().text = "Bribe with 20$";
-			interactButton.onClick.AddListener(delegate
+			interactionLabel = "Bribe with 20$";
+			interaction = delegate
 					{
 						if(localPlayerMainInventory.TransferMoney(-20))
 						{
@@ -170,16 +178,16 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 							InfoController.GetInstance().AddMessage("This Guy couldn't even buy a Beer of the lousy Cash you have at Hand!");
 						}
 						UpdateQuestVesselMenu();
-					});
+					};
 		}
 		else if(quest.taskType == QuestManager.TaskType.JumpStart)
 		{
-			hintField.text = "Dock to interact!";
+			hint = "Dock to interact!";
 			interactable = true;
-			interactButton.GetComponentInChildren<Text>().text = "Jump-Start with 2kWh";
-			interactButton.onClick.AddListener(delegate
+			interactionLabel = "Jump-Start with 2kWh";
+			interaction = delegate
 					{
-						float amount = Mathf.Min(7200.0f, (float) localPlayerMainInventory.GetEnergy());
+						float amount = Mathf.Min(7200.0f, (float)localPlayerMainInventory.GetEnergy());
 						if(localPlayerMainInventory.TransferEnergy(-amount))
 						{
 							quest.progress += amount / 7200.0f;
@@ -189,14 +197,14 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 							Debug.LogWarning("Energy for Quest could not be supplied, Player Vessel has " + localPlayerMainInventory.GetEnergy() + "kWs!");
 						}
 						UpdateQuestVesselMenu();
-					});
+					};
 		}
 		else if(quest.taskType == QuestManager.TaskType.Supply)
 		{
-			hintField.text = "Dock to interact!";
+			hint = "Dock to interact!";
 			interactable = true;
-			interactButton.GetComponentInChildren<Text>().text = "Supply " + quest.infoString;
-			interactButton.onClick.AddListener(delegate
+			interactionLabel = "Supply " + quest.infoString;
+			interaction = delegate
 					{
 						int amount = Mathf.Min(quest.infoInt, (int)localPlayerMainInventory.GetGoodAmount(quest.infoString));
 						if(localPlayerMainInventory.Withdraw(quest.infoString, (uint)amount))
@@ -208,24 +216,27 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 							Debug.LogWarning(quest.infoInt + " " + quest.infoString + " for Quest could not be supplied, Player Vessel has " + localPlayerMainInventory.GetGoodAmount(quest.infoString) + " " + quest.infoString + "!");
 						}
 						UpdateQuestVesselMenu();
-					});
+					};
 		}
 		else if(quest.taskType == QuestManager.TaskType.Plunder)
 		{
-			hintField.text = "Dock to interact!";
+			hint = "Dock to interact!";
 			interactable = true;
-			interactButton.onClick.AddListener(delegate
+			interactionLabel = "Plunder";
+			interaction = delegate
 					{
 						// TODO: Fun and interactive Gameplay?
 						quest.progress = 1.0f;
 						UpdateQuestVesselMenu();
-					});
+					};
 		}
 		else if(quest.taskType == QuestManager.TaskType.Tow)
 		{
-			hintField.text = "Dock to start Towing!";
+			hint = "Dock to start Towing!";
 			interactable = false;
 			quest.destination.RequestDocking(GetComponentInParent<Spacecraft>(), true);
 		}
+
+		UpdateQuestVesselMenu();
 	}
 }
