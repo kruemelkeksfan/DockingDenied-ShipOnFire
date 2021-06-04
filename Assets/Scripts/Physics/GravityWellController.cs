@@ -45,6 +45,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	[SerializeField] private float atmossphericDensity = 0.2f;
 	[Tooltip("A Particle System to visualize Re-Entry Heat and Plasma")]
 	[SerializeField] private ParticleSystem plasmaParticleSystemPrefab = null;
+	private InfoController infoController = null;
 	private GameObject localPlayerMainSpacecraftObject = null;
 	private Vector2 position = Vector2.zero;
 	private float gravitationalParameter;
@@ -52,6 +53,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	HashSet<Rigidbody2D> deadGravityObjects = null;
 	private MinMax[] asteroidAltitudeConstraints = { };
 	private float scaleAltitude = 0.0f;
+	private float halfMaxAltitude = 0.0f;
 
 	public static GravityWellController GetInstance()
 	{
@@ -67,13 +69,14 @@ public class GravityWellController : MonoBehaviour, IListener
 		}
 
 		position = transform.position;
-		gravitationalParameter = (float)(gameObject.GetComponent<Rigidbody2D>().mass * GRAVITY_CONSTANT * 1000000000000000000000000.0);										// Celestial Body Mass is given in 10^24 KGs, to accommodate them in a float
+		gravitationalParameter = (float)(gameObject.GetComponent<Rigidbody2D>().mass * GRAVITY_CONSTANT * 1000000000000000000000000.0);                                     // Celestial Body Mass is given in 10^24 KGs, to accommodate them in a float
 		gravityObjects = new Dictionary<Rigidbody2D, AsteroidRecord?>();
 		deadGravityObjects = new HashSet<Rigidbody2D>();
 
-		globalAltitudeConstraint = new MinMax(globalAltitudeConstraint.Min * globalAltitudeConstraint.Min, globalAltitudeConstraint.Max * globalAltitudeConstraint.Max);	// Square to avoid Mathf.sqrt() later on
+		halfMaxAltitude = (globalAltitudeConstraint.Max * 0.5f) * (globalAltitudeConstraint.Max * 0.5f);
+		globalAltitudeConstraint = new MinMax(globalAltitudeConstraint.Min * globalAltitudeConstraint.Min, globalAltitudeConstraint.Max * globalAltitudeConstraint.Max);    // Square to avoid Mathf.sqrt() later on
 
-		scaleAltitude = atmossphereEntryAltitude - surfaceAltitude;																											// According to Formula Scale Height is the Height at which
+		scaleAltitude = atmossphereEntryAltitude - surfaceAltitude;                                                                                                         // According to Formula Scale Height is the Height at which
 																																											// 1/e of the Air Density of the Surface is present,
 																																											// so treating it as the edge of the Atmossphere is a bit overdrawn
 
@@ -84,6 +87,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	{
 		StartCoroutine(CheckHeight());
 
+		infoController = InfoController.GetInstance();
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
 		localPlayerMainSpacecraftObject = spacecraftManager.GetLocalPlayerMainSpacecraft().gameObject;
 		spacecraftManager.AddSpacecraftChangeListener(this);
@@ -126,22 +130,35 @@ public class GravityWellController : MonoBehaviour, IListener
 
 			foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
 			{
+				if(deadGravityObjects.Count > 0) Debug.Log("Dead: " + deadGravityObjects.Count);
+
 				float sqrOrbitalHeight = (position - (Vector2)gravityObject.position).sqrMagnitude;
 				if(((gravityObjects[gravityObject].HasValue && !gravityObjects[gravityObject].Value.touched
 					&& (sqrOrbitalHeight < asteroidAltitudeConstraints[gravityObjects[gravityObject].Value.beltIndex].Min || sqrOrbitalHeight > asteroidAltitudeConstraints[gravityObjects[gravityObject].Value.beltIndex].Max))
-					|| sqrOrbitalHeight < globalAltitudeConstraint.Min || sqrOrbitalHeight > globalAltitudeConstraint.Max)
+					|| sqrOrbitalHeight < globalAltitudeConstraint.Min || sqrOrbitalHeight > globalAltitudeConstraint.Max || (gravityObject.gameObject == localPlayerMainSpacecraftObject && sqrOrbitalHeight > halfMaxAltitude))
 					&& !deadGravityObjects.Contains(gravityObject))
 				{
 					if(gravityObject.gameObject == localPlayerMainSpacecraftObject)
 					{
 						if(sqrOrbitalHeight > globalAltitudeConstraint.Max)
 						{
-							InfoController.GetInstance().AddMessage("Leaving Signal Range, get back to the Planet!");
+							if(infoController.GetMessageCount() <= 0)
+							{
+								infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
+							}
 							continue;
 						}
 						else if(sqrOrbitalHeight < globalAltitudeConstraint.Min)
 						{
-							InfoController.GetInstance().AddMessage("Altitude critical, pull up!");
+							infoController.AddMessage("Altitude critical, pull up!");
+						}
+						else if(sqrOrbitalHeight > halfMaxAltitude)
+						{
+							if(infoController.GetMessageCount() <= 0)
+							{
+								infoController.AddMessage("Signal is getting weaker...");
+							}
+							continue;
 						}
 					}
 
@@ -187,9 +204,9 @@ public class GravityWellController : MonoBehaviour, IListener
 					ParticleSystem.EmissionModule emission = plasmaParticles.emission;
 					emission.rateOverTimeMultiplier = shape.radius * shape.radius;
 					ParticleSystem.SizeOverLifetimeModule size = plasmaParticles.sizeOverLifetime;
-					size.sizeMultiplier *= Mathf.Sqrt(shape.radius);																									// Sqrt to get Values nearer to 1 and dampen Size
+					size.sizeMultiplier *= Mathf.Sqrt(shape.radius);                                                                                                    // Sqrt to get Values nearer to 1 and dampen Size
 				}
-				float drag = atmossphericDensity * Mathf.Exp(-(orbitalAltitude - surfaceAltitude) / scaleAltitude);														// Drag based on an Approximation of atmosspheric Density
+				float drag = atmossphericDensity * Mathf.Exp(-(orbitalAltitude - surfaceAltitude) / scaleAltitude);                                                     // Drag based on an Approximation of atmosspheric Density
 				gravityObject.velocity *= 1.0f - Mathf.Min((gravityObject.velocity.sqrMagnitude * drag * Time.deltaTime), 1.0f);
 			}
 			else if(plasmaParticles != null && orbitalAltitude * orbitalAltitude > globalAltitudeConstraint.Min)
@@ -257,8 +274,8 @@ public class GravityWellController : MonoBehaviour, IListener
 		// Velocity = sqrt(Gravitational Constant * Mass of Main Body / Radius)
 		return (new Vector2(-orbitalDirection.y, orbitalDirection.x) / altitude)
 			* Mathf.Sqrt(gravitationalParameter
-			/ (altitude * 1000.0f))																											// Convert from km to m
-			/ 1000.0f;																														// Convert back from m/s to km/s
+			/ (altitude * 1000.0f))                                                                                                         // Convert from km to m
+			/ 1000.0f;                                                                                                                      // Convert back from m/s to km/s
 	}
 
 	public void AddGravityObject(Rigidbody2D gravityObject, int asteroidBeltIndex = -1)

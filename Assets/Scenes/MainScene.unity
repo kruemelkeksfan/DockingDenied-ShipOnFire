@@ -1431,7 +1431,7 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 500
+      value: 400
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
@@ -1699,14 +1699,14 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 22da0b090b4515244947d69beeaf0991, type: 3}
   - {fileID: 4900000, guid: 1cb6168fdf04b304db7516b14720cc14, type: 3}
   stationPositions:
-  - {x: 500, y: 0}
-  - {x: 0, y: -500}
-  - {x: -500, y: 0}
-  - {x: 0, y: 500}
-  - {x: 500, y: 500}
-  - {x: 500, y: -500}
-  - {x: -500, y: -500}
-  - {x: -500, y: 500}
+  - {x: 400, y: 0}
+  - {x: 0, y: -400}
+  - {x: -400, y: 0}
+  - {x: 0, y: 400}
+  - {x: 400, y: 400}
+  - {x: 400, y: -400}
+  - {x: -400, y: -400}
+  - {x: -400, y: 400}
 --- !u!4 &437986066
 Transform:
   m_ObjectHideFlags: 0
@@ -2320,7 +2320,7 @@ MonoBehaviour:
   destructionAltitude: 280
   globalAltitudeConstraint:
     min: 320
-    max: 10000
+    max: 1500
   atmossphericDensity: 0.2
   plasmaParticleSystemPrefab: {fileID: 2736846745620259419, guid: 11b17e94e5d60294898ba61c533a9b55,
     type: 3}
