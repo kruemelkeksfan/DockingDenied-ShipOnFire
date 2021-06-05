@@ -26,9 +26,8 @@ Tester Feedback:
 -Resource Cost Display shows up in the wrong Position
 -Button to clear the Info Log
 -Can build Modules even when out of Money
-
+-Reduce Amount of Error Messages when Module building fails (turned out to be bc of the same Bug as above)
 -Dont allow opening of multiple Station Menus at once
 -Close Menus with Esc
--Reduce Amount of Error Messages when Module building fails
 -Module Blueprints skip between 2 Positions when Cursor is near a Grid Cell Boundary
 -Autorun Button
