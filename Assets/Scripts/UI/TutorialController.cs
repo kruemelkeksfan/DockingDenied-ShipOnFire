@@ -189,9 +189,8 @@ public class TutorialController : MonoBehaviour
 			return false;
 		});
 		infoController.AddMessage("You can toggle Velocity Markers in the Top Bar");
-		infoController.AddMessage("The blue Line shows your current Velocity");
-		infoController.AddMessage("The red Line shows the current Velocity of the last Station or Objective you clicked");
-		infoController.AddMessage("The green Line shows the optimal Orbiting Velocity at your current Altitude");
+		infoController.AddMessage("The blue Line shows your Velocity in Relation to the last clicked Target");
+		infoController.AddMessage("The green Line shows the Difference between your Velocity and perfect Orbiting Velocity");
 
 		if(questManager.GetActiveQuestCount() <= 0)
 		{
