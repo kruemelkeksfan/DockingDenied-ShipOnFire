@@ -141,5 +141,6 @@ MonoBehaviour:
     amount: 1
   - goodName: Silicon
     amount: 2
+  description: "Container for up to 200m\xB3 of solid Cargo."
   state: 0
   capacity: 200

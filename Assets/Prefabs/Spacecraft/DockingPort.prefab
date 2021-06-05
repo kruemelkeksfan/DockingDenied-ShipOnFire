@@ -5191,6 +5191,7 @@ MonoBehaviour:
     amount: 2
   - goodName: Silicon
     amount: 4
+  description: Used to couple Vessels, click the placed Module for more Settings.
   moduleSettingMenu: {fileID: 2930098445418603330}
   actionNameField: {fileID: 7320006615892210955}
   hotkeySelection: {fileID: 9193948741579083494}

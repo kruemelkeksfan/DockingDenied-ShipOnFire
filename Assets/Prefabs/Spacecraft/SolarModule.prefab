@@ -225,5 +225,6 @@ MonoBehaviour:
     amount: 6
   - goodName: Silicon
     amount: 20
+  description: Simple Solar Array generating 160kW.
   energyProducer:
     production: 160

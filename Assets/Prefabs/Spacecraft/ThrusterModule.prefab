@@ -4878,6 +4878,7 @@ MonoBehaviour:
     amount: 6
   - goodName: Silicon
     amount: 4
+  description: An Ion Thruster which uses up to 160kW to generate Thrust.
   capacitor:
     capacity: 320
     charge: 0

@@ -143,6 +143,7 @@ MonoBehaviour:
     amount: 20
   - goodName: Silicon
     amount: 40
+  description: Module for constructing other Modules in 400m Range.
   constructionRange: 0.4
   constructionBeamPrefab: {fileID: 2683294556613187196, guid: 455c378a8ff88b74287b7af9a876ac40,
     type: 3}

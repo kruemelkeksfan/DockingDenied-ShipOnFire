@@ -297,6 +297,7 @@ public class BuildingMenu : MonoBehaviour
 			erase = false;
 			SpawnModule(moduleIndex);
 			infoController.SetBuildingCosts(currentModule.module.GetBuildingCosts());
+			infoController.AddMessage(currentModule.module.GetDescription());
 		}
 		else
 		{

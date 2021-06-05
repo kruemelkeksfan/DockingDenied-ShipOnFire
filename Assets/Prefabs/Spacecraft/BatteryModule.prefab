@@ -62,8 +62,9 @@ MonoBehaviour:
     amount: 4
   - goodName: Silicon
     amount: 10
+  description: An Energy Storage capable of storing up to 10kWh.
   capacitor:
-    capacity: 19200
+    capacity: 36000
     charge: 0
 --- !u!1 &4989274293812750468
 GameObject:

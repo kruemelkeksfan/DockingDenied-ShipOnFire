@@ -14,6 +14,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private bool overlappingReservePositions = false;
 	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
+	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
 	protected float mass = 0.0002f;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
@@ -125,6 +126,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public string GetModuleName()
 	{
 		return moduleName;
+	}
+
+	public string GetDescription()
+	{
+		return description;
 	}
 
 	public Vector2Int GetPosition()

@@ -141,3 +141,4 @@ MonoBehaviour:
     amount: 4
   - goodName: Silicon
     amount: 12
+  description: Central Module of each Vessel, can't be (de-)constructed.

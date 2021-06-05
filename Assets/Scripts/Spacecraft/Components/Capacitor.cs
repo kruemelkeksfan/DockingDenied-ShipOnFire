@@ -6,7 +6,7 @@ using UnityEngine;
 [Serializable]
 public class Capacitor
 {
-	[Tooltip("Energy Capacity in kWs, 1m^2 of SciFi Solar Panel in this Game is suppossed to produce 0.4kW, the 400m^2 of one Module therefore produce 160kW or 160kWs per Second.")]
+	[Tooltip("Energy Capacity in kWs, 1m^2 of SciFi Solar Panel in this Game is suppossed to produce 0.4kW, the 400m^2 of one Module therefore produce 160kW.")]
 	public float capacity = 320.0f;
 	[Tooltip("The current Charge of this Capacitor.")]
 	public float charge = 0.0f;
