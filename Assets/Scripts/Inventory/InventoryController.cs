@@ -285,18 +285,15 @@ public class InventoryController : MonoBehaviour, IListener
 				energy += producer.production * deltaTime;
 			}
 
+			foreach(Capacitor battery in batteries)
+			{
+				energy += battery.DischargeAll();
+			}
+
 			int consumerCounter = 0;
 			while(energy > 0.0f && consumerCounter < energyConsumers.Count)
 			{
 				energy = energyConsumers[consumerIndex].Charge(energy);
-				if(energy <= 0.0f)
-				{
-					foreach(Capacitor battery in batteries)
-					{
-						energy += battery.DischargeAll();
-					}
-					energy = energyConsumers[consumerIndex].Charge(energy);
-				}
 				consumerIndex = (consumerIndex + 1) % energyConsumers.Count;
 
 				++consumerCounter;
