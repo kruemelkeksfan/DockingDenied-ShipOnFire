@@ -63,6 +63,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private DockingPort[] dockingPorts = null;
 	private Dictionary<DockingPort, Spacecraft> expectedDockings = null;
 	private HashSet<Spacecraft> dockedSpacecraft = null;
+	private QuestManager.TaskType[] firstTasks = null;
+	private QuestManager.TaskType[] secondaryTasks = null;
 	private QuestManager.Quest[] questSelection = null;
 	private bool updateQuestSelection = true;
 	private float lastStationUpdate = 0.0f;
@@ -103,6 +105,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		localPlayerMainInventory = localPlayerMainSpacecraft.GetComponent<InventoryController>();
 		playerSpacecraftController = localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
+
+		firstTasks = new QuestManager.TaskType[] { QuestManager.TaskType.Bribe, QuestManager.TaskType.JumpStart, QuestManager.TaskType.Tow };
+		secondaryTasks = new QuestManager.TaskType[] { QuestManager.TaskType.Trade };
 
 		Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
 		foreach(string goodName in goods.Keys)
@@ -274,7 +279,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				if(questSelection == null || updateQuestSelection)
 				{
-					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this), questManager.GenerateQuest(this), questManager.GenerateQuest(this) };
+					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this, firstTasks), questManager.GenerateQuest(this, secondaryTasks), questManager.GenerateQuest(this) };
 					updateQuestSelection = false;
 				}
 

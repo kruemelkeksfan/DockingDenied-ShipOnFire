@@ -72,6 +72,10 @@ public class QuestManager : MonoBehaviour, IListener
 	private TaskData[] tasks = null;
 	private string[] goodNames = null;                                              // Dictionary does not allow random Element picking, therefore 2 Arrays
 	private int[] goodRewards = null;
+	private List<int>[] taskBackstories = null;
+	private List<int>[] taskQuestGivers = null;
+	private List<int> questGiverIntersection = null;
+	private Dictionary<TaskType, List<int>> taskTypes = null;
 	private Dictionary<SpaceStationController, Quest> activeQuests = null;
 
 	public static QuestManager GetInstance()
@@ -87,6 +91,81 @@ public class QuestManager : MonoBehaviour, IListener
 		backstories = questData.backstories;
 		questGivers = questData.questGivers;
 		tasks = questData.tasks;
+
+		taskBackstories = new List<int>[tasks.Length];
+		taskQuestGivers = new List<int>[tasks.Length];
+		for(int i = 0; i < tasks.Length; ++i)
+		{
+			taskBackstories[i] = new List<int>();
+			for(int j = 0; j < backstories.Length; ++j)
+			{
+				foreach(int task in backstories[j].tasks)
+				{
+					if(task == i)
+					{
+						taskBackstories[i].Add(j);
+						break;
+					}
+				}
+			}
+
+			taskQuestGivers[i] = new List<int>();
+			for(int j = 0; j < questGivers.Length; ++j)
+			{
+				foreach(int task in questGivers[j].tasks)
+				{
+					if(task == i)
+					{
+						taskQuestGivers[i].Add(j);
+						break;
+					}
+				}
+			}
+		}
+
+		questGiverIntersection = new List<int>();
+
+		Array taskTypeValues = Enum.GetValues(typeof(TaskType));
+		taskTypes = new Dictionary<TaskType, List<int>>(taskTypeValues.Length);
+		foreach(TaskType taskType in taskTypeValues)
+		{
+			taskTypes.Add(taskType, new List<int>());
+		}
+		for(int i = 0; i < tasks.Length; ++i)
+		{
+			if(tasks[i].description.StartsWith("Destroy"))
+			{
+				taskTypes[TaskType.Destroy].Add(i);
+			}
+			else if(tasks[i].description.StartsWith("Bribe"))
+			{
+				taskTypes[TaskType.Bribe].Add(i);
+			}
+			else if(tasks[i].description.StartsWith("Jump-start"))
+			{
+				taskTypes[TaskType.JumpStart].Add(i);
+			}
+			else if(tasks[i].description.StartsWith("Supply"))
+			{
+				taskTypes[TaskType.Supply].Add(i);
+			}
+			else if(tasks[i].description.StartsWith("Plunder"))
+			{
+				taskTypes[TaskType.Plunder].Add(i);
+			}
+			else if(tasks[i].description.StartsWith("Tow"))
+			{
+				taskTypes[TaskType.Tow].Add(i);
+			}
+			else if(tasks[i].description.StartsWith("Sell"))
+			{
+				taskTypes[TaskType.Trade].Add(i);
+			}
+			else if(tasks[i].description.StartsWith("Buy"))
+			{
+				taskTypes[TaskType.Trade].Add(i);
+			}
+		}
 
 		/*for(int i = 0; i < backstories.Length; ++i)
 		{
@@ -163,41 +242,47 @@ public class QuestManager : MonoBehaviour, IListener
 	// (Example Algorithm for the last Part: Probability of a Quest Part = Amount of Times it was performed in the Past / All Quests performed in the Past
 	// => if >20%, use this Number, else equally distribute Chances,
 	// Always generate 1/3 Quests completely random to avoid Player getting locked up in Quests he does not like (any more))
-	public Quest GenerateQuest(SpaceStationController questStation, int attempt = 0)
+	public Quest GenerateQuest(SpaceStationController questStation, TaskType[] taskTypes = null, int attempt = 0)
 	{
 		Quest quest = new Quest();
 
-		quest.backstory = UnityEngine.Random.Range(0, backstories.Length);
-		quest.questGiver = backstories[quest.backstory].questGivers[UnityEngine.Random.Range(0, backstories[quest.backstory].questGivers.Length)];
-
-		List<int> taskIntersection = new List<int>(backstories[quest.backstory].tasks.Length);
-		foreach(int backstoryTask in backstories[quest.backstory].tasks)
+		if(taskTypes == null || taskTypes.Length <= 0)
 		{
-			foreach(int questGiverTask in questGivers[quest.questGiver].tasks)
+			quest.task = UnityEngine.Random.Range(0, tasks.Length);
+		}
+		else
+		{
+			TaskType taskType = taskTypes[UnityEngine.Random.Range(0, taskTypes.Length)];
+			quest.task = this.taskTypes[taskType][UnityEngine.Random.Range(0, this.taskTypes[taskType].Count)];
+		}
+		
+		quest.backstory = taskBackstories[quest.task][UnityEngine.Random.Range(0, taskBackstories[quest.task].Count)];
+
+		questGiverIntersection.Clear();
+		foreach(int questGiver in backstories[quest.backstory].questGivers)
+		{
+			foreach(int task in questGivers[questGiver].tasks)
 			{
-				if(backstoryTask == questGiverTask)
+				if(task == quest.task)
 				{
-					taskIntersection.Add(backstoryTask);
-				}
-				else if(questGiverTask > backstoryTask)
-				{
+					questGiverIntersection.Add(questGiver);
 					break;
 				}
 			}
 		}
-		if(taskIntersection.Count < 1)
+		if(questGiverIntersection.Count <= 0)
 		{
-			Debug.LogWarning("No valid Tasks for the Combination of Backstory " + quest.backstory + " and QuestGiver " + quest.questGiver + "!");
+			Debug.LogWarning("No valid Quest Givers for the Combination of Task " + quest.task + " and Backstory " + quest.backstory + "!");
 			if(attempt < 5)
 			{
-				return GenerateQuest(questStation, attempt + 1);
+				return GenerateQuest(questStation, taskTypes, attempt + 1);
 			}
 			else
 			{
 				return null;
 			}
 		}
-		quest.task = taskIntersection[UnityEngine.Random.Range(0, taskIntersection.Count)];
+		quest.questGiver = questGiverIntersection[UnityEngine.Random.Range(0, questGiverIntersection.Count)];
 
 		quest.destination = questStation;
 
@@ -242,6 +327,7 @@ public class QuestManager : MonoBehaviour, IListener
 
 		quest.progress = 0.001f;
 
+		// TODO: Use Reverse from taskTypes-Dictionary to save Performance (String Comparisons)
 		if(tasks[quest.task].description.StartsWith("Destroy"))
 		{
 			quest.taskType = TaskType.Destroy;
