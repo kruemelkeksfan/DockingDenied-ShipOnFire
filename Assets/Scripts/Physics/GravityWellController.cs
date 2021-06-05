@@ -130,8 +130,6 @@ public class GravityWellController : MonoBehaviour, IListener
 
 			foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
 			{
-				if(deadGravityObjects.Count > 0) Debug.Log("Dead: " + deadGravityObjects.Count);
-
 				float sqrOrbitalHeight = (position - (Vector2)gravityObject.position).sqrMagnitude;
 				if(((gravityObjects[gravityObject].HasValue && !gravityObjects[gravityObject].Value.touched
 					&& (sqrOrbitalHeight < asteroidAltitudeConstraints[gravityObjects[gravityObject].Value.beltIndex].Min || sqrOrbitalHeight > asteroidAltitudeConstraints[gravityObjects[gravityObject].Value.beltIndex].Max))
