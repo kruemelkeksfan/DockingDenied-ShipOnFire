@@ -74,7 +74,7 @@ public class TutorialController : MonoBehaviour
 		{
 			infoController.AddMessage("A Starter Ship should at least have:");
 			infoController.AddMessage("Some Solid Containers, a Docking Port, a Thruster in each Direction and a Solar Module");
-			infoController.AddMessage("You can rotate Modules with Q and E");
+			infoController.AddMessage("You can rotate Modules [Q/E]");
 			infoController.AddMessage("Building Materials are automatically bought from the Station");
 			infoController.AddMessage("However their Stocks and your Money are limited, so don't get carried away");
 			yield return WaitForClear(delegate
@@ -107,41 +107,10 @@ public class TutorialController : MonoBehaviour
 			});
 		}
 
-		while(Mathf.Approximately(cameraTransform.position.z, startZoom))
-		{
-			infoController.AddMessage("You can zoom out using the Scroll Wheel of you Mouse");
-			infoController.AddMessage("Control the Camera by holding your Middle Mouse Button and moving the Mouse or pressing WASD");
-			yield return WaitForClear(delegate
-			{
-				return !Mathf.Approximately(cameraTransform.position.z, startZoom);
-			});
-		}
-
-		while(!Mathf.Approximately(cameraTransform.position.z, startZoom))
-		{
-			infoController.AddMessage("Reset the Camera by pressing the Spacebar");
-			yield return WaitForClear(delegate
-			{
-				return Mathf.Approximately(cameraTransform.position.z, startZoom);
-			});
-		}
-
-		Rigidbody2D rigidbody = spacecraftManager.GetLocalPlayerMainSpacecraft().GetComponent<Rigidbody2D>();
-		do
-		{
-			infoController.AddMessage("Fly your Spacecraft with WASD");
-			infoController.AddMessage("You can turn by pressing Q or E");
-			yield return WaitForClear(delegate
-			{
-				return false;
-			});
-		}
-		while(rigidbody.angularVelocity > 0.2f);
-
 		complete = false;
 		while(!complete)
 		{
-			infoController.AddMessage("Zoom out and click the Name of the Station near you");
+			infoController.AddMessage("Zoom out [Scroll Wheel] and click the Name of the Station near you");
 			infoController.AddMessage("Then click 'Request Docking' in the Station Menu");
 			infoController.AddMessage("Docking Permissions stay active for 2 Minutes and are indicated by yellow Light emerging from the affected Port");
 			infoController.AddMessage("Activate your own Docking Port by pressing the Number Key displayed in the top left Corner of your Screen");
@@ -214,7 +183,7 @@ public class TutorialController : MonoBehaviour
 		{
 			return false;
 		});
-		infoController.AddMessage("If a Quest requires you to find and dock to a Vessel, zoom out until you find the red Quest Vessel Marker");
+		infoController.AddMessage("If a Quest requires you to find and dock to a Vessel, zoom out [Scroll Wheel] until you find the red Quest Vessel Marker");
 		yield return WaitForClear(delegate
 		{
 			return false;

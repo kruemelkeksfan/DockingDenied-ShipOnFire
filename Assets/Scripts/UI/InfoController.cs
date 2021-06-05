@@ -15,6 +15,7 @@ public class InfoController : MonoBehaviour, IListener
 	}
 
 	public static InfoController instance = null;
+	private static bool helpActive = true;
 
 	[SerializeField] private Text messageField = null;
 	[SerializeField] private float skippingMessageDuration = 0.2f;
@@ -22,6 +23,9 @@ public class InfoController : MonoBehaviour, IListener
 	[SerializeField] private Text controlHint = null;
 	[SerializeField] private Text resourceDisplay = null;
 	[SerializeField] private Text buildingResourceDisplay = null;
+	[SerializeField] private Text throttleDisplay = null;
+	[SerializeField] private Text autoThrottleDisplay = null;
+	[SerializeField] private GameObject keyBindingDisplay = null;
 	private Queue<Message> messages = null;
 	private float lastDequeue = 0.0f;
 	private Dictionary<string, uint> buildingCosts = null;
@@ -50,6 +54,15 @@ public class InfoController : MonoBehaviour, IListener
 	// TODO: Put this into a Method which only gets called when a new Message is added or a Message Timestamp runs out (Coroutine)
 	private void Update()
 	{
+		if(Input.GetButtonDown("ShowHelp"))
+		{
+			helpActive = !helpActive;
+		}
+		if(keyBindingDisplay.activeSelf != helpActive)
+		{
+			keyBindingDisplay.SetActive(helpActive);
+		}
+
 		float messageDuration = Input.GetButton("Skip Info Log") ? skippingMessageDuration : this.messageDuration;
 
 		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < Time.realtimeSinceStartup && lastDequeue + messageDuration < Time.realtimeSinceStartup)
@@ -121,6 +134,12 @@ public class InfoController : MonoBehaviour, IListener
 					+ " / Silicon - " + inventoryController.GetGoodAmount("Silicon") + " (" + (buildingCosts.ContainsKey("Silicon") ? buildingCosts["Silicon"] : 0) + ")";
 			}
 		}
+	}
+
+	public void UpdateThrottleDisplay(float throttle, bool autoThrottle)
+	{
+		throttleDisplay.text = "Throttle - " + ((int)(throttle * 100.0f)) + "%";
+		autoThrottleDisplay.text = "AutoThrottle - " + (autoThrottle ? "on" : "off");
 	}
 
 	public void AddMessage(string message)

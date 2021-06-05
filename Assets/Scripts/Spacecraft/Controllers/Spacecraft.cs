@@ -30,6 +30,7 @@ public class Spacecraft : MonoBehaviour
 	private InventoryController inventoryController = null;
 	private new Rigidbody2D rigidbody = null;
 	private HashSet<Thruster>[] thrusters = null;
+	private HashSet<Thruster> inactiveThrusters = null;
 	private bool calculateCollider = false;
 	private float halfGridSize = 0.0f;
 	private PolygonCollider2D spacecraftCollider = null;
@@ -48,6 +49,7 @@ public class Spacecraft : MonoBehaviour
 		{
 			thrusters[i] = new HashSet<Thruster>();
 		}
+		inactiveThrusters = new HashSet<Thruster>();
 
 		rigidbody.centerOfMass = Vector2.zero;
 	}
@@ -112,14 +114,14 @@ public class Spacecraft : MonoBehaviour
 
 	public void SetThrottles(float horizontal, float vertical, float rotationSpeed)
 	{
-		HashSet<Thruster> inactiveThrusters = new HashSet<Thruster>(thrusters[(int)ThrusterGroup.all]);
+		inactiveThrusters.Clear();
+		inactiveThrusters.UnionWith(thrusters[(int)ThrusterGroup.all]);
 
-		// TODO: Remove Else to enable activating opposing Thrusters at the same Time
 		if(vertical > 0.0f)
 		{
 			SetThrusterGroupThrottle(ThrusterGroup.up, vertical, inactiveThrusters);
 		}
-		else if(vertical < 0.0f)
+		if(vertical < 0.0f)
 		{
 			SetThrusterGroupThrottle(ThrusterGroup.down, -vertical, inactiveThrusters);
 		}
@@ -128,7 +130,7 @@ public class Spacecraft : MonoBehaviour
 		{
 			SetThrusterGroupThrottle(ThrusterGroup.left, -horizontal, inactiveThrusters);
 		}
-		else if(horizontal > 0.0f)
+		if(horizontal > 0.0f)
 		{
 			SetThrusterGroupThrottle(ThrusterGroup.right, horizontal, inactiveThrusters);
 		}
@@ -137,7 +139,7 @@ public class Spacecraft : MonoBehaviour
 		{
 			SetThrusterGroupThrottle(ThrusterGroup.turnLeft, -rotationSpeed, inactiveThrusters);
 		}
-		else if(rotationSpeed > 0.0f)
+		if(rotationSpeed > 0.0f)
 		{
 			SetThrusterGroupThrottle(ThrusterGroup.turnRight, rotationSpeed, inactiveThrusters);
 		}

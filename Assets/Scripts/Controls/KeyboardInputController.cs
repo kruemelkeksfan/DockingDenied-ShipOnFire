@@ -18,6 +18,9 @@ public class KeyboardInputController : InputController
 
 	private InfoController infoController = null;
 	private Dictionary<HotkeyKey, string> actionNames = null;
+	private float throttle = 1.0f;
+	private bool autoThrottle = false;
+	private Vector3 autoThrottleSetting = Vector3.zero;
 
 	protected override void Awake()
 	{
@@ -39,7 +42,34 @@ public class KeyboardInputController : InputController
 
 		if(flightControls && !Input.GetButton("Rotate Camera"))
 		{
-			spacecraft.SetThrottles(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), Input.GetAxis("Rotate"));
+			throttle += Input.GetAxis("Throttle") * Time.deltaTime;
+			throttle = Mathf.Clamp01(throttle);
+
+			if(Input.GetButtonDown("AutoThrottle"))
+			{
+				autoThrottle = !autoThrottle;
+			}
+			else if(autoThrottle
+				&& ((Input.GetAxis("Horizontal") < 0.0f && autoThrottleSetting.x > 0.0f)
+				|| (Input.GetAxis("Horizontal") > 0.0f && autoThrottleSetting.x < 0.0f)
+				|| (Input.GetAxis("Vertical") > 0.0f && autoThrottleSetting.y < 0.0f)
+				|| (Input.GetAxis("Vertical") < 0.0f && autoThrottleSetting.y > 0.0f)
+				|| (Input.GetAxis("Rotate") > 0.0f && autoThrottleSetting.z < 0.0f)
+				|| (Input.GetAxis("Rotate") < 0.0f && autoThrottleSetting.z > 0.0f)
+				|| Mathf.Abs(Input.GetAxis("Horizontal")) > Mathf.Abs(autoThrottleSetting.x)
+				|| Mathf.Abs(Input.GetAxis("Vertical")) > Mathf.Abs(autoThrottleSetting.y)
+				|| Mathf.Abs(Input.GetAxis("Rotate")) > Mathf.Abs(autoThrottleSetting.z)))
+			{
+				autoThrottle = false;
+			}
+
+			if(!autoThrottle)
+			{
+				autoThrottleSetting = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), Input.GetAxis("Rotate"));
+			}
+
+			infoController.UpdateThrottleDisplay(throttle, autoThrottle);
+			spacecraft.SetThrottles(autoThrottleSetting.x * throttle, autoThrottleSetting.y * throttle, autoThrottleSetting.z * throttle);
 
 			for(int i = 0; i < hotkeyCount; ++i)
 			{
@@ -96,7 +126,7 @@ public class KeyboardInputController : InputController
 			}
 			keyBindings.Add((hotkey + 1).ToString(), actions);
 		}
-		
+
 		infoController.UpdateControlHint(keyBindings);
 	}
 }
