@@ -90,6 +90,7 @@ GameObject:
   - component: {fileID: 7549261425653873915}
   - component: {fileID: 3931542096556505849}
   - component: {fileID: -6346119792834082195}
+  - component: {fileID: -4534338612941136885}
   - component: {fileID: 6137225308136315882}
   - component: {fileID: 7783625340718850097}
   m_Layer: 10
@@ -151,6 +152,25 @@ CircleCollider2D:
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
   m_Radius: 0.01
+--- !u!205 &-4534338612941136885
+LODGroup:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6818173429850476264}
+  serializedVersion: 2
+  m_LocalReferencePoint: {x: 0, y: 0, z: 0}
+  m_Size: 0.020000001
+  m_FadeMode: 0
+  m_AnimateCrossFading: 0
+  m_LastLODIsBillboard: 0
+  m_LODs:
+  - screenRelativeHeight: 0.005220988
+    fadeTransitionWidth: 0
+    renderers:
+    - renderer: {fileID: 8343165463562524640}
+  m_Enabled: 1
 --- !u!114 &6137225308136315882
 MonoBehaviour:
   m_ObjectHideFlags: 0
