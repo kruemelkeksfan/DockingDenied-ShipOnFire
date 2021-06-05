@@ -20,6 +20,8 @@ public class Spacecraft : MonoBehaviour
 
 	[SerializeField] private Module commandModulePrefab = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
+	[Tooltip("Minimum Turning Force which must be exerted by a Thruster to consider it a turning Thruster")]
+	[SerializeField] private float turningForceThreshold = 0.002f;
 	private Dictionary<Vector2Int, Module> modules = null;
 	private HashSet<IUpdateListener> updateListeners = null;
 	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
@@ -159,7 +161,12 @@ public class Spacecraft : MonoBehaviour
 			rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass));
 		}
 
-		// TODO: Recalculate Turning Thrusters
+		thrusters[(int)ThrusterGroup.turnLeft].Clear();
+		thrusters[(int)ThrusterGroup.turnRight].Clear();
+		foreach(Thruster thruster in thrusters[(int)ThrusterGroup.all])
+		{
+			CalculateThrusterTurningGroup(thruster);
+		}
 
 		centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
 	}
@@ -297,6 +304,25 @@ public class Spacecraft : MonoBehaviour
 				&& (!modules.ContainsKey(borderingPosition) || (borderingPosition != modules[borderingPosition].GetPosition() && modules[borderingPosition].HasOverlappingReservePositions()));
 	}
 
+	private void CalculateThrusterTurningGroup(Thruster thruster)
+	{
+		// Add rotational Thrust Group
+		// M = r x F
+		// M - Torque
+		// r - Lever
+		// F - Thrust
+		Vector2 lever = (Vector2)thruster.transform.localPosition - rigidbody.centerOfMass;
+		float torque = Vector3.Cross(lever, thruster.GetThrustVector()).z;
+		if(torque < -turningForceThreshold)
+		{
+			thrusters[(int)ThrusterGroup.turnLeft].Add(thruster);
+		}
+		else if(torque > turningForceThreshold)
+		{
+			thrusters[(int)ThrusterGroup.turnRight].Add(thruster);
+		}
+	}
+
 	public Module GetModule(Vector2Int position)
 	{
 		if(modules.ContainsKey(position))
@@ -380,21 +406,7 @@ public class Spacecraft : MonoBehaviour
 			thrusters[(int)ThrusterGroup.up].Add(thruster);
 		}
 
-		// Add rotational Thrust Group
-		// M = r x F
-		// M - Torque
-		// r - Lever
-		// F - Thrust
-		Vector2 lever = (Vector2)thruster.transform.localPosition - rigidbody.centerOfMass;
-		float torque = Vector3.Cross(lever, thrust).z;
-		if(torque < -0.0002f)
-		{
-			thrusters[(int)ThrusterGroup.turnLeft].Add(thruster);
-		}
-		else if(torque > 0.0002f)
-		{
-			thrusters[(int)ThrusterGroup.turnRight].Add(thruster);
-		}
+		CalculateThrusterTurningGroup(thruster);
 	}
 
 	public void RemoveThruster(Thruster thruster)
