@@ -203,10 +203,6 @@ public class BuildingMenu : MonoBehaviour
 
 						SpawnModule(currentModule.index);
 					}
-					else
-					{
-						infoController.AddMessage("Either there is no Constructor in Range or no Construction Materials could be provided!");
-					}
 				}
 			}
 			else if(erase)
@@ -224,10 +220,6 @@ public class BuildingMenu : MonoBehaviour
 							constructor?.StartConstruction(position);
 
 							module.Deconstruct();
-						}
-						else
-						{
-							infoController.AddMessage("Either there is no Constructor in Range or the Materials could not be sold or stored! Ships may not disassemble themselves!");
 						}
 					}
 				}
@@ -438,6 +430,8 @@ public class BuildingMenu : MonoBehaviour
 			}
 		}
 
+		infoController.AddMessage("Either there is no Constructor in Range or no Construction Materials could be provided!");
+
 		return null;
 	}
 
@@ -458,6 +452,8 @@ public class BuildingMenu : MonoBehaviour
 				}
 			}
 		}
+
+		infoController.AddMessage("Either there is no Constructor in Range or the Materials could not be sold or stored! Ships may not disassemble themselves!");
 
 		return null;
 	}
