@@ -5,7 +5,6 @@ using UnityEngine.UI;
 
 public class HotkeyModule : Module, IHotkeyListener
 {
-	[SerializeField] private GameObject moduleSettingMenu = null;
 	[SerializeField] private InputField actionNameField = null;
 	[SerializeField] private Dropdown hotkeySelection = null;
 	private InputController inputController = null;

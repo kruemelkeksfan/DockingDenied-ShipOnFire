@@ -29,8 +29,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
 	[Tooltip("Maximum Distance from which a Docking Permission can be granted")]
 	[SerializeField] private float maxApproachDistance = 1.0f;
-	[Tooltip("Additional Discount Percentage per Item in Favour of the Player for Buying and Selling to encourage Bulk Trading.")]
-	[SerializeField] private float bulkDiscount = 0.002f;
 	[Tooltip("Maximum Time in Seconds before Docking Permission expires")]
 	[SerializeField] private float dockingTimeout = 600.0f;
 	[SerializeField] private float stationUpdateInterval = 600.0f;
@@ -40,7 +38,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private int minProfit = -100;
 	[Tooltip("Maximum Money Change of the Station per Economy Update.")]
 	[SerializeField] private int maxProfit = 200;
-	[SerializeField] private RectTransform questEntryPrefab = null;
 	[SerializeField] private RectTransform tradingEntryPrefab = null;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;

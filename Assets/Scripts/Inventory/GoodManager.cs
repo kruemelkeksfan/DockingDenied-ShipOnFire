@@ -68,11 +68,12 @@ public class GoodManager : MonoBehaviour
 
 	private void Awake()
 	{
-		goodDictionary = new Dictionary<string, Good>();
 		/*int solidConsumptionSum = 0;
 		int solidCount = 0;
 		int fluidConsumptionSum = 0;
 		int fluidCount = 0;*/
+
+		goodDictionary = new Dictionary<string, Good>();
 		foreach(Good good in goods)
 		{
 			goodDictionary.Add(good.goodName, good);

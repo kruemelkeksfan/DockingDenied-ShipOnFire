@@ -4502,7 +4502,7 @@ MonoBehaviour:
     mass: 2.3
     volume: 1
     flammability: 0
-    consumption: 6
+    consumption: 8
     price: 12
     item:
       type: 
