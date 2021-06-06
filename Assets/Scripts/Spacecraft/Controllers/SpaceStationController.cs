@@ -337,11 +337,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 					InventoryController localStationInventory = inventoryController;
 					tradingEntryRectTransform.GetChild(6).GetComponent<Button>().onClick.AddListener(delegate
 					{
-						Trade(localGoodName, 0, localPlayerInventory, localStationInventory, tradingInventory[goodNames[i]].stationAmount, localAmountField);
+						Trade(localGoodName, 0, localPlayerInventory, localStationInventory, tradingInventory[localGoodName].stationAmount, localAmountField);
 					});
 					tradingEntryRectTransform.GetChild(7).GetComponent<Button>().onClick.AddListener(delegate
 					{
-						Trade(localGoodName, 0, localStationInventory, localPlayerInventory, tradingInventory[goodNames[i]].stationAmount, localAmountField);
+						Trade(localGoodName, 0, localStationInventory, localPlayerInventory, tradingInventory[localGoodName].stationAmount, localAmountField);
 					});
 				}
 				else

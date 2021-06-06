@@ -244,10 +244,13 @@ public class MenuController : MonoBehaviour, IListener
 						button.interactable = true;
 						button.GetComponentInChildren<Text>().text = "Complete";
 						SpaceStationController localActiveStation = activeStation;
+						button.onClick.RemoveAllListeners();
 						button.onClick.AddListener(delegate
 						{
-							questManager.CompleteQuest(localActiveStation);
-							localActiveStation.UpdateQuests();
+							if(questManager.CompleteQuest(localActiveStation))
+							{
+								localActiveStation.UpdateQuests();
+							}
 						});
 					}
 					else
@@ -265,6 +268,7 @@ public class MenuController : MonoBehaviour, IListener
 				button.GetComponentInChildren<Text>().text = "Accept";
 				QuestManager.Quest localQuest = quest;
 				SpaceStationController localActiveStation = activeStation;
+				button.onClick.RemoveAllListeners();
 				button.onClick.AddListener(delegate
 				{
 					questManager.AcceptQuest(localQuest);

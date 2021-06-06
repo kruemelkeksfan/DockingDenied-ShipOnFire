@@ -468,7 +468,7 @@ public class QuestManager : MonoBehaviour, IListener
 		}
 	}
 
-	public void CompleteQuest(SpaceStationController spaceStation)
+	public bool CompleteQuest(SpaceStationController spaceStation)
 	{
 		Quest quest = activeQuests[spaceStation];
 		for(int i = 0; i < quest.rewards.Length; ++i)
@@ -487,12 +487,13 @@ public class QuestManager : MonoBehaviour, IListener
 				else
 				{
 					InfoController.GetInstance().AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!");
-					return;
+					return false;
 				}
 			}
 		}
 
 		activeQuests.Remove(spaceStation);
+		return true;
 	}
 
 	public void NotifyTrade(SpaceStationController questStation, string goodName, int amount, int price)
