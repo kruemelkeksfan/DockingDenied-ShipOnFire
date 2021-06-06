@@ -110,6 +110,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		if((transform.position - cameraTransform.position).sqrMagnitude >= minMapMarkerDisplayDistance)
 		{
 			mapMarker.gameObject.SetActive(true);
+			mapMarker.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
 		}
 		else
 		{
@@ -132,7 +133,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		}
 		else
 		{
-			vector.sizeDelta = new Vector2(vector.sizeDelta.x, 0.0f);
+			vector.sizeDelta = new Vector2(0.0f, 0.0f);
 		}
 	}
 
