@@ -96,7 +96,7 @@ public class TutorialController : MonoBehaviour
 		}
 
 		Spacecraft playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
-		HashSet<DockingPort> dockingPorts = new HashSet<DockingPort>(2);
+		HashSet<DockingPort> dockingPorts = new HashSet<DockingPort>();
 		complete = false;
 		while(!complete)
 		{
