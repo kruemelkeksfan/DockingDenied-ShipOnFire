@@ -41,7 +41,6 @@ public class MenuController : MonoBehaviour, IListener
 	private Spacecraft localPlayerMainSpacecraft = null;
 	private InventoryController localPlayerMainInventory = null;
 	private InputController localPlayerMainInputController = null;
-	private float timeScale = 1.0f;
 
 	public static MenuController GetInstance()
 	{
@@ -121,16 +120,6 @@ public class MenuController : MonoBehaviour, IListener
 		else
 		{
 			mainMenu.SetActive(!mainMenu.activeSelf);
-		}
-
-		if(mainMenu.activeSelf)
-		{
-			timeScale = Time.timeScale;
-			Time.timeScale = 0.0f;
-		}
-		else
-		{
-			Time.timeScale = timeScale;
 		}
 
 		UpdateFlightControls();
