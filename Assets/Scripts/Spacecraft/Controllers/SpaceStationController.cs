@@ -576,26 +576,20 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private int CalculateGoodPrice(string goodName, uint supplyAmount, int transactionAmount = 1)
 	{
-		++supplyAmount;
-		transactionAmount = Mathf.Max(transactionAmount, 1);
+		++supplyAmount;																				// Avoid supplyAmount == 0 without having supplyAmount == 0 and supplyAmount == 1 generate the same Price
 
 		GoodManager.Good good = goodManager.GetGood(goodName);
 
-		// Price Formula is (consumption / supplyAmount)^2 * basePrice
-		// To calculate Bulk Price without looping through the Bulk use Integral
-		// Integral of Price Formula is (-(consumption^2) * basePrice) / amount
-		// To get the precise Number calculate Integral of upper Bound (supplyAmount + transactionAmount when Station is buying) minus Integral of lower Bound (supplyAmount when Station is buying)
-		float consumptionPriceConstant = -(good.consumption * good.consumption) * good.price;
-		if(transactionAmount >= 0)
+		int price = 0;
+		for(int i = 0; i < transactionAmount; ++i)
 		{
-			float price = (consumptionPriceConstant / (supplyAmount + transactionAmount)) - (consumptionPriceConstant / (supplyAmount));
-			return Mathf.RoundToInt(price + (bulkDiscount * transactionAmount * price)) + 1;                                                        // Round instead of Ceil to avoid different Values for amount = 1 and amount = many, + 1 to avoid price = 0
+			// Price Formula is ((consumption * maxGoodStockFactor) / supplyAmount)^2 * basePrice
+			// maxGoodStockFactor * 0.5 normalizes the Formula to output basePrice when Storage is half full
+			float supplyConstant = (good.consumption * maxGoodStockFactor * 0.5f) / supplyAmount;
+			price += Mathf.CeilToInt((supplyConstant * supplyConstant) * good.price);
 		}
-		else
-		{
-			float price = (consumptionPriceConstant / (supplyAmount)) - (consumptionPriceConstant / (supplyAmount + transactionAmount));
-			return Mathf.RoundToInt(price - (bulkDiscount * transactionAmount * price)) + 1;                                                        // Round instead of Ceil to avoid different Values for amount = 1 and amount = many, + 1 to avoid price = 0
-		}
+
+		return price;
 	}
 
 	public Transform GetTransform()
