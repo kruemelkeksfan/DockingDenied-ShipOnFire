@@ -124,7 +124,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   energyUpdateInterval: 0.05
-  startingMoney: 200
+  startingMoney: 1500
 --- !u!1 &5754137889756671904
 GameObject:
   m_ObjectHideFlags: 0

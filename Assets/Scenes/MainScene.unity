@@ -1623,11 +1623,6 @@ PrefabInstance:
       propertyPath: m_Enabled
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 6188606278163628312, guid: 563dc166c0dffa8498e07f185cb0614a,
-        type: 3}
-      propertyPath: startingMoney
-      value: 1000
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 563dc166c0dffa8498e07f185cb0614a, type: 3}
 --- !u!1001 &430846544
@@ -4402,7 +4397,7 @@ MonoBehaviour:
     mass: 2.5
     volume: 1
     flammability: 0
-    consumption: 10
+    consumption: 12
     price: 2
     item:
       type: 
@@ -4424,7 +4419,7 @@ MonoBehaviour:
     mass: 2.2
     volume: 1
     flammability: 0
-    consumption: 16
+    consumption: 8
     price: 3
     item:
       type: 
@@ -4435,7 +4430,7 @@ MonoBehaviour:
     mass: 2.9
     volume: 1
     flammability: 0
-    consumption: 6
+    consumption: 2
     price: 5
     item:
       type: 
@@ -4446,7 +4441,7 @@ MonoBehaviour:
     mass: 1.5
     volume: 1
     flammability: 0
-    consumption: 5
+    consumption: 8
     price: 2
     item:
       type: 
@@ -4457,7 +4452,7 @@ MonoBehaviour:
     mass: 8
     volume: 1
     flammability: 0
-    consumption: 20
+    consumption: 24
     price: 10
     item:
       type: 
@@ -4480,7 +4475,7 @@ MonoBehaviour:
     mass: 9
     volume: 1
     flammability: 0
-    consumption: 5
+    consumption: 12
     price: 12
     item:
       type: 
@@ -4491,7 +4486,7 @@ MonoBehaviour:
     mass: 19
     volume: 1
     flammability: 0
-    consumption: 3
+    consumption: 4
     price: 20
     item:
       type: 
@@ -4502,7 +4497,7 @@ MonoBehaviour:
     mass: 2.3
     volume: 1
     flammability: 0
-    consumption: 8
+    consumption: 16
     price: 12
     item:
       type: 
@@ -4514,7 +4509,7 @@ MonoBehaviour:
     mass: 8
     volume: 1
     flammability: 0.02
-    consumption: 20
+    consumption: 10
     price: 4
     item:
       type: 
@@ -4526,7 +4521,7 @@ MonoBehaviour:
     mass: 1
     volume: 1
     flammability: 0
-    consumption: 20
+    consumption: 10
     price: 1
     item:
       type: 
@@ -4537,7 +4532,7 @@ MonoBehaviour:
     mass: 0.04
     volume: 1
     flammability: 2
-    consumption: 40
+    consumption: 30
     price: 2
     item:
       type: 
@@ -4571,7 +4566,7 @@ MonoBehaviour:
     mass: 0.3
     volume: 1
     flammability: 0.6
-    consumption: 20
+    consumption: 10
     price: 4
     item:
       type: 
@@ -4582,7 +4577,7 @@ MonoBehaviour:
     mass: 0.2
     volume: 1
     flammability: 1
-    consumption: 5
+    consumption: 2
     price: 8
     item:
       type: 
@@ -4594,7 +4589,7 @@ MonoBehaviour:
     mass: 0.4
     volume: 1
     flammability: 0.2
-    consumption: 10
+    consumption: 4
     price: 6
     item:
       type: 
@@ -4605,7 +4600,7 @@ MonoBehaviour:
     mass: 0.2
     volume: 1
     flammability: 1.2
-    consumption: 2
+    consumption: 1
     price: 20
     item:
       type: 
