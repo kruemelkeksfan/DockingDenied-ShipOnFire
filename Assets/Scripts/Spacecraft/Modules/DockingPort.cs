@@ -18,7 +18,7 @@ public class DockingPort : HotkeyModule
 	private bool docking = false;
 	private DockingPort connectedPort = null;
 	private FixedJoint2D joint = null;
-	private IDockingListener dockingListener = null;
+	private List<IDockingListener> dockingListeners = null;
 	private new Rigidbody2D rigidbody = null;
 
 	protected override void Awake()
@@ -26,6 +26,7 @@ public class DockingPort : HotkeyModule
 		base.Awake();
 
 		magnetParticles = gameObject.GetComponentInChildren<ParticleSystem>();
+		dockingListeners = new List<IDockingListener>(2);
 		rigidbody = gameObject.GetComponentInParent<Rigidbody2D>();
 	}
 
@@ -34,6 +35,7 @@ public class DockingPort : HotkeyModule
 		base.Build(position, listenUpdates, listenFixedUpdates);
 		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
 		portNameField.text = GetActionName();
+		AddDockingListener(spacecraft);
 	}
 
 	public override void Deconstruct()
@@ -72,8 +74,14 @@ public class DockingPort : HotkeyModule
 			Component.Destroy(joint);
 			joint = null;
 
-			dockingListener?.Undocked(this, otherPort);
-			otherPort.dockingListener?.Undocked(otherPort, this);
+			foreach(IDockingListener listener in dockingListeners)
+			{
+				listener.Undocked(this, otherPort);
+			}
+			foreach(IDockingListener listener in otherPort.dockingListeners)
+			{
+				listener.Undocked(otherPort, this);
+			}
 
 			otherPort.ToggleParticles();
 		}
@@ -145,12 +153,18 @@ public class DockingPort : HotkeyModule
 						otherPort.connectedPort = this;
 						otherPort.joint = joint;
 						docking = false;
-						dockingListener?.Docked(this, otherPort);
-						otherPort.dockingListener?.Docked(otherPort, this);
+						foreach(IDockingListener listener in dockingListeners)
+						{
+							listener.Docked(this, otherPort);
+						}
+						foreach(IDockingListener listener in otherPort.dockingListeners)
+						{
+							listener.Docked(otherPort, this);
+						}
 						ToggleParticles();
 						otherPort.ToggleParticles();
 
-						break;																																	// Break in case the Connection gets seperated again by a DockingListener
+						break;                                                                                                                                  // Break in case the Connection gets seperated again by a DockingListener
 					}
 					else
 					{
@@ -164,7 +178,7 @@ public class DockingPort : HotkeyModule
 
 	public void AddDockingListener(IDockingListener listener)
 	{
-		dockingListener = listener;
+		dockingListeners.Add(listener);
 	}
 
 	public bool IsActive()

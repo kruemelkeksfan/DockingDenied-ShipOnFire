@@ -5,7 +5,7 @@ using UnityEngine;
 
 // TODO: What happens to attached Modules when link is severed? Maybe implement Shift LeftClick to make Selection and select the severed Modules automatically for easy Movement/Reattachment
 
-public class Spacecraft : MonoBehaviour
+public class Spacecraft : MonoBehaviour, IDockingListener
 {
 	private enum ThrusterGroup
 	{
@@ -29,11 +29,14 @@ public class Spacecraft : MonoBehaviour
 	private new Transform transform = null;
 	private InventoryController inventoryController = null;
 	private new Rigidbody2D rigidbody = null;
+	private Vector2 internalCenterOfMass = Vector2.zero;
+	private float foreignMass = 0.0f;
 	private HashSet<Thruster>[] thrusters = null;
 	private HashSet<Thruster> inactiveThrusters = null;
 	private bool calculateCollider = false;
 	private float halfGridSize = 0.0f;
 	private PolygonCollider2D spacecraftCollider = null;
+	private Dictionary<Spacecraft, Transform> dockedSpacecraft = null;
 
 	private void Awake()
 	{
@@ -50,6 +53,8 @@ public class Spacecraft : MonoBehaviour
 			thrusters[i] = new HashSet<Thruster>();
 		}
 		inactiveThrusters = new HashSet<Thruster>();
+
+		dockedSpacecraft = new Dictionary<Spacecraft, Transform>(2);
 
 		rigidbody.centerOfMass = Vector2.zero;
 	}
@@ -103,6 +108,31 @@ public class Spacecraft : MonoBehaviour
 		}
 	}
 
+	public void Docked(DockingPort port, DockingPort otherPort)
+	{
+		Spacecraft otherSpacecraft = otherPort.GetSpacecraft();
+		if(!dockedSpacecraft.ContainsKey(otherSpacecraft))																		// First Caller manages both Spacecraft
+		{
+			dockedSpacecraft.Add(otherSpacecraft, otherSpacecraft.transform);
+			otherSpacecraft.dockedSpacecraft.Add(this, transform);
+
+			otherSpacecraft.UpdateForeignMass(transform, internalCenterOfMass, rigidbody.mass);
+			UpdateForeignMass(otherSpacecraft.transform, otherSpacecraft.internalCenterOfMass, otherSpacecraft.rigidbody.mass);
+		}
+	}
+
+	public void Undocked(DockingPort port, DockingPort otherPort)
+	{
+		Spacecraft otherSpacecraft = otherPort.GetSpacecraft();
+		if(dockedSpacecraft.Remove(otherPort.GetSpacecraft()))																	// First Caller manages both Spacecraft
+		{
+			otherSpacecraft.dockedSpacecraft.Remove(this);
+
+			otherSpacecraft.UpdateForeignMass(transform, internalCenterOfMass, -rigidbody.mass);
+			UpdateForeignMass(otherSpacecraft.transform, otherSpacecraft.internalCenterOfMass, -otherSpacecraft.rigidbody.mass);
+		}
+	}
+
 	public void Kill()
 	{
 		// TODO: Switch to other Player Spacecraft if available
@@ -150,19 +180,30 @@ public class Spacecraft : MonoBehaviour
 		}
 	}
 
-	public void UpdateModuleMass(Vector2 position, float massDifference)
+	// TODO: Floating Point Errors will sum up in this Method, should regularily (e.g. every 100 Calls && dockedSpacecraft.Count <= 0) reset/recalculate all Values
+	public void UpdateModuleMass(Vector2 position = new Vector2(), float massDifference = 0.0f)
 	{
-		if(rigidbody.mass < 0.0002f)        // Set Rigidbody Mass when updating for the first Time
+		if(massDifference != 0.0f)
 		{
-			rigidbody.centerOfMass = position;
-			rigidbody.mass = massDifference;
-		}
-		else
-		{
-			rigidbody.mass += massDifference;
-			rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass));
-		}
+			if(rigidbody.mass < 0.0002f)																							// Set Rigidbody Mass when updating for the first Time
+			{
+				rigidbody.centerOfMass = position;
+				internalCenterOfMass = position;
+				rigidbody.mass = massDifference;
+			}
+			else
+			{
+				rigidbody.mass += massDifference;
+				rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass + foreignMass));
+				internalCenterOfMass += (position - internalCenterOfMass) * (massDifference / rigidbody.mass);
+			}
 
+			foreach(Spacecraft spacecraft in dockedSpacecraft.Keys)
+			{
+				spacecraft.UpdateForeignMass(transform, position, massDifference);
+			}
+		}
+		
 		thrusters[(int)ThrusterGroup.turnLeft].Clear();
 		thrusters[(int)ThrusterGroup.turnRight].Clear();
 		foreach(Thruster thruster in thrusters[(int)ThrusterGroup.all])
@@ -171,6 +212,24 @@ public class Spacecraft : MonoBehaviour
 		}
 
 		centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
+	}
+
+	// TODO: Enable Stacking (recursive Calls for other Spacecraft which are docked to the foreign Spacecraft)
+	public void UpdateForeignMass(Transform otherTransform, Vector2 position, float massDifference)
+	{
+		foreignMass += massDifference;
+
+		if(dockedSpacecraft.Count > 0)
+		{
+			rigidbody.centerOfMass += ((Vector2)transform.InverseTransformPoint(otherTransform.TransformPoint(position)) - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass + foreignMass));
+		}
+		// Docking Ports are usually not perfectly aligned while Docking, therefore a relatively random Error creeps into the Calculation, the following resets this Error
+		else
+		{
+			rigidbody.centerOfMass = internalCenterOfMass;
+		}
+
+		UpdateModuleMass();
 	}
 
 	public bool PositionsAvailable(Vector2Int[] positions, bool HasAttachableReservePositions, bool HasOverlappingReservePositions)
@@ -293,7 +352,7 @@ public class Spacecraft : MonoBehaviour
 			}
 		}
 		while(points.Count < 4 || points[0] != points[points.Count - 1]);
-		
+
 		// Remove last Point because it is identical with the first
 		points.RemoveAt(points.Count - 1);
 
