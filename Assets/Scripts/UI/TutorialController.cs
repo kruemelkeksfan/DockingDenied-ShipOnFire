@@ -69,7 +69,6 @@ public class TutorialController : MonoBehaviour
 		}
 
 		complete = false;
-		HashSet<DockingPort> dockingPorts = new HashSet<DockingPort>();
 		while(!complete)
 		{
 			infoController.AddMessage("A Starter Ship should at least have:");
@@ -83,17 +82,6 @@ public class TutorialController : MonoBehaviour
 			});
 
 			complete = complete || VerifyStartShipRequirements();
-			if(complete)
-			{
-				Dictionary<Vector2Int, Module> modules = spacecraftManager.GetLocalPlayerMainSpacecraft().GetModules();
-				foreach(Vector2Int modulePosition in modules.Keys)
-				{
-					if(modulePosition == modules[modulePosition].GetPosition() && modules[modulePosition] is DockingPort)
-					{
-						dockingPorts.Add((DockingPort)modules[modulePosition]);
-					}
-				}
-			}
 		}
 
 		while(buildingMenu.activeSelf)
@@ -107,9 +95,22 @@ public class TutorialController : MonoBehaviour
 			});
 		}
 
+		Spacecraft playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
+		HashSet<DockingPort> dockingPorts = new HashSet<DockingPort>(2);
 		complete = false;
 		while(!complete)
 		{
+			// TODO: Do this repeatedly in case the Player keeps modifying his Ship
+			Dictionary<Vector2Int, Module> modules = playerSpacecraft.GetModules();
+			dockingPorts.Clear();
+			foreach(Vector2Int modulePosition in modules.Keys)
+			{
+				if(modulePosition == modules[modulePosition].GetPosition() && modules[modulePosition] is DockingPort)
+				{
+					dockingPorts.Add((DockingPort)modules[modulePosition]);
+				}
+			}
+
 			infoController.AddMessage("Zoom out [Scroll Wheel] and click the Name of the Station near you");
 			infoController.AddMessage("Then click 'Request Docking' in the Station Menu");
 			infoController.AddMessage("Docking Permissions stay active for 2 Minutes and are indicated by yellow Light emerging from the affected Port");
