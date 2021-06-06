@@ -451,9 +451,12 @@ public class BuildingMenu : MonoBehaviour
 			if(constructor.GetSpacecraft() != deconstructingSpacecraft && constructor.PositionInRange(position))
 			{
 				SpaceStationController spaceStationController = constructor.GetSpaceStationController();
-				if(spaceStationController != null && spaceStationController.SellDeconstructionMaterials(materials))
+				if(spaceStationController != null)
 				{
-					return constructor;
+					if(spaceStationController.SellDeconstructionMaterials(materials))
+					{
+						return constructor;
+					}
 				}
 				else if(constructor.GetInventoryController().DepositBulk(materials))
 				{

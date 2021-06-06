@@ -34,6 +34,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private float stationUpdateInterval = 600.0f;
 	[Tooltip("Determines the maximum Amount of this Good this Station will stockpile by itself, depending on the Consumption.")]
 	[SerializeField] private float maxGoodStockFactor = 12.0f;
+	[Tooltip("When the Stocks are precisely at this Factor times the Consumption, Good Prices equal Base Good Prices.")]
+	[SerializeField] private float targetGoodStockFactor = 4.0f;
 	[Tooltip("Minimum Money Change of the Station per Economy Update.")]
 	[SerializeField] private int minProfit = -100;
 	[Tooltip("Maximum Money Change of the Station per Economy Update.")]
@@ -368,7 +370,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		int money = buyer.GetMoney();
 		uint availableAmount = seller.GetGoodAmount(goodName);
-		int totalPrice = CalculateGoodPrice(goodName, stationAmount, (buyer == localPlayerMainInventory ? (int)tradeAmount : (int)-tradeAmount));
+		int totalPrice = CalculateGoodPrice(goodName, stationAmount, (buyer == localPlayerMainInventory ? (int)-tradeAmount : (int)tradeAmount));
 		if(money >= totalPrice)
 		{
 			if(hollowSale || availableAmount >= tradeAmount)
@@ -453,7 +455,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				return false;
 			}
 
-			totalPrice += CalculateGoodPrice(materials[i].goodName, supplyAmounts[i], (int)materials[i].amount);
+			totalPrice += CalculateGoodPrice(materials[i].goodName, supplyAmounts[i], -(int)materials[i].amount);
 			++i;
 		}
 
@@ -573,17 +575,25 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private int CalculateGoodPrice(string goodName, uint supplyAmount, int transactionAmount = 1)
 	{
-		++supplyAmount;																				// Avoid supplyAmount == 0 without having supplyAmount == 0 and supplyAmount == 1 generate the same Price
+		++supplyAmount;                                                                                         // Avoid supplyAmount == 0 without having supplyAmount == 0 and supplyAmount == 1 generate the same Price
 
 		GoodManager.Good good = goodManager.GetGood(goodName);
 
 		int price = 0;
-		for(int i = 0; i < transactionAmount; ++i)
+		float sign = Mathf.Sign(transactionAmount);
+		for(int i = 0; i < Mathf.Abs(transactionAmount); ++i)
 		{
-			// Price Formula is ((consumption * maxGoodStockFactor) / supplyAmount)^2 * basePrice
-			// maxGoodStockFactor * 0.5 normalizes the Formula to output basePrice when Storage is half full
-			float supplyConstant = (good.consumption * maxGoodStockFactor * 0.5f) / supplyAmount;
-			price += Mathf.CeilToInt((supplyConstant * supplyConstant) * good.price);
+			// Price Formula is ((consumption * targetGoodStockFactor) / supplyAmount)^2 * basePrice
+			float newSupply = supplyAmount + ((i + 1) * sign);                                                  // Supply afterthis Unit is bought/sold
+			if(newSupply > 0.0f)
+			{
+				float supplyConstant = (good.consumption * targetGoodStockFactor) / newSupply;
+				price += Mathf.CeilToInt((supplyConstant * supplyConstant) * good.price);
+			}
+			else
+			{
+				return price;
+			}
 		}
 
 		return price;

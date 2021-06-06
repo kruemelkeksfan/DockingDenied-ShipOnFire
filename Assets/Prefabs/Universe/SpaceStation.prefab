@@ -12,21 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: bf04d9df136da81438964f75cca8ecb0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  uiTransform: {fileID: 0}
   mapMarkerPrefab: {fileID: 3653227749583949900, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
     type: 3}
-  mapMarkerName: {fileID: 0}
-  mapMarkerDistance: {fileID: 0}
   decimalDigitThreshold: 100
   maxApproachDistance: 1
-  bulkDiscount: 0.002
   dockingTimeout: 600
   stationUpdateInterval: 600
   maxGoodStockFactor: 12
+  targetGoodStockFactor: 6
   minProfit: -100
   maxProfit: 200
-  questEntryPrefab: {fileID: 396380138248993149, guid: 3f4a71c29994bd04b9a1b238acc68824,
-    type: 3}
   tradingEntryPrefab: {fileID: 1009032507462002704, guid: 0f67ddc186ff7cb499fb57c610d0eee1,
     type: 3}
 --- !u!114 &9196285693668071936
