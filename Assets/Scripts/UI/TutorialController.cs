@@ -196,6 +196,8 @@ public class TutorialController : MonoBehaviour
 		{
 			infoController.AddMessage("Quests usually reward you with Money and Materials which you can Trade and use to expand your Spacecraft");
 		}
+
+		skipButton.SetActive(false);
 	}
 
 	public void SkipTutorial()
