@@ -10600,13 +10600,13 @@ MonoBehaviour:
   blueprintLoadPanel: {fileID: 986459331}
   modulePrefabs:
   - {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193, type: 3}
-  - {fileID: 6033598934764924008, guid: d79625a9fa7875744b399f9a17a614db, type: 3}
   - {fileID: 8808181452168659175, guid: 2fca3038c9958a1488b5094e0977d99f, type: 3}
   - {fileID: 5519130266305016477, guid: b81c7eed601f0c24589cd59751be6e0d, type: 3}
   - {fileID: 3236814468019911108, guid: 3c4b10af7e4ca2e468d37240f2da2a48, type: 3}
   - {fileID: 2825718841994423135, guid: 1b2d01318b2ff3142b690471645553b8, type: 3}
   - {fileID: 5712120552042506432, guid: 9264ef601d98e6745b1c42372b9ab8ec, type: 3}
   - {fileID: 9191871534577045455, guid: 39b80cf02a8186247930968442a2b2a5, type: 3}
+  - {fileID: 6033598934764924008, guid: d79625a9fa7875744b399f9a17a614db, type: 3}
   reservedZonePrefab: {fileID: 8223917137543656114, guid: d4b17ac56ae6b0c4aaee533ffc7f68e9,
     type: 3}
   zoneValidMaterial: {fileID: 2100000, guid: 6798cdb6f00365040892dc6057e11cb5, type: 2}
