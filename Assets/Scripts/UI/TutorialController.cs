@@ -1,39 +1,44 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TutorialController : MonoBehaviour
 {
 	private delegate bool CancelCondition();
 
 	private static WaitForSecondsRealtime waitForTutorialUpdateInterval = null;
+	private static WaitForSecondsRealtime waitForQuadTutorialUpdateInterval = null;
 	private static bool skipped = false;
 
 	[SerializeField] private float tutorialUpdateInterval = 1.0f;
+	[SerializeField] private Text tutorialMessageField = null;
 	[SerializeField] private GameObject buildingMenu = null;
+	[SerializeField] private Text keyBindingDisplay = null;
+	[SerializeField] private Button buildButton = null;
+	[SerializeField] private Button buildAreaButton = null;
+	[SerializeField] private Button velocityButton = null;
+	[SerializeField] private Color highlightColor = Color.red;
+	[SerializeField] private GameObject nextButton = null;
 	[SerializeField] private GameObject skipButton = null;
-	private InfoController infoController = null;
 	private ToggleController toggleController = null;
 	private SpacecraftManager spacecraftManager = null;
 	private QuestManager questManager = null;
-	private Transform cameraTransform = null;
-	private float startZoom = 0.0f;
+	private ColorBlock oldColorBlock = new ColorBlock();
+	private bool next = false;
 	private bool complete = false;
 
 	private void Start()
 	{
-		if(waitForTutorialUpdateInterval == null)
+		if(waitForTutorialUpdateInterval == null || waitForQuadTutorialUpdateInterval == null)
 		{
 			waitForTutorialUpdateInterval = new WaitForSecondsRealtime(tutorialUpdateInterval);
+			waitForQuadTutorialUpdateInterval = new WaitForSecondsRealtime(tutorialUpdateInterval * 4.0f);
 		}
 
-		infoController = InfoController.GetInstance();
 		toggleController = ToggleController.GetInstance();
 		spacecraftManager = SpacecraftManager.GetInstance();
 		questManager = QuestManager.GetInstance();
-
-		cameraTransform = Camera.main.GetComponent<Transform>();
-		startZoom = cameraTransform.position.z;
 
 		if(!skipped)
 		{
@@ -43,162 +48,154 @@ public class TutorialController : MonoBehaviour
 
 	private IEnumerator UpdateTutorial()
 	{
-		yield return waitForTutorialUpdateInterval;
+		yield return waitForQuadTutorialUpdateInterval;
 
+		tutorialMessageField.gameObject.SetActive(true);
 		skipButton.SetActive(true);
 
-		infoController.AddMessage("Welcome to Space!");
-
-		while(!buildingMenu.activeSelf)
+		tutorialMessageField.text = "Welcome to Space!\nStart constructing your Spacecraft by clicking 'Build' in the top-left Corner";
+		HighlightButton(buildButton);
+		do
 		{
-			infoController.AddMessage("Start constructing your Spacecraft by clicking 'Build' in the top-left Corner");
-			yield return WaitForClear(delegate
-			{
-				return buildingMenu.activeSelf;
-			});
+			yield return waitForTutorialUpdateInterval;
 		}
+		while(!buildingMenu.activeSelf);
+		UnHighlightButton(buildButton);
 
-		while(!toggleController.IsGroupToggled("BuildAreaIndicators"))
+		tutorialMessageField.text = "For now you can only build in the Vicinity of Stations\nTo see the Building Range, click 'Show Build Area' in the Top Bar";
+		HighlightButton(buildAreaButton);
+		do
 		{
-			infoController.AddMessage("For now you can only build in the Vicinity of Stations");
-			infoController.AddMessage("To see the Building Range, click 'Show Build Area' in the Top Bar");
-			yield return WaitForClear(delegate
-			{
-				return toggleController.IsGroupToggled("BuildAreaIndicators");
-			});
+			yield return waitForTutorialUpdateInterval;
 		}
+		while(!toggleController.IsGroupToggled("BuildAreaIndicators"));
+		UnHighlightButton(buildAreaButton);
 
+		tutorialMessageField.text = "A Starter Ship should at least have:\nSome Solid Containers, a Docking Port, a Thruster in each Direction and a Solar Module\nYou can rotate Modules [Q/E]\nBuilding Materials are automatically bought from the Station\nHowever their Stocks and your Money are limited, so don't get carried away";
 		complete = false;
-		while(!complete)
+		do
 		{
-			infoController.AddMessage("A Starter Ship should at least have:");
-			infoController.AddMessage("Some Solid Containers, a Docking Port, a Thruster in each Direction and a Solar Module");
-			infoController.AddMessage("You can rotate Modules [Q/E]");
-			infoController.AddMessage("Building Materials are automatically bought from the Station");
-			infoController.AddMessage("However their Stocks and your Money are limited, so don't get carried away");
-			yield return WaitForClear(delegate
-			{
-				return complete = complete || VerifyStartShipRequirements();
-			});
+			yield return waitForQuadTutorialUpdateInterval;
 
-			complete = complete || VerifyStartShipRequirements();
-		}
-
-		while(buildingMenu.activeSelf)
-		{
-			infoController.AddMessage("You can save your Design by clicking the Button on the left");
-			infoController.AddMessage("That Way you don't have to rebuild it every Time you need it");
-			infoController.AddMessage("When you are done, close the Building Menu by clicking 'Build' in the top-left Corner again");
-			yield return WaitForClear(delegate
-			{
-				return !buildingMenu.activeSelf;
-			});
-		}
-
-		Spacecraft playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
-		HashSet<DockingPort> dockingPorts = new HashSet<DockingPort>();
-		complete = false;
-		while(!complete)
-		{
-			// TODO: Do this repeatedly in case the Player keeps modifying his Ship
-			Dictionary<Vector2Int, Module> modules = playerSpacecraft.GetModules();
-			dockingPorts.Clear();
+			Dictionary<Vector2Int, Module> modules = spacecraftManager.GetLocalPlayerMainSpacecraft().GetModules();
+			int containerCount = 0;
+			int portCount = 0;
+			int thrusterCount = 0;
+			int solarCount = 0;
 			foreach(Vector2Int modulePosition in modules.Keys)
 			{
-				if(modulePosition == modules[modulePosition].GetPosition() && modules[modulePosition] is DockingPort)
+				if(modulePosition == modules[modulePosition].GetPosition())
 				{
-					dockingPorts.Add((DockingPort)modules[modulePosition]);
-				}
-			}
-
-			infoController.AddMessage("Zoom out [Scroll Wheel] and click the Name of the Station near you");
-			infoController.AddMessage("Then click 'Request Docking' in the Station Menu");
-			infoController.AddMessage("Docking Permissions stay active for 2 Minutes and are indicated by yellow Light emerging from the affected Port");
-			infoController.AddMessage("Activate your own Docking Port by pressing the Number Key displayed in the top left Corner of your Screen");
-			yield return WaitForClear(delegate
-			{
-				foreach(DockingPort port in dockingPorts)
-				{
-					if(port.IsActive())
+					if(modules[modulePosition] is Container)
 					{
-						return true;
+						++containerCount;
+					}
+					if(modules[modulePosition] is DockingPort)
+					{
+						++portCount;
+					}
+					if(modules[modulePosition] is Thruster)
+					{
+						++thrusterCount;
+					}
+					if(modules[modulePosition] is SolarModule)
+					{
+						++solarCount;
 					}
 				}
-				return false;
-			});
-
-			foreach(DockingPort port in dockingPorts)
-			{
-				if(port.IsActive())
-				{
-					complete = true;
-					break;
-				}
 			}
+			complete = containerCount >= 1 && portCount >= 1 && thrusterCount >= 4 && solarCount >= 1;
 		}
+		while(!complete);
 
+		HighlightButton(buildButton);
+		tutorialMessageField.text = "You can save your Design by clicking 'Save Blueprint' on the left\nThat Way you don't have to rebuild it every Time you need it\nWhen you are done, close the Building Menu by clicking 'Build' in the top-left Corner again";
+		do
+		{
+			yield return waitForTutorialUpdateInterval;
+		}
+		while(buildingMenu.activeSelf);
+		UnHighlightButton(buildButton);
+
+		tutorialMessageField.text = "Zoom out [Scroll Wheel] and click the Name of the Station near you\nThen click 'Request Docking' in the Station Menu\nDocking Permissions stay active for 2 Minutes and are indicated by yellow Light emerging from the affected Port\nActivate your own Docking Port by pressing the Number Key displayed in the top left Corner of your Screen";
+		Spacecraft playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
 		complete = false;
-		while(!complete)
+		do
 		{
-			infoController.AddMessage("Now align the activated Port of the Station and with that on your Ship");
-			infoController.AddMessage("Then come really close to complete the Docking");
-			yield return WaitForClear(delegate
-			{
-				foreach(DockingPort port in dockingPorts)
-				{
-					if(!port.IsFree())
-					{
-						return true;
-					}
-				}
-				return false;
-			});
+			yield return waitForTutorialUpdateInterval;
 
-			foreach(DockingPort port in dockingPorts)
+			Dictionary<Vector2Int, Module> modules = playerSpacecraft.GetModules();
+			foreach(Vector2Int modulePosition in modules.Keys)
 			{
-				if(!port.IsFree())
+				if(modulePosition == modules[modulePosition].GetPosition() && modules[modulePosition] is DockingPort && ((DockingPort)modules[modulePosition]).IsActive())
 				{
 					complete = true;
 					break;
 				}
 			}
 		}
+		while(!complete);
 
-		while(questManager.GetActiveQuestCount() <= 0)
+		Color oldTextColor = keyBindingDisplay.color;
+		keyBindingDisplay.color = highlightColor;
+		tutorialMessageField.text = "Control your Ship with the tiny Set of Buttons shown on the right Side of your Screen\nNow align the activated Port of the Station and with that on your Ship\nThen come really close to complete the Docking";
+		do
 		{
-			infoController.AddMessage("Being docked to a Station allows you to trade Materials or receive Rewards for completed Quests");
-			infoController.AddMessage("You can accept Quests from any Station without docking, but you will need to dock to receive the Rewards after completing the Quest");
-			infoController.AddMessage("Now accept any Quest in the Station Menu");
-			yield return WaitForClear(delegate
-			{
-				return questManager.GetActiveQuestCount() > 0;
-			});
+			yield return waitForTutorialUpdateInterval;
 		}
+		while(playerSpacecraft.GetDockedSpacecraftCount() <= 0);
+		keyBindingDisplay.color = oldTextColor;
 
-		yield return WaitForClear(delegate
+		tutorialMessageField.text = "Being docked to a Station allows you to trade Materials or receive Rewards for completed Quests\nYou can accept Quests without docking, but you will later need to dock to receive the Rewards\nNow accept any Quest in the Station Menu";
+		do
 		{
-			return false;
-		});
-		infoController.AddMessage("Simply press the Activation Key for your Docking Port again to undock");
-		yield return WaitForClear(delegate
-		{
-			return false;
-		});
-		infoController.AddMessage("If a Quest requires you to find and dock to a Vessel, zoom out [Scroll Wheel] until you find the red Quest Vessel Marker");
-		yield return WaitForClear(delegate
-		{
-			return false;
-		});
-		infoController.AddMessage("You can toggle Velocity Markers in the Top Bar");
-		infoController.AddMessage("The blue Line shows your Velocity in Relation to the last clicked Target");
-		infoController.AddMessage("The green Line shows the Difference between your Velocity and perfect Orbiting Velocity");
-
-		if(questManager.GetActiveQuestCount() <= 0)
-		{
-			infoController.AddMessage("Quests usually reward you with Money and Materials which you can Trade and use to expand your Spacecraft");
+			yield return waitForTutorialUpdateInterval;
 		}
+		while(questManager.GetActiveQuestCount() <= 0);
 
+		tutorialMessageField.text = "Close the Station Menu when you want to undock again\nThen simply press the Activation Key for your Docking Port again";
+		do
+		{
+			yield return waitForTutorialUpdateInterval;
+		}
+		while(playerSpacecraft.GetDockedSpacecraftCount() > 0);
+
+		nextButton.SetActive(true);
+
+		tutorialMessageField.text = "If a Quest requires you to find and dock to a Vessel, zoom out [Scroll Wheel] until you find the red Quest Vessel Marker";
+		do
+		{
+			yield return waitForTutorialUpdateInterval;
+		}
+		while(!next);
+		next = false;
+		
+		HighlightButton(velocityButton);
+		tutorialMessageField.text = "You can toggle Velocity Markers in the Top Bar\nThe blue Line shows your Velocity in Relation to the last clicked Target\nThe green Line shows the Difference between your Velocity and perfect Orbiting Velocity";
+		do
+		{
+			yield return waitForTutorialUpdateInterval;
+		}
+		while(!next);
+		next = false;
+		UnHighlightButton(velocityButton);
+
+		tutorialMessageField.text = "Quests usually reward you with Money and Materials which you can use for Trade or to expand your Spacecraft";
+		do
+		{
+			yield return waitForTutorialUpdateInterval;
+		}
+		while(!next);
+		next = false;
+
+		nextButton.SetActive(false);
+		tutorialMessageField.gameObject.SetActive(false);
 		skipButton.SetActive(false);
+	}
+
+	public void NextMessage()
+	{
+		next = true;
 	}
 
 	public void SkipTutorial()
@@ -208,50 +205,19 @@ public class TutorialController : MonoBehaviour
 		skipped = true;
 	}
 
-	private IEnumerator WaitForClear(CancelCondition cancelCondition)
+	private void HighlightButton(Button button)
 	{
-		while(infoController.GetMessageCount() > 0 && !cancelCondition())
-		{
-			yield return waitForTutorialUpdateInterval;
-		}
+		oldColorBlock = buildButton.colors;
+		ColorBlock newColorBlock = oldColorBlock;
+		newColorBlock.normalColor = highlightColor;
+		newColorBlock.highlightedColor = highlightColor;
+		newColorBlock.pressedColor = highlightColor;
+		newColorBlock.selectedColor = highlightColor;
+		button.colors = newColorBlock;
 	}
 
-	private bool VerifyStartShipRequirements()
+	private void UnHighlightButton(Button button)
 	{
-		Dictionary<Vector2Int, Module> modules = spacecraftManager.GetLocalPlayerMainSpacecraft().GetModules();
-		int containerCount = 0;
-		int portCount = 0;
-		int thrusterCount = 0;
-		int solarCount = 0;
-		foreach(Vector2Int modulePosition in modules.Keys)
-		{
-			if(modulePosition == modules[modulePosition].GetPosition())
-			{
-				if(modules[modulePosition] is Container)
-				{
-					++containerCount;
-				}
-				if(modules[modulePosition] is DockingPort)
-				{
-					++portCount;
-				}
-				if(modules[modulePosition] is Thruster)
-				{
-					++thrusterCount;
-				}
-				if(modules[modulePosition] is SolarModule)
-				{
-					++solarCount;
-				}
-			}
-		}
-		if(containerCount >= 1 && portCount >= 1 && thrusterCount >= 4 && solarCount >= 1)
-		{
-			return true;
-		}
-		else
-		{
-			return false;
-		}
+		button.colors = oldColorBlock;
 	}
 }

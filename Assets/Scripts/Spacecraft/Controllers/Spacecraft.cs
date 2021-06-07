@@ -401,6 +401,11 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		return modules;
 	}
 
+	public int GetDockedSpacecraftCount()
+	{
+		return dockedSpacecraft.Count;
+	}
+
 	public Transform GetTransform()
 	{
 		return transform;
