@@ -321,7 +321,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				tradingEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodNames[i];
 				tradingEntryRectTransform.GetChild(1).GetComponent<Text>().text = tradingInventory[goodNames[i]].playerAmount.ToString();
 				tradingEntryRectTransform.GetChild(2).GetComponent<Text>().text = tradingInventory[goodNames[i]].stationAmount.ToString();
-				tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = tradingInventory[goodNames[i]].price.ToString();
+				tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = tradingInventory[goodNames[i]].price + "$";
 				tradingEntryRectTransform.GetChild(4).GetComponent<Text>().text = goodManager.GetGood(goodNames[i]).decription;
 
 				if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))

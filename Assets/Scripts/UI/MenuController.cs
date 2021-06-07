@@ -309,6 +309,10 @@ public class MenuController : MonoBehaviour, IListener
 				{
 					tradingEntry.GetChild(5).GetComponent<InputField>().text = amountSettings[goodName];
 				}
+				else
+				{
+					tradingEntry.GetChild(5).GetComponent<InputField>().text = "1";
+				}
 			}
 
 			if(tradingEntries.Length <= 0)
