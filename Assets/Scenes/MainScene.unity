@@ -5191,8 +5191,8 @@ Transform:
   m_LocalPosition: {x: 0, y: 0, z: -0.08}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 1360578271}
-  m_RootOrder: 1
+  m_Father: {fileID: 0}
+  m_RootOrder: 15
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
@@ -5206,12 +5206,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2d52a1a394ea3d4795c73c19867b6a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 0.002
+  movementSpeed: 0.008
   rotationSpeed: 1
   zoomSpeed: 4
   maxZHeight: -0.04
   minZHeight: -2000
-  spacecraftTransform: {fileID: 1360578271}
 --- !u!224 &969658260 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6966161580598859357, guid: 3c54a1c0705ac644daf98e79cf8bcbd2,
@@ -11140,7 +11139,7 @@ RectTransform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1360578271}
-  m_RootOrder: 2
+  m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
