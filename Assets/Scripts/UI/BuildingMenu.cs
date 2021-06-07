@@ -293,6 +293,12 @@ public class BuildingMenu : MonoBehaviour
 			GameObject.Destroy(currentModule.module.gameObject);
 		}
 
+		for(int i = 0; i < activeReservedZones; ++i)
+		{
+			reservedZoneTransforms[i].gameObject.SetActive(false);
+		}
+		activeReservedZones = 0;
+
 		if(moduleIndex >= 0 && moduleIndex != currentModule.index)
 		{
 			erase = false;
@@ -303,20 +309,16 @@ public class BuildingMenu : MonoBehaviour
 		else
 		{
 			currentModule.index = -1;
-			for(int i = 0; i < activeReservedZones; ++i)
-			{
-				reservedZoneTransforms[i].gameObject.SetActive(false);
-			}
-			activeReservedZones = 0;
 			infoController.SetBuildingCosts(null);
 		}
 	}
 
 	public bool DeselectModule()
 	{
-		if(currentModule.index >= 0)
+		if(currentModule.index >= 0 || erase)
 		{
 			SelectModule(-1);
+			erase = false;
 			return true;
 		}
 		else
@@ -341,10 +343,12 @@ public class BuildingMenu : MonoBehaviour
 		{
 			reservedZoneRenderers[0].material = zoneInvalidMaterial;
 			reservedZoneTransforms[0].gameObject.SetActive(true);
+			activeReservedZones = 1;
 		}
 		else
 		{
 			reservedZoneTransforms[0].gameObject.SetActive(false);
+			activeReservedZones = 0;
 		}
 	}
 
