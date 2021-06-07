@@ -236,10 +236,8 @@ public class MenuController : MonoBehaviour, IListener
 						button.onClick.RemoveAllListeners();
 						button.onClick.AddListener(delegate
 						{
-							if(questManager.CompleteQuest(localActiveStation))
-							{
-								localActiveStation.UpdateQuests();
-							}
+							questManager.CompleteQuest(localActiveStation);
+							localActiveStation.UpdateQuests();
 						});
 					}
 					else
