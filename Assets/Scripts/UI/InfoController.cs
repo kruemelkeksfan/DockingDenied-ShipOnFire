@@ -114,7 +114,7 @@ public class InfoController : MonoBehaviour, IListener
 	{
 		if(inventoryController != null)
 		{
-			resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - " + (inventoryController.GetEnergy() * 0.00027777f).ToString("F2") + "kWh"	// 0.00027777 is the approximate Conversion Factor from kWs to kWh
+			resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - " + inventoryController.GetEnergyKWH() + "kWh"
 				/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
 			+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/;
 			if(buildingCosts == null)

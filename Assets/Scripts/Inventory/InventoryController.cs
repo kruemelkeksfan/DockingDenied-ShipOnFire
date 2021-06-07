@@ -73,7 +73,7 @@ public class InventoryController : MonoBehaviour, IListener
 				production += producer.production;
 			}
 
-			if(production >= energy)
+			if(storedEnergy + production + energy >= 0.0f)
 			{
 				transferEnergy = energy;
 				return true;
@@ -328,6 +328,11 @@ public class InventoryController : MonoBehaviour, IListener
 	public double GetEnergy()
 	{
 		return storedEnergy;
+	}
+
+	public string GetEnergyKWH()
+	{
+		return (storedEnergy * 0.00027777).ToString("F2");			// 0.00027777 is the approximate Conversion Factor from kWs to kWh, bc (1 / 60) / 60 == 1 * 0.00027777
 	}
 
 	public int GetMoney()
