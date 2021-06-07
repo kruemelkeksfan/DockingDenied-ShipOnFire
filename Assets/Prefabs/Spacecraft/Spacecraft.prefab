@@ -110,7 +110,7 @@ MonoBehaviour:
   commandModulePrefab: {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193,
     type: 3}
   centerOfMassIndicator: {fileID: 5754137889756671905}
-  turningForceThreshold: 0.002
+  turningForceThreshold: 0.008
 --- !u!114 &6188606278163628312
 MonoBehaviour:
   m_ObjectHideFlags: 0

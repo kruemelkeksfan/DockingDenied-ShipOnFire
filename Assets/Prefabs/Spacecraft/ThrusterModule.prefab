@@ -4883,7 +4883,7 @@ MonoBehaviour:
     capacity: 320
     charge: 0
   energyConsumption: 160
-  thrust: 1
+  thrust: 2
 --- !u!1 &4989274293812750468
 GameObject:
   m_ObjectHideFlags: 0
