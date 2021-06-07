@@ -9,7 +9,8 @@ public class CameraController : MonoBehaviour, IListener
 	[SerializeField] private float rotationSpeed = 1.0f;
 	[SerializeField] private float zoomSpeed = 1.0f;
 	[SerializeField] private float maxZHeight = -0.04f;
-	[SerializeField] private float minZHeight = -2000.0f;
+	[SerializeField] private float maxDistance = 2000.0f;
+	[SerializeField] private float planetSafetyRadius = 280.0f;
 	private new Transform transform = null;
 	private Transform spacecraftTransform = null;
 	private Vector3 startPosition = Vector3.zero;
@@ -17,6 +18,7 @@ public class CameraController : MonoBehaviour, IListener
 	private Vector3 localPosition;
 	private Vector3 localRotation;
 	private bool fixedCamera = true;
+	private float sqrPlanetSafetyRadius = 0.0f;
 
 	private void Start()
 	{
@@ -27,6 +29,8 @@ public class CameraController : MonoBehaviour, IListener
 
 		localPosition = startPosition;
 		localRotation = startRotation;
+
+		sqrPlanetSafetyRadius = planetSafetyRadius * planetSafetyRadius;		// Square to avoid Sqrt later
 
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
@@ -47,7 +51,29 @@ public class CameraController : MonoBehaviour, IListener
 		transform.position = spacecraftTransform.position + (rotation * localPosition);
 		transform.rotation = rotation;
 
-		// TODO: Collider for Camera
+		if(transform.position.z > maxZHeight)
+		{
+			transform.position = new Vector3(transform.position.x, transform.position.y, maxZHeight);
+			localPosition = Quaternion.Inverse(rotation) * (transform.position - spacecraftTransform.position);
+		}
+		else if(localPosition.z < -maxDistance)
+		{
+			transform.position = new Vector3(transform.position.x, transform.position.y, -maxDistance);
+			localPosition = Quaternion.Inverse(rotation) * (transform.position - spacecraftTransform.position);
+		}
+
+		if(Mathf.Abs(transform.position.x) > maxDistance || Mathf.Abs(transform.position.y) > maxDistance || Mathf.Abs(transform.position.z) > maxDistance)
+		{
+			transform.position = new Vector3(Mathf.Clamp(transform.position.x, -maxDistance, maxDistance), Mathf.Clamp(transform.position.y, -maxDistance, maxDistance), Mathf.Clamp(transform.position.z, -maxDistance, maxDistance));
+			localPosition = Quaternion.Inverse(rotation) * (transform.position - spacecraftTransform.position);
+		}
+
+		if(transform.position.sqrMagnitude <= sqrPlanetSafetyRadius)
+		{
+			transform.position = transform.position.normalized * planetSafetyRadius;
+			localPosition = Quaternion.Inverse(rotation) * (transform.position - spacecraftTransform.position);
+		}
+
 		if(Input.GetButton("Rotate Camera"))
 		{
 			Cursor.visible = false;
@@ -87,17 +113,9 @@ public class CameraController : MonoBehaviour, IListener
 			localRotation = startRotation;
 		}
 
-		if(!EventSystem.current.IsPointerOverGameObject() && !Mathf.Approximately(Input.GetAxis("Mouse ScrollWheel"), 0.0f))
+		if(!EventSystem.current.IsPointerOverGameObject())
 		{
 			localPosition += transform.forward * Input.GetAxis("Mouse ScrollWheel") * zoomSpeed * -localPosition.z;
-			if(localPosition.z > maxZHeight)
-			{
-				localPosition = new Vector3(localPosition.x, localPosition.y, maxZHeight);
-			}
-			else if(localPosition.z < minZHeight)
-			{
-				localPosition = new Vector3(localPosition.x, localPosition.y, minZHeight);
-			}
 		}
 	}
 

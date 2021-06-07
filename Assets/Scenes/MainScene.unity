@@ -5212,7 +5212,8 @@ MonoBehaviour:
   rotationSpeed: 1
   zoomSpeed: 4
   maxZHeight: -0.04
-  minZHeight: -2000
+  maxDistance: 2000
+  planetSafetyRadius: 280
 --- !u!224 &969658260 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6966161580598859357, guid: 3c54a1c0705ac644daf98e79cf8bcbd2,
