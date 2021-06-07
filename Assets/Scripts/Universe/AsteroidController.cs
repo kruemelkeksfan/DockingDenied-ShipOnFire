@@ -4,17 +4,14 @@ using UnityEngine;
 
 public class AsteroidController : MonoBehaviour
 {
-	private GravityWellController gravityWellController = null;
-	private new Rigidbody2D rigidbody = null;
 	private bool touched = false;
 
 	private void OnDestroy()
 	{
-		gravityWellController = GravityWellController.GetInstance();
-		rigidbody = GetComponent<Rigidbody2D>();
+		Rigidbody2D rigidbody = GetComponent<Rigidbody2D>();
 		if(rigidbody != null)
 		{
-			gravityWellController?.RemoveGravityObject(rigidbody);
+			GravityWellController.GetInstance()?.RemoveGravityObject(rigidbody);
 		}
 	}
 
@@ -22,7 +19,7 @@ public class AsteroidController : MonoBehaviour
 	{
 		if(!touched)
 		{
-			touched = gravityWellController.MarkAsteroidTouched(rigidbody, collision.gameObject.GetComponent<Rigidbody2D>());
+			touched = GravityWellController.GetInstance().MarkAsteroidTouched(GetComponent<Rigidbody2D>(), collision.gameObject.GetComponent<Rigidbody2D>());
 		}
 	}
 }
