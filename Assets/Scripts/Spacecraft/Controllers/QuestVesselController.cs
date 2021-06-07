@@ -184,17 +184,16 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			hint = "Dock to interact!";
 			interactable = true;
-			interactionLabel = "Jump-Start with 2kWh";
+			interactionLabel = "Jump-Start with 1kWh";
 			interaction = delegate
 					{
-						float amount = Mathf.Min(7200.0f, (float)localPlayerMainInventory.GetEnergy());
-						if(localPlayerMainInventory.TransferEnergy(-amount))
+						if(localPlayerMainInventory.TransferEnergy(-3600.0f))
 						{
-							quest.progress += amount / 7200.0f;
+							quest.progress = 1.0f;
 						}
 						else
 						{
-							Debug.LogWarning("Energy for Quest could not be supplied, Player Vessel has " + localPlayerMainInventory.GetEnergy() + "kWs!");
+							Debug.LogWarning("Energy for Quest could not be supplied, Player Vessel Batteries are charged with " + localPlayerMainInventory.GetEnergy() + "kWs!");
 						}
 						UpdateQuestVesselMenu();
 					};

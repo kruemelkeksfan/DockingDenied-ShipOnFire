@@ -64,7 +64,7 @@ MonoBehaviour:
     amount: 10
   description: An Energy Storage capable of storing up to 10kWh.
   capacitor:
-    capacity: 36000
+    capacity: 72000
     charge: 0
 --- !u!1 &4989274293812750468
 GameObject:
