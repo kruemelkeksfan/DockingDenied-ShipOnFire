@@ -24,7 +24,10 @@ public class TutorialController : MonoBehaviour
 	private ToggleController toggleController = null;
 	private SpacecraftManager spacecraftManager = null;
 	private QuestManager questManager = null;
+	private Button highlightedButton = null;
 	private ColorBlock oldColorBlock = new ColorBlock();
+	private bool keyBindingHighlighted = false;
+	private Color oldKeyBindingColor = Color.white;
 	private bool next = false;
 	private bool complete = false;
 
@@ -136,7 +139,8 @@ public class TutorialController : MonoBehaviour
 		}
 		while(!complete);
 
-		Color oldTextColor = keyBindingDisplay.color;
+		oldKeyBindingColor = keyBindingDisplay.color;
+		keyBindingHighlighted = true;
 		keyBindingDisplay.color = highlightColor;
 		tutorialMessageField.text = "Control your Ship with the tiny Set of Buttons shown on the right Side of your Screen\nNow align the activated Port of the Station and with that on your Ship\nThen come really close to complete the Docking";
 		do
@@ -144,7 +148,8 @@ public class TutorialController : MonoBehaviour
 			yield return waitForTutorialUpdateInterval;
 		}
 		while(playerSpacecraft.GetDockedSpacecraftCount() <= 0);
-		keyBindingDisplay.color = oldTextColor;
+		keyBindingDisplay.color = oldKeyBindingColor;
+		keyBindingHighlighted = false;
 
 		tutorialMessageField.text = "Being docked to a Station allows you to trade Materials or receive Rewards for completed Quests\nYou can accept Quests without docking, but you will later need to dock to receive the Rewards\nNow accept any Quest in the Station Menu";
 		do
@@ -201,12 +206,27 @@ public class TutorialController : MonoBehaviour
 	public void SkipTutorial()
 	{
 		StopAllCoroutines();
+
+		nextButton.SetActive(false);
+		tutorialMessageField.gameObject.SetActive(false);
 		skipButton.SetActive(false);
+
+		if(highlightedButton != null)
+		{
+			UnHighlightButton(highlightedButton);
+		}
+		if(keyBindingHighlighted)
+		{
+			keyBindingDisplay.color = oldKeyBindingColor;
+		}
+
 		skipped = true;
 	}
 
 	private void HighlightButton(Button button)
 	{
+		highlightedButton = button;
+
 		oldColorBlock = buildButton.colors;
 		ColorBlock newColorBlock = oldColorBlock;
 		newColorBlock.normalColor = highlightColor;
@@ -219,5 +239,7 @@ public class TutorialController : MonoBehaviour
 	private void UnHighlightButton(Button button)
 	{
 		button.colors = oldColorBlock;
+
+		highlightedButton = null;
 	}
 }
