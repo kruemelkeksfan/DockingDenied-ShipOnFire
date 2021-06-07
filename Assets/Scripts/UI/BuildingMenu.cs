@@ -57,7 +57,7 @@ public class BuildingMenu : MonoBehaviour
 	private InfoController infoController = null;
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
-	private Vector3 lastLookPoint = Vector3.zero;
+	private Vector3 lastMousePosition = Vector3.zero;
 	private Vector2Int lastGridPosition = Vector2Int.zero;
 	private Plane buildingPlane = new Plane(Vector3.back, 0.0f);
 	private int rotation = Directions.UP;
@@ -71,7 +71,6 @@ public class BuildingMenu : MonoBehaviour
 	private Dictionary<string, Module> modulePrefabDictionary = null;
 	private Transform spacecraftTransform = null;
 	private new Camera camera = null;
-	private Transform cameraTransform = null;
 	private bool cheaterMode = false;
 
 	public static BuildingMenu GetInstance()
@@ -117,7 +116,6 @@ public class BuildingMenu : MonoBehaviour
 		infoController = InfoController.GetInstance();
 		spacecraftTransform = spacecraft.GetTransform();
 		camera = Camera.main;
-		cameraTransform = camera.GetComponent<Transform>();
 
 		reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));       // Add one Reserve Zone for Erase Highlighting
 		reservedZoneTransforms.Add(reservedZoneRenderers[0].GetComponent<Transform>());
@@ -130,18 +128,17 @@ public class BuildingMenu : MonoBehaviour
 
 	private void Update()
 	{
-		Vector3 lookPoint = new Vector3(Input.mousePosition.x, Input.mousePosition.y, -cameraTransform.position.z);
 		Vector2Int gridPosition = lastGridPosition;
-		if(lookPoint != lastLookPoint)
+		if(Input.mousePosition != lastMousePosition)
 		{
-			Ray lookDirection = camera.ScreenPointToRay(lookPoint);
+			Ray lookDirection = camera.ScreenPointToRay(Input.mousePosition);
 			float enter;
 			if(buildingPlane.Raycast(lookDirection, out enter))
 			{
 				gridPosition = WorldToGridPosition(lookDirection.GetPoint(enter));
 			}
 		}
-		lastLookPoint = lookPoint;
+		lastMousePosition = Input.mousePosition;
 		lastGridPosition = gridPosition;
 
 		if(currentModule.index >= 0)
