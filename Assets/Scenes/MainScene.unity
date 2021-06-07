@@ -1482,33 +1482,35 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 1
     m_LineSpacing: 1
-  m_Text: 'F1 - Show/Hide this Help
+  m_Text: 'WASD - Move Spacecraft
 
-    WASD - Move Spacecraft
+    QE - Rotate Spacecraft
 
-    QE - Rotate
-    Spacecraft
-
-    SHIFT - Increase Throttle
-
-    STRG - Decrease Throttle
-
-    TAB
-    - Toggle AutoThrottle
-
-    Scroll Wheel - Camera Zoom
+    Scroll Wheel -
+    Camera Zoom
 
     MMB - Rotate Camera
 
-    MMB
-    + WASD - Move Camera
+    MMB + WASD - Move Camera
 
-    SPACE - Reset Camera
+    SPACE
+    - Reset Camera
+
+    C - Toggle Camera Mode
 
     Hold L - Clear Message Log
 
+    SHIFT
+    - Increase Throttle
+
+    STRG - Decrease Throttle
+
+    TAB - Toggle AutoThrottle
+
     ESC
-    - Cancel/Main Menu'
+    - Cancel/Main Menu
+
+    F1 - Show/Hide this Help'
 --- !u!222 &371359021
 CanvasRenderer:
   m_ObjectHideFlags: 0
