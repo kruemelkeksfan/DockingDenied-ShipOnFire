@@ -32,6 +32,7 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private GameObject mainMenu = null;
 	[SerializeField] private BuildingMenu buildingMenu = null;
 	[SerializeField] private InventoryScreenController inventoryMenu = null;
+	[SerializeField] private Transform mapMarkerParent = null;
 	// TODO: Somehow control Flight Control bool with all of this
 	private QuestManager questManager = null;
 	private HotkeyModule activeModule = null;
@@ -425,6 +426,11 @@ public class MenuController : MonoBehaviour, IListener
 	public RectTransform GetUITransform()
 	{
 		return uiTransform;
+	}
+
+	public Transform GetMapMarkerParent()
+	{
+		return mapMarkerParent;
 	}
 
 	public bool StationIsQuesting(SpaceStationController requester)

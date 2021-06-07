@@ -63,7 +63,6 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	{
 		if(mapMarker != null)
 		{
-			ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
 			GameObject.Destroy(mapMarker.gameObject);
 		}
 	}
@@ -145,14 +144,13 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 		menuController = MenuController.GetInstance();
 		uiTransform = menuController.GetUITransform();
-		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, uiTransform);
+		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, menuController.GetMapMarkerParent());
 		mapMarkerName = mapMarker.GetChild(0).GetComponent<Text>();
 		mapMarkerDistance = mapMarker.GetChild(1).GetComponent<Text>();
 		mapMarker.GetComponent<Button>().onClick.AddListener(delegate
 		{
 			ToggleQuestVesselMenu();
 		});
-		ToggleController.GetInstance().AddToggleObject("SpacecraftMarkers", mapMarker.gameObject);
 
 		mapMarkerName.text = quest.vesselType.ToString() + " Vessel";
 		vesselName = mapMarkerName.text;

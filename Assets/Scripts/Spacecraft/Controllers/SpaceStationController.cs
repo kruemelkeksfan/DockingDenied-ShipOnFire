@@ -123,7 +123,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	{
 		if(mapMarker != null)
 		{
-			ToggleController.GetInstance()?.RemoveToggleObject("SpacecraftMarkers", mapMarker.gameObject);
 			GameObject.Destroy(mapMarker.gameObject);
 		}
 
@@ -613,14 +612,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	{
 		menuController = MenuController.GetInstance();
 		uiTransform = menuController.GetUITransform();
-		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, uiTransform);
+		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, menuController.GetMapMarkerParent());
 		mapMarkerName = mapMarker.GetChild(0).GetComponent<Text>();
 		mapMarkerDistance = mapMarker.GetChild(1).GetComponent<Text>();
 		mapMarker.GetComponent<Button>().onClick.AddListener(delegate
 		{
 			ToggleStationMenu();
 		});
-		ToggleController.GetInstance().AddToggleObject("SpacecraftMarkers", mapMarker.gameObject);
 
 		mapMarkerName.text = stationName;
 		this.stationName = stationName;
