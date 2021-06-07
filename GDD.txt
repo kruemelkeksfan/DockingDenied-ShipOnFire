@@ -13,7 +13,8 @@ index will be method-enum-index, value the corresponding struct
 see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for delegates
 when receiving index and parameters over network, start delegate
 
-Tester Feedback:
+Test Feedback:
+
 0.1
 -Ship Position/Direction Marker
 -Velocity Markers
@@ -31,3 +32,22 @@ Tester Feedback:
 -Close Menus with Esc
 -Module Blueprints skip between 2 Positions when Cursor is near a Grid Cell Boundary
 -Autorun Button
+
+0.2
+-Display Tutorial Messages in Extra Text Field
+-Highlight Buttons in Tutorial
+-Draw Attention to the Key Binding Display in the Tutorial
+-Fixed Camera Mode (Camera does not follow Ship Rotation)
+-Set 1 as Default Value in Trading Amount Fields
+-Layer Vessel Markers behind other UI Elements
+-Buff Thrusters
+-Increase Turning Threshold on Thrusters
+-Let Buy Quests target another Station
+-Spawn and Despawn Quest Vessels smoothly (Z-Fade)
+-Solar Modules can be built through Quest Vessel Solar Modules
+-Erase Marker sometimes does not disappear (maybe has to do with Main Menu?)
+-NullReferenceException: Object reference not set to an instance of an object
+  at AsteroidController.OnCollisionEnter2D (UnityEngine.Collision2D collision)
+-Don't let Users deconstruct an active Docking Port
+-Speed (numeric) and Altitude Display
+-Don't scroll Table Headers
