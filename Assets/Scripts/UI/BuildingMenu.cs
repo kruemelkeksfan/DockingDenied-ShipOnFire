@@ -177,15 +177,22 @@ public class BuildingMenu : MonoBehaviour
 		else if(erase && Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
 		{
 			Module module = spacecraft.GetModule(gridPosition);
-			if(module != null && module.GetModuleName() != "Command Module")
+			if(module != null)
 			{
-				Vector3 position = module.GetTransform().position;
-				Constructor constructor = null;
-				if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), spacecraft)) != null)
+				if(module.GetModuleName() != "Command Module")
 				{
-					constructor?.StartConstruction(position);
+					Vector3 position = module.GetTransform().position;
+					Constructor constructor = null;
+					if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), spacecraft)) != null)
+					{
+						constructor?.StartConstruction(position);
 
-					module.Deconstruct();
+						module.Deconstruct();
+					}
+				}
+				else
+				{
+					infoController.AddMessage("You can not decontruct the Command Module, since barely anybody wants your Crews Bodies to bust open like Piñatas in open Space!");
 				}
 			}
 		}

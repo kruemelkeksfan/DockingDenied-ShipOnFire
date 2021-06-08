@@ -40,6 +40,11 @@ public class DockingPort : HotkeyModule
 
 	public override void Deconstruct()
 	{
+		if(!IsFree())
+		{
+			HotkeyDown();
+		}
+
 		ToggleController.GetInstance().RemoveToggleObject("PortNameplates", portNameField.gameObject);
 		base.Deconstruct();
 	}
