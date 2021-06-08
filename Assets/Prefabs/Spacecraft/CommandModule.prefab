@@ -143,5 +143,5 @@ MonoBehaviour:
     amount: 12
   description: Central Module of each Vessel, can't be (de-)constructed.
   capacitor:
-    capacity: 5400
+    capacity: 3600
     charge: 0

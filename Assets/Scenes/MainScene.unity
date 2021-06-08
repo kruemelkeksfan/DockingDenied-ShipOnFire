@@ -4951,7 +4951,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   questDataFile: {fileID: 4900000, guid: 542c987d82d7f054692db6e7f8e0d257, type: 3}
-  rewardValue: 100
+  rewardValue: 200
   rewardCount: 3
   monetaryRewardChance: 0.4
   questVesselSpawnRange:

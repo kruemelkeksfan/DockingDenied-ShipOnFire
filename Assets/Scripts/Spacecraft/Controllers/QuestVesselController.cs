@@ -175,10 +175,10 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			hint = "Dock to interact!";
 			interactable = true;
-			interactionLabel = "Bribe with 20$";
+			interactionLabel = "Bribe with 200$";
 			interaction = delegate
 					{
-						if(localPlayerMainInventory.TransferMoney(-20))
+						if(localPlayerMainInventory.TransferMoney(-200))
 						{
 							quest.progress = 1.0f;
 						}
@@ -191,12 +191,12 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		}
 		else if(quest.taskType == QuestManager.TaskType.JumpStart)
 		{
-			hint = "Dock to interact!";
+			hint = "Dock to interact! You will need a Battery!";
 			interactable = true;
-			interactionLabel = "Jump-Start with 1kWh";
+			interactionLabel = "Jump-Start with 5kWh";
 			interaction = delegate
 					{
-						if(localPlayerMainInventory.TransferEnergy(-3600.0f))
+						if(localPlayerMainInventory.TransferEnergy(-18000.0f))
 						{
 							quest.progress = 1.0f;
 						}

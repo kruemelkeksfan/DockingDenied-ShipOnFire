@@ -102,10 +102,10 @@
   ],
   "tasks": [
     {
-      "description": "Bribe a Customs Vessels Crew"
+      "description": "Bribe a Customs Vessels Crew with 200$"
     },
     {
-      "description": "Jump-start a helpless Vessel"
+      "description": "Jump-start a helpless Vessel with 5kWh"
     },
     {
       "description": "Supply 10 Oxygen to a helpless Vessel"
