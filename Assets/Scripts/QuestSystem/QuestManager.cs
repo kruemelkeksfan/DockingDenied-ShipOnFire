@@ -255,7 +255,7 @@ public class QuestManager : MonoBehaviour, IListener
 			TaskType taskType = taskTypes[UnityEngine.Random.Range(0, taskTypes.Length)];
 			quest.task = this.taskTypes[taskType][UnityEngine.Random.Range(0, this.taskTypes[taskType].Count)];
 		}
-		
+
 		quest.backstory = taskBackstories[quest.task][UnityEngine.Random.Range(0, taskBackstories[quest.task].Count)];
 
 		questGiverIntersection.Clear();
@@ -408,6 +408,9 @@ public class QuestManager : MonoBehaviour, IListener
 			string[] taskItems = tasks[quest.task].description.Split(' ');
 			quest.infoString = taskItems[2] == "Sanitary" ? (taskItems[2] + " " + taskItems[3]) : taskItems[2];         // Quick and dirty Solutions for Good Names with Spaces
 			quest.infoInt = -int.Parse(taskItems[1]);
+
+			InventoryController inventoryController = quest.destination.GetInventoryController();
+			inventoryController.Withdraw(quest.infoString, inventoryController.GetGoodAmount(quest.infoString));
 		}
 		else if(tasks[quest.task].description.StartsWith("Buy"))
 		{
@@ -433,19 +436,7 @@ public class QuestManager : MonoBehaviour, IListener
 	{
 		activeQuests.Add(quest.destination, quest);
 
-		if(quest.taskType == TaskType.Trade && quest.infoString != "$")
-		{
-			if(quest.infoInt > 0)
-			{
-				quest.destination.GetInventoryController().Deposit(quest.infoString, (uint)quest.infoInt);
-			}
-			else
-			{
-				InventoryController inventoryController = quest.destination.GetInventoryController();
-				inventoryController.Withdraw(quest.infoString, inventoryController.GetGoodAmount(quest.infoString));
-			}
-		}
-		else if(quest.taskType == TaskType.Destroy || quest.taskType == TaskType.Bribe || quest.taskType == TaskType.JumpStart
+		if(quest.taskType == TaskType.Destroy || quest.taskType == TaskType.Bribe || quest.taskType == TaskType.JumpStart
 			|| quest.taskType == TaskType.Supply || quest.taskType == TaskType.Plunder || quest.taskType == TaskType.Tow)
 		{
 			Vector2 stationPosition = quest.destination.GetTransform().position;
@@ -498,17 +489,25 @@ public class QuestManager : MonoBehaviour, IListener
 
 	public void NotifyTrade(SpaceStationController questStation, string goodName, int amount, int price)
 	{
-		if(activeQuests.ContainsKey(questStation))
+		if(activeQuests.ContainsKey(questStation) && activeQuests[questStation].taskType == TaskType.Trade && activeQuests[questStation].infoString != "$" && activeQuests[questStation].infoInt < 0)
 		{
-			if(activeQuests[questStation].taskType == TaskType.Trade)
+			if(activeQuests[questStation].infoString == goodName)
 			{
-				if(activeQuests[questStation].infoString == "$")
+				activeQuests[questStation].progress += (float)amount / (float)activeQuests[questStation].infoInt;
+			}
+		}
+
+		foreach(SpaceStationController station in activeQuests.Keys)
+		{
+			if(station != questStation && activeQuests.ContainsKey(station) && activeQuests[station].taskType == TaskType.Trade && (activeQuests[station].infoString == "$" || activeQuests[station].infoInt > 0))
+			{
+				if(activeQuests[station].infoString == "$")
 				{
-					activeQuests[questStation].progress += (float)price / (float)activeQuests[questStation].infoInt;
+					activeQuests[station].progress += (float)price / (float)activeQuests[station].infoInt;
 				}
-				else if(activeQuests[questStation].infoString == goodName)
+				else if(activeQuests[station].infoString == goodName)
 				{
-					activeQuests[questStation].progress += (float)amount / (float)activeQuests[questStation].infoInt;
+					activeQuests[station].progress += (float)amount / (float)activeQuests[station].infoInt;
 				}
 			}
 		}
