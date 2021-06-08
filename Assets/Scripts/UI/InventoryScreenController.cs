@@ -18,8 +18,11 @@ public class InventoryScreenController : MonoBehaviour, IListener
 
 	public void ToggleInventoryMenu()
 	{
-		UpdateInventory();
 		gameObject.SetActive(!gameObject.activeSelf);
+		if(gameObject.activeSelf)
+		{
+			UpdateInventory();
+		}
 	}
 
 	public void UpdateInventory()
