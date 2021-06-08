@@ -292,7 +292,7 @@ public class MenuController : MonoBehaviour, IListener
 			stationMoneyField.text = stationMoney + "$";
 
 			amountSettings.Clear();
-			for(int i = 2; i < tradingContentPane.childCount; ++i)
+			for(int i = 1; i < tradingContentPane.childCount; ++i)
 			{
 				Transform child = tradingContentPane.GetChild(i);
 				amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(5).GetComponent<InputField>().text;
