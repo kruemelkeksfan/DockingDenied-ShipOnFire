@@ -61,7 +61,7 @@ public class BuildingMenu : MonoBehaviour
 	private Plane buildingPlane = new Plane(Vector3.back, 0.0f);
 	private int rotation = Directions.UP;
 	private CurrentModule currentModule = new CurrentModule(-1, null);
-	private List<Vector2Int> reservedZones = null;
+	private Vector2Int[] reservedZones = null;
 	private List<Transform> reservedZoneTransforms = null;
 	private List<MeshRenderer> reservedZoneRenderers = null;
 	private int activeReservedZones = 0;
@@ -82,7 +82,6 @@ public class BuildingMenu : MonoBehaviour
 	{
 		inverseBuildingGridSize = 1.0f / buildingGridSize;
 		buildingGridSizeVector = new Vector2(buildingGridSize - 0.002f, buildingGridSize - 0.002f);
-		reservedZones = new List<Vector2Int>(64);
 		reservedZoneTransforms = new List<Transform>();
 		reservedZoneRenderers = new List<MeshRenderer>();
 
@@ -170,8 +169,7 @@ public class BuildingMenu : MonoBehaviour
 				}
 			}
 
-			reservedZones.Clear();
-			reservedZones.AddRange(currentModule.module.GetReservedPositions(gridPosition, currentModule.transform.localRotation));
+			reservedZones = currentModule.module.GetReservedPositions(gridPosition, currentModule.transform.localRotation);
 		}
 		else if(erase && Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
 		{
@@ -257,7 +255,7 @@ public class BuildingMenu : MonoBehaviour
 			GameObject.Destroy(currentModule.module.gameObject);
 		}
 
-		reservedZones.Clear();
+		reservedZones = new Vector2Int[0];
 		for(int i = 0; i < activeReservedZones; ++i)
 		{
 			reservedZoneTransforms[i].gameObject.SetActive(false);
@@ -352,11 +350,15 @@ public class BuildingMenu : MonoBehaviour
 		infoController.SetBuildingCosts(selectedBlueprintCosts);
 		blueprintLoadPanel.SetActive(true);
 
-		reservedZones.Clear();
+		List<Vector2Int> reservedZoneList = new List<Vector2Int>(64);
 		foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 		{
-			reservedZones.AddRange(modulePrefabDictionary[moduleData.type].GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
+			// TODO: Do this more elegantly but in a Way that still works in Standalone Player
+			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type]);
+			reservedZoneList.AddRange(module.GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
+			GameObject.Destroy(module);
 		}
+		reservedZones = reservedZoneList.ToArray();
 	}
 
 	public void DeselectBlueprint()
@@ -366,7 +368,7 @@ public class BuildingMenu : MonoBehaviour
 		infoController.SetBuildingCosts(null);
 		blueprintLoadPanel.SetActive(false);
 
-		reservedZones.Clear();
+		reservedZones = new Vector2Int[0];
 	}
 
 	public void ConfirmBlueprint()
@@ -375,8 +377,7 @@ public class BuildingMenu : MonoBehaviour
 		{
 			foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 			{
-				if(!CheckBuildingSpaceFree(modulePrefabDictionary[moduleData.type].GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)),
-					modulePrefabDictionary[moduleData.type], spacecraftTransform.rotation, true, true))
+				if(!CheckBuildingSpaceFree(reservedZones, modulePrefabDictionary[moduleData.type], spacecraftTransform.rotation, true, true))
 				{
 					InfoController.GetInstance().AddMessage("Not enough free Building Space to construct Blueprint!");
 					return;
@@ -425,9 +426,9 @@ public class BuildingMenu : MonoBehaviour
 		}
 		else
 		{
-			for(int i = 0; i < reservedZones.Count || i < activeReservedZones; ++i)
+			for(int i = 0; i < reservedZones.Length || i < activeReservedZones; ++i)
 			{
-				if(i < reservedZones.Count)
+				if(i < reservedZones.Length)
 				{
 					if(i >= reservedZoneTransforms.Count)
 					{
@@ -446,20 +447,19 @@ public class BuildingMenu : MonoBehaviour
 					reservedZoneTransforms[i].gameObject.SetActive(false);
 				}
 			}
-			activeReservedZones = reservedZones.Count;
+			activeReservedZones = reservedZones.Length;
 
 			bool buildable = true;
 			if(currentModule.index >= 0)
 			{
-				buildable = CheckBuildingSpaceFree(reservedZones.ToArray(), currentModule.module, currentModule.transform.rotation);
+				buildable = CheckBuildingSpaceFree(reservedZones, currentModule.module, currentModule.transform.rotation);
 				currentModule.buildable = buildable;
 			}
 			else if(selectedBlueprintData.moduleData != null && selectedBlueprintData.moduleData.Count > 0)
 			{
 				foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 				{
-					if(!CheckBuildingSpaceFree(modulePrefabDictionary[moduleData.type].GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)),
-						modulePrefabDictionary[moduleData.type], spacecraftTransform.rotation, true, true))
+					if(!CheckBuildingSpaceFree(reservedZones, modulePrefabDictionary[moduleData.type], spacecraftTransform.rotation, true, true))
 					{
 						buildable = false;
 						break;
