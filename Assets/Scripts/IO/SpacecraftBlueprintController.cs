@@ -7,7 +7,7 @@ using UnityEngine;
 public class SpacecraftBlueprintController
 {
 	[Serializable]
-	private struct SpacecraftData
+	public struct SpacecraftData
 	{
 		public List<ModuleData> moduleData;
 
@@ -78,45 +78,48 @@ public class SpacecraftBlueprintController
 		}
 	}
 
-	public static GoodManager.Load[] CalculateBlueprintCosts(string blueprintPath)
+	public static GoodManager.Load[] CalculateBlueprintCosts(SpacecraftData spacecraftData)
 	{
-		using(StreamReader reader = new StreamReader(blueprintPath))
+		Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
+		Dictionary<string, uint> costDictionary = new Dictionary<string, uint>();
+		foreach(ModuleData moduleData in spacecraftData.moduleData)
 		{
-			SpacecraftData spacecraftData = JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd());
-
-			Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
-			Dictionary<string, uint> costDictionary = new Dictionary<string, uint>();
-			foreach(ModuleData moduleData in spacecraftData.moduleData)
+			if(moduleData.type != "Command Module")
 			{
-				if(moduleData.type != "Command Module")
+				foreach(GoodManager.Load cost in modulePrefabDictionary[moduleData.type].GetBuildingCosts())
 				{
-					foreach(GoodManager.Load cost in modulePrefabDictionary[moduleData.type].GetBuildingCosts())
+					if(cost.amount > 0)
 					{
-						if(cost.amount > 0)
+						if(!costDictionary.ContainsKey(cost.goodName))
 						{
-							if(!costDictionary.ContainsKey(cost.goodName))
-							{
-								costDictionary[cost.goodName] = cost.amount;
-							}
-							else
-							{
-								costDictionary[cost.goodName] += cost.amount;
-							}
+							costDictionary[cost.goodName] = cost.amount;
+						}
+						else
+						{
+							costDictionary[cost.goodName] += cost.amount;
 						}
 					}
 				}
 			}
-			GoodManager.Load[] costs = new GoodManager.Load[costDictionary.Count];
-			int i = 0;
-			foreach(string costName in costDictionary.Keys)
-			{
-				costs[i] = new GoodManager.Load();
-				costs[i].goodName = costName;
-				costs[i].amount = costDictionary[costName];
-				++i;
-			}
+		}
+		GoodManager.Load[] costs = new GoodManager.Load[costDictionary.Count];
+		int i = 0;
+		foreach(string costName in costDictionary.Keys)
+		{
+			costs[i] = new GoodManager.Load();
+			costs[i].goodName = costName;
+			costs[i].amount = costDictionary[costName];
+			++i;
+		}
 
-			return costs;
+		return costs;
+	}
+
+	public static SpacecraftData LoadBlueprintModules(string blueprintPath)
+	{
+		using(StreamReader reader = new StreamReader(blueprintPath))
+		{
+			return JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd());
 		}
 	}
 
@@ -133,7 +136,7 @@ public class SpacecraftBlueprintController
 		InstantiateModules(JsonUtility.FromJson<SpacecraftData>(blueprint.text), spacecraftTransform);
 	}
 
-	private static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)
+	public static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)
 	{
 		spacecraftTransform.gameObject.GetComponent<Spacecraft>().DeconstructModules();
 

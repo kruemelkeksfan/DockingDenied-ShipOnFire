@@ -232,21 +232,21 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		UpdateModuleMass();
 	}
 
-	public bool PositionsAvailable(Vector2Int[] positions, bool HasAttachableReservePositions, bool HasOverlappingReservePositions)
+	public bool PositionsAvailable(Vector2Int[] positions, bool HasAttachableReservePositions, bool HasOverlappingReservePositions, bool ignoreCommandModule = false, bool ignoreAttachmentPoints = false)
 	{
-		bool neighbour = false;
+		bool neighbour = ignoreAttachmentPoints;
 		for(int i = 0; i < positions.Length; ++i)
 		{
-			if(modules.ContainsKey(positions[i])                                                                                                            // Position is already in Use
-				&& (i == 0 || positions[i] == modules[positions[i]].GetPosition()                                                                           // Either Requester or current Position User have their Main Position on this Position
-				|| !HasOverlappingReservePositions || !modules[positions[i]].HasOverlappingReservePositions()))                                             // Either Requester or current Position User do not allow overlapping Reserve Positions
+			if(modules.ContainsKey(positions[i])                                                                                                           // Position is already in Use
+				&& (i == 0 || positions[i] == modules[positions[i]].GetPosition()                                                                          // Either Requester or current Position User have their Main Position on this Position
+				|| !HasOverlappingReservePositions || !modules[positions[i]].HasOverlappingReservePositions())                                             // Either Requester or current Position User do not allow overlapping Reserve Positions
+				&& !(ignoreCommandModule && modules[positions[i]].GetModuleName() == "Command Module"))
 			{
 				return false;
 			}
 
 			if(!neighbour)
 			{
-
 				foreach(Vector2Int direction in Directions.VECTORS)
 				{
 					Vector2Int neighbourPosition = positions[i] + direction;

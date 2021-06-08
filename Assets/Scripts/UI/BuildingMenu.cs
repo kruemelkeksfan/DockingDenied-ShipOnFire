@@ -62,11 +62,12 @@ public class BuildingMenu : MonoBehaviour
 	private Plane buildingPlane = new Plane(Vector3.back, 0.0f);
 	private int rotation = Directions.UP;
 	private CurrentModule currentModule = new CurrentModule(-1, null);
+	private List<Vector2Int> reservedZones = null;
 	private List<Transform> reservedZoneTransforms = null;
 	private List<MeshRenderer> reservedZoneRenderers = null;
 	private int activeReservedZones = 0;
 	private bool erase = false;
-	private string selectedBlueprintPath = null;
+	private SpacecraftBlueprintController.SpacecraftData selectedBlueprintData = new SpacecraftBlueprintController.SpacecraftData();
 	private GoodManager.Load[] selectedBlueprintCosts = null;
 	private Dictionary<string, Module> modulePrefabDictionary = null;
 	private Transform spacecraftTransform = null;
@@ -82,6 +83,7 @@ public class BuildingMenu : MonoBehaviour
 	{
 		inverseBuildingGridSize = 1.0f / buildingGridSize;
 		buildingGridSizeVector = new Vector2(buildingGridSize - 0.002f, buildingGridSize - 0.002f);
+		reservedZones = new List<Vector2Int>(64);
 		reservedZoneTransforms = new List<Transform>();
 		reservedZoneRenderers = new List<MeshRenderer>();
 
@@ -145,49 +147,6 @@ public class BuildingMenu : MonoBehaviour
 		{
 			currentModule.transform.localPosition = GridToLocalPosition(gridPosition);
 
-			Vector2Int[] reservedPositions = currentModule.module.GetReservedPositions(gridPosition);
-			for(int i = 0; i < reservedPositions.Length || i < activeReservedZones; ++i)
-			{
-				if(i < reservedPositions.Length)
-				{
-					if(i >= reservedZoneTransforms.Count)
-					{
-						reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));
-						reservedZoneTransforms.Add(reservedZoneRenderers[i].GetComponent<Transform>());
-					}
-					else
-					{
-						reservedZoneTransforms[i].gameObject.SetActive(true);
-					}
-
-					reservedZoneTransforms[i].localPosition = GridToLocalPosition(reservedPositions[i]) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[i].localPosition.z);
-				}
-				else if(i < activeReservedZones)
-				{
-					reservedZoneTransforms[i].gameObject.SetActive(false);
-				}
-			}
-			activeReservedZones = reservedPositions.Length;
-
-			Collider2D overlap;
-			if(spacecraft.PositionsAvailable(reservedPositions, currentModule.module.HasAttachableReservePositions(), currentModule.module.HasOverlappingReservePositions())
-				&& ((overlap = Physics2D.OverlapBox(currentModule.transform.position, buildingGridSizeVector, currentModule.transform.rotation.eulerAngles.z)) == null || overlap.isTrigger || overlap.gameObject == spacecraft.gameObject))
-			{
-				currentModule.buildable = true;
-				for(int i = 0; i < activeReservedZones; ++i)
-				{
-					reservedZoneRenderers[i].material = zoneValidMaterial;
-				}
-			}
-			else
-			{
-				currentModule.buildable = false;
-				for(int i = 0; i < activeReservedZones; ++i)
-				{
-					reservedZoneRenderers[i].material = zoneInvalidMaterial;
-				}
-			}
-
 			if(Input.GetButtonUp("Rotate Left"))
 			{
 				rotation = ((rotation - 1) + 4) % 4;
@@ -211,27 +170,26 @@ public class BuildingMenu : MonoBehaviour
 					SpawnModule(currentModule.index);
 				}
 			}
-		}
-		else if(erase)
-		{
-			reservedZoneTransforms[0].localPosition = GridToLocalPosition(gridPosition) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[0].localPosition.z);
-			if(Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
-			{
-				Module module = spacecraft.GetModule(gridPosition);
-				if(module != null && module.GetModuleName() != "Command Module")
-				{
-					Vector3 position = module.GetTransform().position;
-					Constructor constructor = null;
-					if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), spacecraft)) != null)
-					{
-						constructor?.StartConstruction(position);
 
-						module.Deconstruct();
-					}
+			reservedZones.Clear();
+			reservedZones.AddRange(currentModule.module.GetReservedPositions(gridPosition, currentModule.transform.localRotation));
+		}
+		else if(erase && Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
+		{
+			Module module = spacecraft.GetModule(gridPosition);
+			if(module != null && module.GetModuleName() != "Command Module")
+			{
+				Vector3 position = module.GetTransform().position;
+				Constructor constructor = null;
+				if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), spacecraft)) != null)
+				{
+					constructor?.StartConstruction(position);
+
+					module.Deconstruct();
 				}
 			}
 		}
-		else
+		else if(selectedBlueprintData.moduleData == null)
 		{
 			if(Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
 			{
@@ -246,6 +204,8 @@ public class BuildingMenu : MonoBehaviour
 				}
 			}
 		}
+
+		UpdateReservedZone();
 	}
 
 	public void ToggleBuildingMenu()
@@ -284,12 +244,14 @@ public class BuildingMenu : MonoBehaviour
 	public void SelectModule(int moduleIndex)
 	{
 		menuController.CloseModuleMenu();
+		DeselectBlueprint();
 
 		if(currentModule.index >= 0 && currentModule.module != null)
 		{
 			GameObject.Destroy(currentModule.module.gameObject);
 		}
 
+		reservedZones.Clear();
 		for(int i = 0; i < activeReservedZones; ++i)
 		{
 			reservedZoneTransforms[i].gameObject.SetActive(false);
@@ -335,18 +297,6 @@ public class BuildingMenu : MonoBehaviour
 	{
 		SelectModule(-1);
 		erase = !erase;
-
-		if(erase)
-		{
-			reservedZoneRenderers[0].material = zoneInvalidMaterial;
-			reservedZoneTransforms[0].gameObject.SetActive(true);
-			activeReservedZones = 1;
-		}
-		else
-		{
-			reservedZoneTransforms[0].gameObject.SetActive(false);
-			activeReservedZones = 0;
-		}
 	}
 
 	private void RefreshBlueprintList()
@@ -388,35 +338,162 @@ public class BuildingMenu : MonoBehaviour
 
 	public void SelectBlueprint(string blueprintPath)
 	{
-		selectedBlueprintPath = blueprintPath;
-		selectedBlueprintCosts = SpacecraftBlueprintController.CalculateBlueprintCosts(blueprintPath);
+		menuController.CloseModuleMenu();
+		DeselectModule();
+
+		selectedBlueprintData = SpacecraftBlueprintController.LoadBlueprintModules(blueprintPath);
+		selectedBlueprintCosts = SpacecraftBlueprintController.CalculateBlueprintCosts(selectedBlueprintData);
 		infoController.SetBuildingCosts(selectedBlueprintCosts);
 		blueprintLoadPanel.SetActive(true);
+
+		reservedZones.Clear();
+		foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
+		{
+			reservedZones.AddRange(modulePrefabDictionary[moduleData.type].GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
+		}
 	}
 
 	public void DeselectBlueprint()
 	{
-		selectedBlueprintPath = null;
+		selectedBlueprintData = new SpacecraftBlueprintController.SpacecraftData();
 		selectedBlueprintCosts = null;
 		infoController.SetBuildingCosts(null);
 		blueprintLoadPanel.SetActive(false);
+
+		reservedZones.Clear();
 	}
 
 	public void ConfirmBlueprint()
 	{
 		if(spacecraft.GetModules().Count <= 1)
 		{
+			foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
+			{
+				if(!CheckBuildingSpaceFree(modulePrefabDictionary[moduleData.type].GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)),
+					modulePrefabDictionary[moduleData.type], spacecraftTransform.rotation, true, true))
+				{
+					InfoController.GetInstance().AddMessage("Not enough free Building Space to construct Blueprint!");
+					return;
+				}
+			}
+
 			if(cheaterMode || FindBuildingConstructor(spacecraftTransform.position, selectedBlueprintCosts) != null)
 			{
-				SpacecraftBlueprintController.LoadBlueprint(selectedBlueprintPath, spacecraftTransform);
+				SpacecraftBlueprintController.InstantiateModules(selectedBlueprintData, spacecraftTransform);
 				DeselectBlueprint();
 			}
 		}
 		else
 		{
 			InfoController.GetInstance().AddMessage("Unable to instantiate Blueprint, deconstruct old Modules first!");
-			return;
 		}
+	}
+
+	private void UpdateReservedZone()
+	{
+		if(erase)
+		{
+			for(int i = 0; i < activeReservedZones; ++i)
+			{
+				if(i == 0)
+				{
+					if(i >= reservedZoneTransforms.Count)
+					{
+						reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));
+						reservedZoneTransforms.Add(reservedZoneRenderers[i].GetComponent<Transform>());
+					}
+					else
+					{
+						reservedZoneTransforms[i].gameObject.SetActive(true);
+					}
+
+					reservedZoneTransforms[i].localPosition = GridToLocalPosition(lastGridPosition) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[0].localPosition.z);
+				}
+				else
+				{
+					reservedZoneTransforms[i].gameObject.SetActive(false);
+				}
+			}
+			activeReservedZones = 1;
+			reservedZoneRenderers[0].material = zoneInvalidMaterial;
+		}
+		else
+		{
+			for(int i = 0; i < reservedZones.Count || i < activeReservedZones; ++i)
+			{
+				if(i < reservedZones.Count)
+				{
+					if(i >= reservedZoneTransforms.Count)
+					{
+						reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));
+						reservedZoneTransforms.Add(reservedZoneRenderers[i].GetComponent<Transform>());
+					}
+					else
+					{
+						reservedZoneTransforms[i].gameObject.SetActive(true);
+					}
+
+					reservedZoneTransforms[i].localPosition = GridToLocalPosition(reservedZones[i]) + new Vector3(0.0f, 0.0f, reservedZoneTransforms[i].localPosition.z);
+				}
+				else if(i < activeReservedZones)
+				{
+					reservedZoneTransforms[i].gameObject.SetActive(false);
+				}
+			}
+			activeReservedZones = reservedZones.Count;
+
+			bool buildable = true;
+			if(currentModule.index >= 0)
+			{
+				buildable = CheckBuildingSpaceFree(reservedZones.ToArray(), currentModule.module, currentModule.transform.rotation);
+				currentModule.buildable = buildable;
+			}
+			else if(selectedBlueprintData.moduleData != null && selectedBlueprintData.moduleData.Count > 0)
+			{
+				foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
+				{
+					if(!CheckBuildingSpaceFree(modulePrefabDictionary[moduleData.type].GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)),
+						modulePrefabDictionary[moduleData.type], spacecraftTransform.rotation, true, true))
+					{
+						buildable = false;
+						break;
+					}
+				}
+			}
+			if(buildable)
+			{
+				for(int i = 0; i < activeReservedZones; ++i)
+				{
+					reservedZoneRenderers[i].material = zoneValidMaterial;
+				}
+			}
+			else
+			{
+				for(int i = 0; i < activeReservedZones; ++i)
+				{
+					reservedZoneRenderers[i].material = zoneInvalidMaterial;
+				}
+			}
+		}
+	}
+
+	private bool CheckBuildingSpaceFree(Vector2Int[] reservedPositions, Module module, Quaternion moduleRotation, bool ignoreCommandModule = false, bool ignoreAttachmentPoints = false)
+	{
+		if(!spacecraft.PositionsAvailable(reservedPositions, module.HasAttachableReservePositions(), module.HasOverlappingReservePositions(), ignoreCommandModule, ignoreAttachmentPoints))
+		{
+			return false;
+		}
+
+		foreach(Vector2Int reservedPosition in reservedPositions)
+		{
+			Collider2D overlap;
+			if((overlap = Physics2D.OverlapBox(GridToWorldPosition(reservedPosition), buildingGridSizeVector, moduleRotation.eulerAngles.z)) != null && !overlap.isTrigger && overlap.gameObject != spacecraft.gameObject)
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private Constructor FindBuildingConstructor(Vector2 position, GoodManager.Load[] materials)

@@ -25,7 +25,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected virtual void Awake()
 	{
 		transform = gameObject.GetComponent<Transform>();
-		bufferedReservedPositions = reservedPositions;
+		bufferedReservedPositions = new Vector2Int[reservedPositions.Length];
 	}
 
 	protected virtual void Start()
@@ -50,7 +50,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 		this.position = position;
 		transform.localPosition = BuildingMenu.GetInstance().GridToLocalPosition(position);
-		UpdateReservedPositionBuffer(position);
+		UpdateReservedPositionBuffer(position, transform.localRotation);
 		spacecraft.UpdateModuleMass(transform.localPosition, mass);
 		constructed = true;
 
@@ -111,14 +111,13 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	}
 
-	private void UpdateReservedPositionBuffer(Vector2Int position)
+	private void UpdateReservedPositionBuffer(Vector2Int position, Quaternion localRotation)
 	{
 		if(!constructed)
 		{
-			bufferedReservedPositions = new Vector2Int[reservedPositions.Length];
 			for(int i = 0; i < bufferedReservedPositions.Length; ++i)
 			{
-				bufferedReservedPositions[i] = Vector2Int.RoundToInt(position + (Vector2)(transform.localRotation * (Vector2)reservedPositions[i]));
+				bufferedReservedPositions[i] = Vector2Int.RoundToInt(position + (Vector2)(localRotation * (Vector2)reservedPositions[i]));
 			}
 		}
 	}
@@ -148,9 +147,9 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return spacecraft;
 	}
 
-	public Vector2Int[] GetReservedPositions(Vector2Int position)
+	public Vector2Int[] GetReservedPositions(Vector2Int position, Quaternion localRotation)
 	{
-		UpdateReservedPositionBuffer(position);
+		UpdateReservedPositionBuffer(position, localRotation);
 
 		return bufferedReservedPositions;
 	}
