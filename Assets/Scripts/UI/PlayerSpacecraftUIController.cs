@@ -31,6 +31,8 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	private float velocityVectorWidth = 1.0f;
 	private float navVectorWidth = 1.0f;
 	private Rigidbody2D target = null;
+	private float surfaceAltitude = 0.0f;
+	private Vector3 flightData = Vector3.zero;
 
 	private void Start()
 	{
@@ -59,6 +61,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		scaleFactor = Mathf.Abs(1.0f / cameraTransform.position.z);
 		velocityVectorWidth = velocityVector.sizeDelta.x;
 		navVectorWidth = planetNavVector.sizeDelta.x;
+		surfaceAltitude = GravityWellController.GetInstance().GetSurfaceAltitude();
 
 		toggleController = ToggleController.GetInstance();
 		toggleController.AddToggleObject("VelocityVectors", velocityVector.gameObject);
@@ -117,17 +120,19 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 			mapMarker.gameObject.SetActive(false);
 		}
 
-		UpdateVelocityVector(velocityVector, (target != null ? (rigidbody.velocity - target.velocity) : Vector2.zero), scaleFactor);
-		UpdateVelocityVector(orbitalVector, rigidbody.velocity - gravityWellController.CalculateOptimalOrbitalVelocity(rigidbody), scaleFactor);
-		UpdateNavVector(targetNavVector, target != null ? target.position : rigidbody.position, scaleFactor);
-		UpdateNavVector(planetNavVector, Vector2.zero, scaleFactor);
+		Vector2 orbitalVelocity = rigidbody.velocity - gravityWellController.CalculateOptimalOrbitalVelocity(rigidbody);
+		flightData = new Vector3(rigidbody.position.magnitude - surfaceAltitude, (target != null ? (rigidbody.velocity - target.velocity).magnitude : 0.0f), orbitalVelocity.magnitude);
+		UpdateVelocityVector(velocityVector, (target != null ? (rigidbody.velocity - target.velocity) : Vector2.zero), flightData.y, scaleFactor);
+		UpdateVelocityVector(orbitalVector, orbitalVelocity, flightData.z, scaleFactor);
+		UpdateNavVector(targetNavVector, (target != null ? target.position : Vector2.zero), (target != null ? (target.position - rigidbody.position).magnitude : 0.0f), scaleFactor);
+		UpdateNavVector(planetNavVector, Vector2.zero, flightData.x, scaleFactor);
 	}
 
-	private void UpdateVelocityVector(RectTransform vector, Vector2 velocity, float scaleFactor)
+	private void UpdateVelocityVector(RectTransform vector, Vector2 velocity, float velocityMagnitude, float scaleFactor)
 	{
-		if(vector.gameObject.activeSelf && velocity != Vector2.zero)
+		if(vector.gameObject.activeSelf && velocityMagnitude > 0.0f)
 		{
-			vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocity.magnitude * vectorLengthFactor);
+			vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocityMagnitude * vectorLengthFactor);
 			vector.localRotation = Quaternion.FromToRotation(uiTransform.up, velocity);
 			vector.anchoredPosition = uiTransform.InverseTransformDirection(velocity) * (vectorLengthFactor * 0.5f);
 		}
@@ -137,12 +142,12 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		}
 	}
 
-	private void UpdateNavVector(RectTransform vector, Vector2 targetPosition, float scaleFactor)
+	private void UpdateNavVector(RectTransform vector, Vector2 targetPosition, float targetDistance, float scaleFactor)
 	{
-		if(vector.gameObject.activeSelf && targetPosition != rigidbody.position)
+		if(vector.gameObject.activeSelf && targetDistance > 0.0f)
 		{
 			Vector2 direction = uiTransform.InverseTransformPoint(targetPosition);															// Vector from local Origin to Target Position in local Space
-			vector.sizeDelta = new Vector2(navVectorWidth * scaleFactor, direction.magnitude);
+			vector.sizeDelta = new Vector2(navVectorWidth * scaleFactor, targetDistance);
 			vector.localRotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - rigidbody.position);
 			vector.anchoredPosition = direction * 0.5f;
 		}
@@ -150,6 +155,11 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		{
 			vector.sizeDelta = new Vector2(0.0f, 0.0f);
 		}
+	}
+
+	public Vector3 GetFlightData()
+	{
+		return flightData;
 	}
 
 	public void SetTarget(Rigidbody2D target)

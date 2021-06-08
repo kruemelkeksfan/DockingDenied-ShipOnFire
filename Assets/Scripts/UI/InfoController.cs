@@ -22,7 +22,7 @@ public class InfoController : MonoBehaviour, IListener
 	[SerializeField] private float messageDuration = 6.0f;
 	[SerializeField] private Text controlHint = null;
 	[SerializeField] private Text resourceDisplay = null;
-	[SerializeField] private Text buildingResourceDisplay = null;
+	[SerializeField] private Text secondaryDisplay = null;
 	[SerializeField] private Text throttleDisplay = null;
 	[SerializeField] private Text autoThrottleDisplay = null;
 	[SerializeField] private GameObject keyBindingDisplay = null;
@@ -30,6 +30,11 @@ public class InfoController : MonoBehaviour, IListener
 	private float lastDequeue = 0.0f;
 	private Dictionary<string, uint> buildingCosts = null;
 	private InventoryController inventoryController = null;
+	private PlayerSpacecraftUIController playerSpacecraftUIController = null;
+	private StringBuilder textBuilder = null;
+	private bool updateResourceDisplay = true;
+	private bool updateBuildingResourceDisplay = true;
+	private bool showBuildingResourceDisplay = false;
 
 	public static InfoController GetInstance()
 	{
@@ -38,22 +43,98 @@ public class InfoController : MonoBehaviour, IListener
 
 	private void Awake()
 	{
-		Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");												// Decimal Points FTW!!elf!
+		Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture("en-GB");                                               // Decimal Points FTW!!elf!
 
 		messages = new Queue<Message>();
+		textBuilder = new StringBuilder();
+
 		instance = this;
 	}
 
 	private void Start()
 	{
-		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
-		inventoryController = spacecraftManager.GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
-		spacecraftManager.AddSpacecraftChangeListener(this);
+		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
+		Notify();
 	}
 
 	// TODO: Put this into a Method which only gets called when a new Message is added or a Message Timestamp runs out (Coroutine)
 	private void Update()
 	{
+		if(updateResourceDisplay)
+		{
+			textBuilder.Clear();
+			textBuilder.Append(inventoryController.GetMoney());
+			textBuilder.Append("$ / Energy - ");
+			textBuilder.Append(inventoryController.GetEnergyKWH());
+			textBuilder.Append("kWh");
+			resourceDisplay.text = textBuilder.ToString();
+			/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
+		+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/
+
+			updateResourceDisplay = false;
+		}
+
+		if(showBuildingResourceDisplay && updateBuildingResourceDisplay)
+		{
+			textBuilder.Clear();
+			textBuilder.Append("Steel - ");
+			textBuilder.Append(inventoryController.GetGoodAmount("Steel"));
+			if(buildingCosts != null)
+			{
+				textBuilder.Append(" (");
+				textBuilder.Append(buildingCosts.ContainsKey("Steel") ? buildingCosts["Steel"] : 0);
+				textBuilder.Append(")");
+			}
+			textBuilder.Append(" / Aluminium - ");
+			textBuilder.Append(inventoryController.GetGoodAmount("Aluminium"));
+			if(buildingCosts != null)
+			{
+				textBuilder.Append(" (");
+				textBuilder.Append(buildingCosts.ContainsKey("Aluminium") ? buildingCosts["Aluminium"] : 0);
+				textBuilder.Append(")");
+			}
+			textBuilder.Append(" / Copper - ");
+			textBuilder.Append(inventoryController.GetGoodAmount("Copper"));
+			if(buildingCosts != null)
+			{
+				textBuilder.Append(" (");
+				textBuilder.Append(buildingCosts.ContainsKey("Copper") ? buildingCosts["Copper"] : 0);
+				textBuilder.Append(")");
+			}
+			textBuilder.Append(" / Gold - ");
+			textBuilder.Append(inventoryController.GetGoodAmount("Gold"));
+			if(buildingCosts != null)
+			{
+				textBuilder.Append(" (");
+				textBuilder.Append(buildingCosts.ContainsKey("Gold") ? buildingCosts["Gold"] : 0);
+				textBuilder.Append(")");
+			}
+			textBuilder.Append(" / Silicon - ");
+			textBuilder.Append(inventoryController.GetGoodAmount("Silicon"));
+			if(buildingCosts != null)
+			{
+				textBuilder.Append(" (");
+				textBuilder.Append(buildingCosts.ContainsKey("Silicon") ? buildingCosts["Silicon"] : 0);
+				textBuilder.Append(")");
+			}
+			secondaryDisplay.text = textBuilder.ToString();
+
+			updateBuildingResourceDisplay = false;
+		}
+		else if(!showBuildingResourceDisplay)
+		{
+			Vector3 flightData = playerSpacecraftUIController.GetFlightData();
+			textBuilder.Clear();
+			textBuilder.Append("Altitude - ");
+			textBuilder.Append((int) flightData.x);
+			textBuilder.Append("km / Station Speed - ");
+			textBuilder.Append(flightData.y.ToString("F4"));
+			textBuilder.Append("km/s / Orbital Speed - ");
+			textBuilder.Append(flightData.z.ToString("F4"));
+			textBuilder.Append("km/s");
+			secondaryDisplay.text = textBuilder.ToString();
+		}
+
 		if(Input.GetButtonDown("ShowHelp"))
 		{
 			helpActive = !helpActive;
@@ -71,17 +152,18 @@ public class InfoController : MonoBehaviour, IListener
 			lastDequeue = Time.realtimeSinceStartup;
 		}
 
-		StringBuilder messageText = new StringBuilder();
+		textBuilder.Clear();
 		foreach(Message message in messages)
 		{
-			messageText.AppendLine(message.message);
+			textBuilder.AppendLine(message.message);
 		}
-		messageField.text = messageText.ToString();
+		messageField.text = textBuilder.ToString();
 	}
 
 	public void Notify()
 	{
 		inventoryController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
+		playerSpacecraftUIController = inventoryController.GetComponent<PlayerSpacecraftUIController>();
 	}
 
 	public void UpdateControlHint(Dictionary<string, string[]> keyBindings)
@@ -109,31 +191,14 @@ public class InfoController : MonoBehaviour, IListener
 		controlHint.text = hint.ToString();
 	}
 
-	// TODO: Rather set a bool here and update in Update() when bool is true, to avoid Updating dozens of Times each frame
-	public void UpdateResourceDisplays()
+	public void UpdateResourceDisplay()
 	{
-		if(inventoryController != null)
-		{
-			resourceDisplay.text = inventoryController.GetMoney() + "$ / Energy - " + inventoryController.GetEnergyKWH() + "kWh"
-				/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
-			+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/;
-			if(buildingCosts == null)
-			{
-				buildingResourceDisplay.text = "Steel - " + inventoryController.GetGoodAmount("Steel")
-					+ " / Aluminium - " + inventoryController.GetGoodAmount("Aluminium")
-					+ " / Copper - " + inventoryController.GetGoodAmount("Copper")
-					+ " / Gold - " + inventoryController.GetGoodAmount("Gold")
-					+ " / Silicon - " + inventoryController.GetGoodAmount("Silicon");
-			}
-			else
-			{
-				buildingResourceDisplay.text = "Steel - " + inventoryController.GetGoodAmount("Steel") + " (" + (buildingCosts.ContainsKey("Steel") ? buildingCosts["Steel"] : 0) + ")"
-					+ " / Aluminium - " + inventoryController.GetGoodAmount("Aluminium") + " (" + (buildingCosts.ContainsKey("Aluminium") ? buildingCosts["Aluminium"] : 0) + ")"
-					+ " / Copper - " + inventoryController.GetGoodAmount("Copper") + " (" + (buildingCosts.ContainsKey("Copper") ? buildingCosts["Copper"] : 0) + ")"
-					+ " / Gold - " + inventoryController.GetGoodAmount("Gold") + " (" + (buildingCosts.ContainsKey("Gold") ? buildingCosts["Gold"] : 0) + ")"
-					+ " / Silicon - " + inventoryController.GetGoodAmount("Silicon") + " (" + (buildingCosts.ContainsKey("Silicon") ? buildingCosts["Silicon"] : 0) + ")";
-			}
-		}
+		updateResourceDisplay = true;
+	}
+
+	public void UpdateBuildingResourceDisplay()
+	{
+		updateBuildingResourceDisplay = true;
 	}
 
 	public void UpdateThrottleDisplay(float throttle, bool autoThrottle)
@@ -156,6 +221,12 @@ public class InfoController : MonoBehaviour, IListener
 		return messages.Count;
 	}
 
+	public void SetShowBuildingResourceDisplay(bool showBuildingResourceDisplay)
+	{
+		updateBuildingResourceDisplay = showBuildingResourceDisplay;
+		this.showBuildingResourceDisplay = showBuildingResourceDisplay;
+	}
+
 	public void SetBuildingCosts(GoodManager.Load[] buildingCosts)
 	{
 		if(buildingCosts != null)
@@ -171,6 +242,6 @@ public class InfoController : MonoBehaviour, IListener
 			this.buildingCosts = null;
 		}
 
-		UpdateResourceDisplays();
+		UpdateResourceDisplay();
 	}
 }

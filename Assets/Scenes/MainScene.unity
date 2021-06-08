@@ -3358,7 +3358,7 @@ MonoBehaviour:
   messageDuration: 6
   controlHint: {fileID: 82966304}
   resourceDisplay: {fileID: 775159703}
-  buildingResourceDisplay: {fileID: 1632501202}
+  secondaryDisplay: {fileID: 1632501202}
   throttleDisplay: {fileID: 1184270125}
   autoThrottleDisplay: {fileID: 1585539236}
   keyBindingDisplay: {fileID: 371359018}
@@ -8612,7 +8612,7 @@ GameObject:
   - component: {fileID: 1632501203}
   - component: {fileID: 1632501202}
   m_Layer: 5
-  m_Name: BuildingResourceDisplay
+  m_Name: SecondaryDisplay
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -8669,7 +8669,7 @@ MonoBehaviour:
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
     m_LineSpacing: 1
-  m_Text: Steel - 0 / Aluminium - 0 / Copper - 0 / Gold - 0 / Silicon - 0
+  m_Text: TEST
 --- !u!222 &1632501203
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -10962,7 +10962,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51733ac79b41b2745b1c5f2805ea5a11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildingResourceDisplay: {fileID: 1632501200}
   buildingGridSize: 0.01
   moduleButtonPrefab: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
     type: 3}

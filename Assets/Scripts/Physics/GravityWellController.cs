@@ -306,4 +306,9 @@ public class GravityWellController : MonoBehaviour, IListener
 			return true;
 		}
 	}
+
+	public float GetSurfaceAltitude()
+	{
+		return surfaceAltitude;
+	}
 }

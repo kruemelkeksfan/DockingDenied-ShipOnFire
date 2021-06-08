@@ -48,14 +48,13 @@ public class InventoryController : MonoBehaviour, IListener
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
 		StartCoroutine(UpdateEnergy());
-
-		resourceDisplayController?.UpdateResourceDisplays();
 	}
 
 	public void Notify()
 	{
 		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
-		resourceDisplayController?.UpdateResourceDisplays();
+		resourceDisplayController?.UpdateResourceDisplay();
+		resourceDisplayController?.UpdateBuildingResourceDisplay();
 	}
 
 	public bool TransferEnergy(float energy)
@@ -91,7 +90,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			this.money += money;
 
-			resourceDisplayController?.UpdateResourceDisplays();
+			resourceDisplayController?.UpdateResourceDisplay();
 			return true;
 		}
 		else
@@ -119,7 +118,8 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			if(container.Deposit(goodName, amount))
 			{
-				resourceDisplayController?.UpdateResourceDisplays();
+				resourceDisplayController?.UpdateResourceDisplay();
+				resourceDisplayController?.UpdateBuildingResourceDisplay();
 				return true;
 			}
 			else
@@ -140,7 +140,8 @@ public class InventoryController : MonoBehaviour, IListener
 
 				if(amount <= 0)
 				{
-					resourceDisplayController?.UpdateResourceDisplays();
+					resourceDisplayController?.UpdateResourceDisplay();
+					resourceDisplayController?.UpdateBuildingResourceDisplay();
 					return true;
 				}
 			}
@@ -211,7 +212,8 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			if(container.Withdraw(goodName, amount))
 			{
-				resourceDisplayController?.UpdateResourceDisplays();
+				resourceDisplayController?.UpdateResourceDisplay();
+				resourceDisplayController?.UpdateBuildingResourceDisplay();
 				return true;
 			}
 			else
@@ -232,7 +234,8 @@ public class InventoryController : MonoBehaviour, IListener
 
 				if(amount <= 0)
 				{
-					resourceDisplayController?.UpdateResourceDisplays();
+					resourceDisplayController?.UpdateResourceDisplay();
+					resourceDisplayController?.UpdateBuildingResourceDisplay();
 					return true;
 				}
 			}
@@ -321,7 +324,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 			transferEnergy = 0.0f;
 
-			resourceDisplayController?.UpdateResourceDisplays();
+			resourceDisplayController?.UpdateResourceDisplay();
 		}
 	}
 
@@ -404,13 +407,15 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			return (((Vector2)x.GetTransform().localPosition) - rigidbody.centerOfMass).sqrMagnitude - (((Vector2)y.GetTransform().localPosition) - rigidbody.centerOfMass).sqrMagnitude >= 0 ? 1 : -1;
 		});
-		resourceDisplayController?.UpdateResourceDisplays();
+		resourceDisplayController?.UpdateResourceDisplay();
+		resourceDisplayController?.UpdateBuildingResourceDisplay();
 	}
 
 	public void RemoveContainer(Container container)
 	{
 		containers[container.GetState()].Remove(container);
-		resourceDisplayController?.UpdateResourceDisplays();
+		resourceDisplayController?.UpdateResourceDisplay();
+		resourceDisplayController?.UpdateBuildingResourceDisplay();
 	}
 
 	public Dictionary<string, uint> GetInventoryContents()
