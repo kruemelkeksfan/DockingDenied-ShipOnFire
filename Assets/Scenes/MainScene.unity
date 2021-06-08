@@ -1544,7 +1544,7 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_RootOrder
-      value: 14
+      value: 15
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
@@ -1857,7 +1857,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &439902182 stripped
 MonoBehaviour:
@@ -1901,9 +1901,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   asteroidPrefabs:
-  - {fileID: 6137225308136315882, guid: 995a724cde47723428d487c6b7a91ada, type: 3}
-  - {fileID: 5115176918420387598, guid: 99c1619453d83c740a1ccff3e1e7fa00, type: 3}
-  - {fileID: 2690796472479987618, guid: f06c6a2e9edd1bb46936d4679e51dd7f, type: 3}
+  - {fileID: 3931542096556505849, guid: 995a724cde47723428d487c6b7a91ada, type: 3}
+  - {fileID: 2691088914286335517, guid: 99c1619453d83c740a1ccff3e1e7fa00, type: 3}
+  - {fileID: 5112650389580486321, guid: f06c6a2e9edd1bb46936d4679e51dd7f, type: 3}
   densities:
   - 1
   maxAsteroids: 600
@@ -1911,9 +1911,6 @@ MonoBehaviour:
   asteroidBeltHeights:
   - min: 348
     max: 350
-  spawnAreaRadius: 10
-  spawnHeight: 1000
-  approachSpeed: 0.2
 --- !u!4 &449989463
 Transform:
   m_ObjectHideFlags: 0
@@ -1926,7 +1923,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &452516120
 GameObject:
@@ -2352,7 +2349,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &488042605
 GameObject:
@@ -2451,14 +2448,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   altitudeCheckInterval: 5
-  decayHeight: 100
-  clearSpeed: 0.002
   surfaceAltitude: 250
   atmossphereEntryAltitude: 320
   destructionAltitude: 280
   globalAltitudeConstraint:
     min: 320
-    max: 1500
+    max: 10000
   atmossphericDensity: 0.2
   plasmaParticleSystemPrefab: {fileID: 2736846745620259419, guid: 11b17e94e5d60294898ba61c533a9b55,
     type: 3}
@@ -2577,7 +2572,7 @@ RectTransform:
   - {fileID: 346605099318023814}
   - {fileID: 1438289197}
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -3379,7 +3374,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &702266748
 GameObject:
@@ -3549,7 +3544,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 12
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: -20, z: 0}
 --- !u!224 &730384172 stripped
 RectTransform:
@@ -4962,10 +4957,8 @@ MonoBehaviour:
   questVesselSpawnRange:
     min: 4
     max: 12
-  questVesselPrefab: {fileID: 6497912318156362318, guid: c347a9d1101a45e41aac3af9b415db46,
+  questVesselPrefab: {fileID: 6497912318156362320, guid: c347a9d1101a45e41aac3af9b415db46,
     type: 3}
-  questVesselBlueprints:
-  - {fileID: 4900000, guid: 2acd4dc4e30946447900601e68da4573, type: 3}
   questVesselSpawnClearance: 0.2
 --- !u!4 &938566358
 Transform:
@@ -5194,7 +5187,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 15
+  m_RootOrder: 16
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
@@ -7868,7 +7861,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1466514765 stripped
 MonoBehaviour:
@@ -8298,7 +8291,7 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1571141922 stripped
 MonoBehaviour:
@@ -10004,6 +9997,52 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d739d2c748e404e4488852f095a58554, type: 3}
+--- !u!1 &1818884378
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1818884380}
+  - component: {fileID: 1818884379}
+  m_Layer: 0
+  m_Name: SpawnController
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1818884379
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1818884378}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4db8b07451e9fd146a28b98c846b3e67, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnAreaRadius: 2
+  spawnHeight: -10
+  approachSpeed: 0.02
+--- !u!4 &1818884380
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1818884378}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!224 &1843211679 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
@@ -11903,10 +11942,20 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 664091068388133149, guid: 6f59274365b6eb449a06ee16f4007538,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
+      objectReference: {fileID: 0}
     - target: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
       propertyPath: m_Name
       value: Planet
+      objectReference: {fileID: 0}
+    - target: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
+        type: 3}
+      propertyPath: m_Layer
+      value: 10
       objectReference: {fileID: 0}
     - target: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
@@ -11916,7 +11965,7 @@ PrefabInstance:
     - target: {fileID: 8025485152524623507, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
       propertyPath: m_RootOrder
-      value: 13
+      value: 14
       objectReference: {fileID: 0}
     - target: {fileID: 8025485152524623507, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}

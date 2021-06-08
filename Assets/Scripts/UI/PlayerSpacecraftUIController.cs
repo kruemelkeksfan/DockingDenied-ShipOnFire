@@ -120,7 +120,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		UpdateVelocityVector(velocityVector, (target != null ? (rigidbody.velocity - target.velocity) : Vector2.zero), scaleFactor);
 		UpdateVelocityVector(orbitalVector, rigidbody.velocity - gravityWellController.CalculateOptimalOrbitalVelocity(rigidbody), scaleFactor);
 		UpdateNavVector(targetNavVector, target != null ? target.position : rigidbody.position, scaleFactor);
-		UpdateNavVector(planetNavVector, gravityWellController.GetPosition(), scaleFactor);
+		UpdateNavVector(planetNavVector, Vector2.zero, scaleFactor);
 	}
 
 	private void UpdateVelocityVector(RectTransform vector, Vector2 velocity, float scaleFactor)

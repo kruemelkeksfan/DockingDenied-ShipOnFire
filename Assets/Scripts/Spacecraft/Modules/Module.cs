@@ -33,6 +33,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	}
 
+	protected virtual void OnDestroy()
+	{
+
+	}
+
 	public virtual void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		spacecraft = gameObject.GetComponentInParent<Spacecraft>();

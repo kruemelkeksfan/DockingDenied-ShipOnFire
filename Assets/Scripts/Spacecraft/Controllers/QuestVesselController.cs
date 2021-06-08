@@ -8,9 +8,12 @@ using UnityEngine.UI;
 
 public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingListener, IListener
 {
+	[SerializeField] private TextAsset[] questVesselBlueprints = { };
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[Tooltip("Distance up from which no more digital Digits will be displayed")]
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
+	[Tooltip("Distance the Player needs to be away for this Vessel to start Despawning when its Quest is completed")]
+	[SerializeField] private float playerDespawnDistance = 0.2f;
 	private RectTransform uiTransform = null;
 	private MenuController menuController = null;
 	private Spacecraft spacecraft = null;
@@ -34,11 +37,12 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	private QuestManager.Quest quest = null;
 	private bool interactable = false;
 	private bool playerDocked = false;
-
 	private void Start()
 	{
 		spacecraft = GetComponent<Spacecraft>();
 		transform = spacecraft.GetTransform();
+		SpacecraftBlueprintController.LoadBlueprint(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)], transform);
+
 		rigidbody = GetComponent<Rigidbody2D>();
 		camera = Camera.main;
 		cameraTransform = camera.GetComponent<Transform>();
@@ -48,6 +52,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			port.AddDockingListener(this);
 			port.HotkeyDown();
 		}
+
+		playerDespawnDistance *= playerDespawnDistance;
 
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
 		localPlayerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
@@ -88,6 +94,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		else
 		{
 			mapMarker.localScale = Vector3.zero;
+		}
+
+		if(quest.progress >= 1.0f && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
+		{
+			StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));
 		}
 	}
 

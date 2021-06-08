@@ -12,11 +12,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 06a6816f17a5c984682f9867ae1d743c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  questVesselBlueprints:
+  - {fileID: 4900000, guid: 2acd4dc4e30946447900601e68da4573, type: 3}
   mapMarkerPrefab: {fileID: 8860085007747504424, guid: 7c77ffe9b9c549246add687e41963679,
     type: 3}
-  questVesselMenuPrefab: {fileID: 765663083927741838, guid: 1348d26f78e55bb4092da335e6979418,
-    type: 3}
   decimalDigitThreshold: 100
+  playerDespawnDistance: 1
 --- !u!1001 &1583003449038245521
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -6,30 +6,8 @@ using UnityEngine;
 [Serializable]
 public struct MinMax
 {
-	[SerializeField] private float min;
-	public float Min
-	{
-		get
-		{
-			return min;
-		}
-		private set
-		{
-			min = value;
-		}
-	}
-	[SerializeField] private float max;
-	public float Max
-	{
-		get
-		{
-			return max;
-		}
-		private set
-		{
-			max = value;
-		}
-	}
+	[SerializeField] public float min;
+	[SerializeField] public float max;
 
 	public MinMax(float min, float max)
 	{

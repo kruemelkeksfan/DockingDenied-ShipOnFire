@@ -6,12 +6,12 @@ public class GravityWellController : MonoBehaviour, IListener
 {
 	private struct AsteroidRecord
 	{
-		public int beltIndex;
+		public MinMax altitudeConstraint;
 		public bool touched;
 
-		public AsteroidRecord(int beltIndex)
+		public AsteroidRecord(MinMax altitudeConstraint)
 		{
-			this.beltIndex = beltIndex;
+			this.altitudeConstraint = new MinMax(altitudeConstraint.min * altitudeConstraint.min, altitudeConstraint.max * altitudeConstraint.max);
 			touched = false;
 		}
 
@@ -29,10 +29,6 @@ public class GravityWellController : MonoBehaviour, IListener
 
 	[Tooltip("Determines how often the Heights of all Gravity Objects Orbits are checked in Ingame Seconds")]
 	[SerializeField] private float altitudeCheckInterval = 5.0f;
-	[Tooltip("Height below the XY-Plane at which old Asteroids will enter the Atmossphere and decay")]
-	[SerializeField] private float decayHeight = 100.0f;
-	[Tooltip("Velocity with which Asteroids leave the orbital Plane when despawning")]
-	[SerializeField] private float clearSpeed = 0.002f;
 	[Tooltip("Sea level Height above the Planet Center")]
 	[SerializeField] private float surfaceAltitude = 250.0f;
 	[Tooltip("Height at which Asteroids should start burning up")]
@@ -45,13 +41,12 @@ public class GravityWellController : MonoBehaviour, IListener
 	[SerializeField] private float atmossphericDensity = 0.2f;
 	[Tooltip("A Particle System to visualize Re-Entry Heat and Plasma")]
 	[SerializeField] private ParticleSystem plasmaParticleSystemPrefab = null;
+	private SpawnController spawnController = null;
 	private InfoController infoController = null;
 	private GameObject localPlayerMainSpacecraftObject = null;
-	private Vector2 position = Vector2.zero;
 	private float gravitationalParameter;
 	private Dictionary<Rigidbody2D, AsteroidRecord?> gravityObjects = null;
 	HashSet<Rigidbody2D> deadGravityObjects = null;
-	private MinMax[] asteroidAltitudeConstraints = { };
 	private float scaleAltitude = 0.0f;
 	private float halfMaxAltitude = 0.0f;
 
@@ -68,13 +63,12 @@ public class GravityWellController : MonoBehaviour, IListener
 			waitForFixedUpdate = new WaitForFixedUpdate();
 		}
 
-		position = transform.position;
 		gravitationalParameter = (float)(gameObject.GetComponent<Rigidbody2D>().mass * GRAVITY_CONSTANT * 1000000000000000000000000.0);                                     // Celestial Body Mass is given in 10^24 KGs, to accommodate them in a float
 		gravityObjects = new Dictionary<Rigidbody2D, AsteroidRecord?>();
 		deadGravityObjects = new HashSet<Rigidbody2D>();
 
-		halfMaxAltitude = (globalAltitudeConstraint.Max * 0.5f) * (globalAltitudeConstraint.Max * 0.5f);
-		globalAltitudeConstraint = new MinMax(globalAltitudeConstraint.Min * globalAltitudeConstraint.Min, globalAltitudeConstraint.Max * globalAltitudeConstraint.Max);    // Square to avoid Mathf.sqrt() later on
+		halfMaxAltitude = (globalAltitudeConstraint.max * 0.5f) * (globalAltitudeConstraint.max * 0.5f);
+		globalAltitudeConstraint = new MinMax(globalAltitudeConstraint.min * globalAltitudeConstraint.min, globalAltitudeConstraint.max * globalAltitudeConstraint.max);    // Square to avoid Mathf.sqrt() later on
 
 		scaleAltitude = atmossphereEntryAltitude - surfaceAltitude;                                                                                                         // According to Formula Scale Height is the Height at which
 																																											// 1/e of the Air Density of the Surface is present,
@@ -87,6 +81,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	{
 		StartCoroutine(CheckHeight());
 
+		spawnController = SpawnController.GetInstance();
 		infoController = InfoController.GetInstance();
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
 		localPlayerMainSpacecraftObject = spacecraftManager.GetLocalPlayerMainSpacecraft().gameObject;
@@ -103,7 +98,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	{
 		foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
 		{
-			Vector2 gravityDirection = position - gravityObject.position;
+			Vector2 gravityDirection = -gravityObject.position;
 			if(gravityDirection.x != 0.0f || gravityDirection.y != 0.0f)
 			{
 				float sqrGravityDirectionMagnitude = gravityDirection.x * gravityDirection.x + gravityDirection.y * gravityDirection.y;
@@ -128,17 +123,19 @@ public class GravityWellController : MonoBehaviour, IListener
 		{
 			yield return altitudeCheckInterval;
 
+			List<Rigidbody2D> deorbitObjects = new List<Rigidbody2D>();
+			List<Rigidbody2D> despawnObjects = new List<Rigidbody2D>();
 			foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
 			{
-				float sqrOrbitalHeight = (position - (Vector2)gravityObject.position).sqrMagnitude;
+				float sqrOrbitalHeight = ((Vector2)gravityObject.position).sqrMagnitude;
 				if(((gravityObjects[gravityObject].HasValue && !gravityObjects[gravityObject].Value.touched
-					&& (sqrOrbitalHeight < asteroidAltitudeConstraints[gravityObjects[gravityObject].Value.beltIndex].Min || sqrOrbitalHeight > asteroidAltitudeConstraints[gravityObjects[gravityObject].Value.beltIndex].Max))
-					|| sqrOrbitalHeight < globalAltitudeConstraint.Min || sqrOrbitalHeight > globalAltitudeConstraint.Max || (gravityObject.gameObject == localPlayerMainSpacecraftObject && sqrOrbitalHeight > halfMaxAltitude))
+					&& (sqrOrbitalHeight < gravityObjects[gravityObject].Value.altitudeConstraint.min || sqrOrbitalHeight > gravityObjects[gravityObject].Value.altitudeConstraint.max))
+					|| sqrOrbitalHeight < globalAltitudeConstraint.min || sqrOrbitalHeight > globalAltitudeConstraint.max || (gravityObject.gameObject == localPlayerMainSpacecraftObject && sqrOrbitalHeight > halfMaxAltitude))
 					&& !deadGravityObjects.Contains(gravityObject))
 				{
 					if(gravityObject.gameObject == localPlayerMainSpacecraftObject)
 					{
-						if(sqrOrbitalHeight > globalAltitudeConstraint.Max)
+						if(sqrOrbitalHeight > globalAltitudeConstraint.max)
 						{
 							if(infoController.GetMessageCount() <= 0)
 							{
@@ -146,7 +143,7 @@ public class GravityWellController : MonoBehaviour, IListener
 							}
 							continue;
 						}
-						else if(sqrOrbitalHeight < globalAltitudeConstraint.Min)
+						else if(sqrOrbitalHeight < globalAltitudeConstraint.min)
 						{
 							infoController.AddMessage("Altitude critical, pull up!");
 						}
@@ -160,30 +157,38 @@ public class GravityWellController : MonoBehaviour, IListener
 						}
 					}
 
-					// TODO: Different Mechanism for Objects which leave the Orbit (despawn when they reach a ridiculous Distance from the Planet and are not in Sight)
-					StartCoroutine(Despawn(gravityObject, gravityObjects[gravityObject]));
+					if(sqrOrbitalHeight < globalAltitudeConstraint.min)
+					{
+						deorbitObjects.Add(gravityObject);
+					}
+					else
+					{
+						despawnObjects.Add(gravityObject);
+					}
 					deadGravityObjects.Add(gravityObject);
 				}
+			}
+
+			foreach(Rigidbody2D deorbitObject in deorbitObjects)
+			{
+				StartCoroutine(Deorbit(deorbitObject));
+			}
+			foreach(Rigidbody2D despawnObject in despawnObjects)
+			{
+				StartCoroutine(spawnController.DespawnObject(despawnObject));
 			}
 		}
 	}
 
-	private IEnumerator Despawn(Rigidbody2D gravityObject, AsteroidRecord? asteroidRecord)
+	private IEnumerator Deorbit(Rigidbody2D gravityObject)
 	{
-		int previousLayer = gravityObject.gameObject.layer;
-		gravityObject.gameObject.layer = 9;
 		gravityObject.drag = 0.02f;
 
 		Transform gravityObjectTransform = gravityObject.GetComponent<Transform>();
-		float orbitalAltitude = 0.0f;
+		float orbitalAltitude;
 		ParticleSystem plasmaParticles = null;
-		while((orbitalAltitude = ((Vector2)gravityObjectTransform.position - position).magnitude) > destructionAltitude)
+		while((orbitalAltitude = ((Vector2)gravityObjectTransform.position).magnitude) > destructionAltitude)
 		{
-			if(asteroidRecord.HasValue && gravityObjectTransform.position.z < decayHeight)
-			{
-				gravityObjectTransform.position += new Vector3(0.0f, 0.0f, clearSpeed * Time.fixedDeltaTime);
-			}
-
 			if(orbitalAltitude < atmossphereEntryAltitude)
 			{
 				if(plasmaParticles == null)
@@ -207,16 +212,8 @@ public class GravityWellController : MonoBehaviour, IListener
 				float drag = atmossphericDensity * Mathf.Exp(-(orbitalAltitude - surfaceAltitude) / scaleAltitude);                                                     // Drag based on an Approximation of atmosspheric Density
 				gravityObject.velocity *= 1.0f - Mathf.Min((gravityObject.velocity.sqrMagnitude * drag * Time.deltaTime), 1.0f);
 			}
-			else if(plasmaParticles != null && orbitalAltitude * orbitalAltitude > globalAltitudeConstraint.Min)
+			else if(plasmaParticles != null && orbitalAltitude * orbitalAltitude > globalAltitudeConstraint.min)
 			{
-				while(asteroidRecord.HasValue && gravityObjectTransform.position.z > 0.0f)
-				{
-					gravityObjectTransform.position -= new Vector3(0.0f, 0.0f, clearSpeed * Time.fixedDeltaTime);
-					yield return waitForFixedUpdate;
-				}
-
-				gravityObject.drag = 0.0f;
-				gravityObject.gameObject.layer = previousLayer;
 				deadGravityObjects.Remove(gravityObject);
 				GameObject.Destroy(plasmaParticles.gameObject);
 
@@ -226,10 +223,6 @@ public class GravityWellController : MonoBehaviour, IListener
 			yield return waitForFixedUpdate;
 		}
 
-		if(asteroidRecord.HasValue)
-		{
-			--AsteroidSpawner.AsteroidCount;
-		}
 		if(gravityObject.gameObject == localPlayerMainSpacecraftObject)
 		{
 			gravityObject.GetComponent<Spacecraft>().Kill();
@@ -243,7 +236,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	// Calculates the required orbital Velocity for a circular Orbit at the current Height of this Orbiter.
 	public Vector2 CalculateOptimalOrbitalVelocity(Rigidbody2D orbiter)
 	{
-		Vector2 orbitalVelocity = CalculateOptimalOrbitalVelocity(position - orbiter.position);
+		Vector2 orbitalVelocity = CalculateOptimalOrbitalVelocity(orbiter.position);
 
 		if(Vector2.Dot(orbiter.velocity, orbitalVelocity) > 0.0f)                                                         // Turn the Target Velocity around, if the Orbiter is already going into the other Direction
 		{
@@ -270,35 +263,21 @@ public class GravityWellController : MonoBehaviour, IListener
 
 		// See: https://www.satsig.net/orbit-research/orbit-height-and-speed.htm
 		// Velocity = sqrt(Gravitational Constant * Mass of Main Body / Radius)
-		return (new Vector2(-orbitalDirection.y, orbitalDirection.x) / altitude)
+		return (new Vector2(orbitalDirection.y, -orbitalDirection.x) / altitude)
 			* Mathf.Sqrt(gravitationalParameter
 			/ (altitude * 1000.0f))                                                                                                         // Convert from km to m
 			/ 1000.0f;                                                                                                                      // Convert back from m/s to km/s
 	}
 
-	public void AddGravityObject(Rigidbody2D gravityObject, int asteroidBeltIndex = -1)
+	public void AddGravityObject(Rigidbody2D gravityObject, MinMax asteroidBeltHeight = new MinMax())
 	{
-		gravityObjects.Add(gravityObject, (asteroidBeltIndex >= 0 ? ((AsteroidRecord?)new AsteroidRecord(asteroidBeltIndex)) : null));
+		gravityObjects.Add(gravityObject, ((asteroidBeltHeight.min != 0.0f || asteroidBeltHeight.max != 0.0f) ? ((AsteroidRecord?)new AsteroidRecord(asteroidBeltHeight)) : null));
 	}
 
 	public void RemoveGravityObject(Rigidbody2D gravityObject)
 	{
 		deadGravityObjects.Remove(gravityObject);
 		gravityObjects.Remove(gravityObject);
-	}
-
-	public Vector2 GetPosition()
-	{
-		return position;
-	}
-
-	public void SetAsteroidAltitudeConstraints(MinMax[] asteroidAltitudeConstraints)
-	{
-		this.asteroidAltitudeConstraints = new MinMax[asteroidAltitudeConstraints.Length];
-		for(int i = 0; i < asteroidAltitudeConstraints.Length; ++i)
-		{
-			this.asteroidAltitudeConstraints[i] = new MinMax(asteroidAltitudeConstraints[i].Min * asteroidAltitudeConstraints[i].Min, asteroidAltitudeConstraints[i].Max * asteroidAltitudeConstraints[i].Max);
-		}
 	}
 
 	public bool MarkAsteroidTouched(Rigidbody2D asteroid, Rigidbody2D otherAsteroid)

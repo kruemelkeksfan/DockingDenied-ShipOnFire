@@ -11,7 +11,7 @@ public class AsteroidController : MonoBehaviour
 		Rigidbody2D rigidbody = GetComponent<Rigidbody2D>();
 		if(rigidbody != null)
 		{
-			GravityWellController.GetInstance()?.RemoveGravityObject(rigidbody);
+			AsteroidSpawner.GetInstance()?.RemoveAsteroid(rigidbody);
 		}
 	}
 

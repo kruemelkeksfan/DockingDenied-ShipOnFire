@@ -62,10 +62,10 @@ public class QuestManager : MonoBehaviour, IListener
 	[SerializeField] private float monetaryRewardChance = 0.4f;
 	[Tooltip("Range in which Quest Vessels will spawn around the Station.")]
 	[SerializeField] private MinMax questVesselSpawnRange = new MinMax(4.0f, 12.0f);
-	[SerializeField] private Spacecraft questVesselPrefab = null;
-	[SerializeField] private TextAsset[] questVesselBlueprints = { };
+	[SerializeField] private Rigidbody2D questVesselPrefab = null;
 	[Tooltip("Radius around the Vessel which must be free of any Colliders before Spawn.")]
 	[SerializeField] private float questVesselSpawnClearance = 0.2f;
+	private SpawnController spawnController = null;
 	private InventoryController localPlayerMainInventory = null;
 	private BackstoryData[] backstories = null;
 	private QuestGiverData[] questGivers = null;
@@ -217,6 +217,7 @@ public class QuestManager : MonoBehaviour, IListener
 
 	private void Start()
 	{
+		spawnController = SpawnController.GetInstance();
 		Dictionary<string, GoodManager.Good> goods = GoodManager.GetInstance().GetGoodDictionary();
 		goodNames = new string[goods.Count];
 		goodRewards = new int[goods.Count];
@@ -439,23 +440,7 @@ public class QuestManager : MonoBehaviour, IListener
 		if(quest.taskType == TaskType.Destroy || quest.taskType == TaskType.Bribe || quest.taskType == TaskType.JumpStart
 			|| quest.taskType == TaskType.Supply || quest.taskType == TaskType.Plunder || quest.taskType == TaskType.Tow)
 		{
-			Vector2 stationPosition = quest.destination.GetTransform().position;
-			Vector2 spawnPosition = Vector2.zero;
-			do
-			{
-				// sin(a) = G / H => G = sin(a) * H
-				// cos(a) = A / H => A = cos(a) * H
-				float spawnDistance = UnityEngine.Random.Range(questVesselSpawnRange.Min, questVesselSpawnRange.Max);
-				float spawnAngle = UnityEngine.Random.Range(0.0f, 2 * Mathf.PI);
-				spawnPosition = stationPosition + new Vector2(Mathf.Cos(spawnAngle) * spawnDistance, Mathf.Sin(spawnAngle) * spawnDistance);
-			}
-			while(Physics2D.OverlapCircle(spawnPosition, questVesselSpawnClearance));
-
-			Spacecraft questVesselSpacecraft = GameObject.Instantiate<Spacecraft>(questVesselPrefab, spawnPosition, Quaternion.identity);
-			SpacecraftBlueprintController.LoadBlueprint(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)], questVesselSpacecraft.GetTransform());
-
-			QuestVesselController questVessel = questVesselSpacecraft.GetComponent<QuestVesselController>();
-			questVessel.SetQuest(quest);
+			StartCoroutine(spawnController.SpawnObject(questVesselPrefab, quest.destination.GetTransform().position, questVesselSpawnRange, 11, quest));
 		}
 	}
 
