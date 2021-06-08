@@ -151,7 +151,7 @@ public class TutorialController : MonoBehaviour
 		keyBindingDisplay.color = oldKeyBindingColor;
 		keyBindingHighlighted = false;
 
-		tutorialMessageField.text = "Being docked to a Station allows you to trade Materials or receive Rewards for completed Quests\nYou can accept Quests without docking, but you will later need to dock to receive the Rewards\nNow accept any Quest in the Station Menu";
+		tutorialMessageField.text = "Being docked to a Station allows you to trade Materials or receive Rewards for completed Quests\nYou can accept Quests without docking, but you will need to dock later to receive the Rewards\nNow accept any Quest in the Station Menu";
 		do
 		{
 			yield return waitForTutorialUpdateInterval;
