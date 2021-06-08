@@ -34,20 +34,19 @@ Test Feedback:
 -Autorun Button
 
 0.2
--Display Tutorial Messages in Extra Text Field
--Highlight Buttons in Tutorial
--Draw Attention to the Key Binding Display in the Tutorial
--Fixed Camera Mode (Camera does not follow Ship Rotation)
 -Set 1 as Default Value in Trading Amount Fields
 -Layer Vessel Markers behind other UI Elements
 -Buff Thrusters
 -Increase Turning Threshold on Thrusters
+-Erase Marker sometimes does not disappear (maybe has to do with Main Menu?)
+-NullReferenceException on Asteroid Collision
+-Display Tutorial Messages in Extra Text Field
+-Highlight Buttons in Tutorial
+-Draw Attention to the Key Binding Display in the Tutorial
+-Fixed Camera Mode (Camera does not follow Ship Rotation)
+-Solar Modules can be built through Quest Vessel Solar Modules
+-Don't let Users deconstruct an active Docking Port
 -Let Buy Quests target another Station
 -Spawn and Despawn Quest Vessels smoothly (Z-Fade)
--Solar Modules can be built through Quest Vessel Solar Modules
--Erase Marker sometimes does not disappear (maybe has to do with Main Menu?)
--NullReferenceException: Object reference not set to an instance of an object
-  at AsteroidController.OnCollisionEnter2D (UnityEngine.Collision2D collision)
--Don't let Users deconstruct an active Docking Port
 -Speed (numeric) and Altitude Display
 -Don't scroll Table Headers
