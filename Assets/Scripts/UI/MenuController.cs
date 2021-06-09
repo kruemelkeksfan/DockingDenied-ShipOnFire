@@ -409,7 +409,7 @@ public class MenuController : MonoBehaviour, IListener
 
 	public void UpdateFlightControls()
 	{
-		localPlayerMainInputController.SetFlightControls(activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !mainMenu.activeSelf);
+		localPlayerMainInputController.SetFlightControls(activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !inventoryMenu.gameObject.activeSelf && !mainMenu.activeSelf);
 	}
 
 	private IEnumerator UpdateNextUpdateField(float lastStationUpdate, float stationUpdateInterval)
