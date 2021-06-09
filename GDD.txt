@@ -50,3 +50,11 @@ Test Feedback:
 -Spawn and Despawn Quest Vessels smoothly (Z-Fade)
 -Speed (numeric) and Altitude Display
 -Don't scroll Table Headers
+
+0.3
+-Zoom in wrong Direction
+-Planet Nav Vector too short
+-Blue Vectors too dark on black Background
+-Docking to Station Port activated for a Towing Quest deactivates the Port
+-Docking once to a wrong Port locks the Player out of the Station forever
+-Docking Timeout Display would be useful
