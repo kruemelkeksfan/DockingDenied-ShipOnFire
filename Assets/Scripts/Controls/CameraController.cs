@@ -79,7 +79,7 @@ public class CameraController : MonoBehaviour, IListener
 			Cursor.visible = false;
 			Cursor.lockState = CursorLockMode.Locked;
 
-			Vector3 direction = new Vector3();
+			Vector3 direction = Vector3.zero;
 			if(Input.GetAxis("Vertical") > 0.0f)
 			{
 				direction += transform.up;
@@ -115,7 +115,7 @@ public class CameraController : MonoBehaviour, IListener
 
 		if(!EventSystem.current.IsPointerOverGameObject())
 		{
-			localPosition += transform.forward * Input.GetAxis("Mouse ScrollWheel") * zoomSpeed * -localPosition.z;
+			localPosition += Vector3.forward * Input.GetAxis("Mouse ScrollWheel") * zoomSpeed * -localPosition.z;
 		}
 	}
 
