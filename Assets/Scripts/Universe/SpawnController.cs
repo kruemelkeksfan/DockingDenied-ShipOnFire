@@ -95,9 +95,11 @@ public class SpawnController : MonoBehaviour
 
 		Transform spawnObjectTransform = despawnObject.GetComponent<Transform>();
 		Vector3 spawnObjectSize = spawnObjectTransform.localScale;
+		float speed = 0.0f;
 		while(despawnObject.transform.position.z > spawnHeight)
 		{
-			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, Mathf.Min(despawnObject.transform.position.z, -0.000002f) * approachSpeed * 0.02f * Time.deltaTime);
+			speed -= approachSpeed * 0.2f * Time.deltaTime;
+			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * Time.deltaTime);
 			float currentSize = 1.0f - (despawnObject.transform.position.z / spawnHeight);
 			spawnObjectTransform.localScale = spawnObjectSize * currentSize;
 
