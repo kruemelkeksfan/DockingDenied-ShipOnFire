@@ -565,7 +565,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			}
 			inventoryController.TransferMoney(UnityEngine.Random.Range(minProfit, maxProfit));
 
-			UpdateQuests();
 			UpdateTrading();
 
 			yield return waitForStationUpdateInterval;
