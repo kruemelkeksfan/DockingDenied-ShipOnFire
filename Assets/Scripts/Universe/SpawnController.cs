@@ -9,9 +9,11 @@ public class SpawnController : MonoBehaviour
 	[Tooltip("The clear area which is required for a new Object to spawn at a specific Position")]
 	[SerializeField] private float spawnAreaRadius = 2.0f;
 	[Tooltip("Height above the XY-Plane at which new Objects spawn before descending into the XY-Plane")]
-	[SerializeField] private float spawnHeight = -10.0f;
+	[SerializeField] private float spawnHeight = 10.0f;
 	[Tooltip("Approach Velocity of freshly spawned Objects")]
-	[SerializeField] private float approachSpeed = 0.02f;
+	[SerializeField] private float approachSpeed = 0.2f;
+	[Tooltip("Acceleration of freshly despawned Objects")]
+	[SerializeField] private float disappearingAcceleration = 0.002f;
 	private AsteroidSpawner asteroidSpawner = null;
 	private GravityWellController gravityWellController = null;
 	private int layerMask = Physics2D.DefaultRaycastLayers;
@@ -59,9 +61,9 @@ public class SpawnController : MonoBehaviour
 		Transform spawnObjectTransform = spawnObject.GetComponent<Transform>();
 		float spawnObjectExtents = Mathf.Max(spawnObjectTransform.GetComponent<Collider2D>().bounds.extents.x, 0.01f);
 		Vector3 spawnObjectSize = spawnObjectTransform.localScale;
-		while(spawnObject.transform.position.z < -0.0002f && spawnObject.gameObject.layer != 9)                                                                   // Check if Asteroid is still in Approach and not decaying yet
+		while(spawnObject.transform.position.z > 0.001f && spawnObject.gameObject.layer != 9)                                                                   // Check if Asteroid is still in Approach and not decaying yet
 		{
-			if(-spawnObject.transform.position.z < spawnObjectExtents)
+			if(spawnObject.transform.position.z < spawnObjectExtents)
 			{
 				spawnObject.gameObject.layer = layer;
 			}
@@ -96,9 +98,9 @@ public class SpawnController : MonoBehaviour
 		Transform spawnObjectTransform = despawnObject.GetComponent<Transform>();
 		Vector3 spawnObjectSize = spawnObjectTransform.localScale;
 		float speed = 0.0f;
-		while(despawnObject.transform.position.z > spawnHeight)
+		while(despawnObject.transform.position.z < spawnHeight)
 		{
-			speed -= approachSpeed * 0.2f * Time.deltaTime;
+			speed += disappearingAcceleration * Time.deltaTime;
 			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * Time.deltaTime);
 			float currentSize = 1.0f - (despawnObject.transform.position.z / spawnHeight);
 			spawnObjectTransform.localScale = spawnObjectSize * currentSize;

@@ -10106,8 +10106,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnAreaRadius: 2
-  spawnHeight: -10
-  approachSpeed: 0.02
+  spawnHeight: 4
+  approachSpeed: 0.2
+  disappearingAcceleration: 0.002
 --- !u!4 &1818884380
 Transform:
   m_ObjectHideFlags: 0
