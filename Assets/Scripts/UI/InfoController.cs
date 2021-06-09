@@ -242,6 +242,6 @@ public class InfoController : MonoBehaviour, IListener
 			this.buildingCosts = null;
 		}
 
-		UpdateResourceDisplay();
+		UpdateBuildingResourceDisplay();
 	}
 }

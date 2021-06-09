@@ -82,6 +82,7 @@ public class BuildingMenu : MonoBehaviour
 	{
 		inverseBuildingGridSize = 1.0f / buildingGridSize;
 		buildingGridSizeVector = new Vector2(buildingGridSize - 0.002f, buildingGridSize - 0.002f);
+		reservedZones = new Vector2Int[0];
 		reservedZoneTransforms = new List<Transform>();
 		reservedZoneRenderers = new List<MeshRenderer>();
 
