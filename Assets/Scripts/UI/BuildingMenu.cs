@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -330,7 +331,7 @@ public class BuildingMenu : MonoBehaviour
 
 	public void SaveBlueprint()
 	{
-		string name = blueprintNameField.text;
+		string name = Regex.Replace(blueprintNameField.text, "[^a-zA-Z0-9_. ]{1}", "_");
 		if(name == null || name == "")
 		{
 			name = "X" + DateTime.Now.ToString("ddMMyyyyHHmmss");
