@@ -8,12 +8,16 @@ using UnityEngine.UI;
 
 public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingListener, IListener
 {
+	private static WaitForSeconds waitForDockingPortReactivationDelay = null;
+
 	[SerializeField] private TextAsset[] questVesselBlueprints = { };
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[Tooltip("Distance up from which no more digital Digits will be displayed")]
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
 	[Tooltip("Distance the Player needs to be away for this Vessel to start Despawning when its Quest is completed")]
 	[SerializeField] private float playerDespawnDistance = 0.2f;
+	[Tooltip("Delay for Reactivation of the Docking Port, if it is disabled, for Example after docking to the wrong Port of a Station")]
+	[SerializeField] private float dockingPortReactivateDelay = 20.0f;
 	private RectTransform uiTransform = null;
 	private MenuController menuController = null;
 	private Spacecraft spacecraft = null;
@@ -37,8 +41,14 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	private QuestManager.Quest quest = null;
 	private bool interactable = false;
 	private bool playerDocked = false;
+
 	private void Start()
 	{
+		if(waitForDockingPortReactivationDelay == null)
+		{
+			waitForDockingPortReactivationDelay = new WaitForSeconds(dockingPortReactivateDelay);
+		}
+
 		spacecraft = GetComponent<Spacecraft>();
 		transform = spacecraft.GetTransform();
 		SpacecraftBlueprintController.LoadBlueprint(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)], transform);
@@ -121,6 +131,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		if(otherPort.GetComponentInParent<Spacecraft>() == localPlayerSpacecraft)
 		{
 			playerDocked = false;
+		}
+
+		if(!port.IsActive())
+		{
+			StartCoroutine(ReactivateDockingPort(port));
 		}
 	}
 
@@ -242,9 +257,19 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			hint = "Dock to start Towing!";
 			interactable = false;
-			quest.destination.RequestDocking(GetComponentInParent<Spacecraft>(), true);
+			quest.destination.RequestDocking(GetComponentInParent<Spacecraft>());
 		}
 
 		UpdateQuestVesselMenu();
+	}
+
+	public IEnumerator ReactivateDockingPort(DockingPort port)
+	{
+		yield return waitForDockingPortReactivationDelay;
+
+		if(!port.IsActive())
+		{
+			port.HotkeyDown();
+		}
 	}
 }

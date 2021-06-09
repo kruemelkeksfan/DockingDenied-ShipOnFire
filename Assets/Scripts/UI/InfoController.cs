@@ -35,6 +35,7 @@ public class InfoController : MonoBehaviour, IListener
 	private bool updateResourceDisplay = true;
 	private bool updateBuildingResourceDisplay = true;
 	private bool showBuildingResourceDisplay = false;
+	private float expiryTime = -1.0f;
 
 	public static InfoController GetInstance()
 	{
@@ -126,12 +127,25 @@ public class InfoController : MonoBehaviour, IListener
 			Vector3 flightData = playerSpacecraftUIController.GetFlightData();
 			textBuilder.Clear();
 			textBuilder.Append("Altitude - ");
-			textBuilder.Append((int) flightData.x);
+			textBuilder.Append((int)flightData.x);
 			textBuilder.Append("km / Station Speed - ");
 			textBuilder.Append(flightData.y.ToString("F4"));
 			textBuilder.Append("km/s / Orbital Speed - ");
 			textBuilder.Append(flightData.z.ToString("F4"));
 			textBuilder.Append("km/s");
+			if(expiryTime > 0.0f)
+			{
+				if(Time.realtimeSinceStartup >= expiryTime)
+				{
+					expiryTime = -1.0f;
+				}
+				else
+				{
+					textBuilder.Append(" / Docking Permission - ");
+					textBuilder.Append((int)(expiryTime - Time.realtimeSinceStartup));
+					textBuilder.Append(" Seconds");
+				}
+			}
 			secondaryDisplay.text = textBuilder.ToString();
 		}
 
@@ -243,5 +257,10 @@ public class InfoController : MonoBehaviour, IListener
 		}
 
 		UpdateBuildingResourceDisplay();
+	}
+
+	public void SetDockingExpiryTime(float expiryTime)
+	{
+		this.expiryTime = expiryTime;
 	}
 }

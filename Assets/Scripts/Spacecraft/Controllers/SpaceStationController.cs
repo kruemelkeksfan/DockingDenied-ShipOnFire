@@ -44,6 +44,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private MenuController menuController = null;
+	private InfoController infoController = null;
 	private Spacecraft spacecraft = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
@@ -60,6 +61,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private Text mapMarkerDistance = null;
 	private string stationName = null;
 	private DockingPort[] dockingPorts = null;
+	private IEnumerator dockingTimeoutCoroutine = null;
 	private Dictionary<DockingPort, Spacecraft> expectedDockings = null;
 	private HashSet<Spacecraft> dockedSpacecraft = null;
 	private QuestManager.TaskType[] firstTasks = null;
@@ -98,12 +100,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
-		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
-		localPlayerMainSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
-		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
-		localPlayerMainInventory = localPlayerMainSpacecraft.GetComponent<InventoryController>();
-		playerSpacecraftController = localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>();
-		spacecraftManager.AddSpacecraftChangeListener(this);
+		infoController = InfoController.GetInstance();
+		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
+		Notify();
 
 		firstTasks = new QuestManager.TaskType[] { QuestManager.TaskType.Bribe, QuestManager.TaskType.JumpStart, QuestManager.TaskType.Tow };
 		secondaryTasks = new QuestManager.TaskType[] { QuestManager.TaskType.Trade };
@@ -162,30 +161,39 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				expectedDockings.Remove(port);
 				dockedSpacecraft.Add(otherSpacecraft);
+
+				if(otherSpacecraft == localPlayerMainSpacecraft)
+				{
+					StopCoroutine(dockingTimeoutCoroutine);
+					dockingTimeoutCoroutine = null;
+					infoController.SetDockingExpiryTime(-1.0f);
+				}
 			}
 			else
 			{
-				if(otherSpacecraft == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+				if(otherSpacecraft == localPlayerMainSpacecraft)
 				{
-					InfoController.GetInstance().AddMessage("You have no Docking Permission for this Docking Port!");
+					infoController.AddMessage("You have no Docking Permission for this Docking Port!");
 				}
-				port.HotkeyDown();
+				otherPort.HotkeyDown();
 			}
 		}
+
+		//StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));								// Used for Despawn Testing
 	}
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
 	{
 		dockedSpacecraft.Remove(otherPort.GetComponentInParent<Spacecraft>());
 
-		if(port.IsActive())
+		if(port.IsActive() && !expectedDockings.ContainsKey(port))
 		{
 			port.HotkeyDown();
 		}
-		if(otherPort.GetComponentInParent<Spacecraft>() == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+		if(otherPort.GetComponentInParent<Spacecraft>() == localPlayerMainSpacecraft)
 		{
 			menuController.CloseStationMenu(this);
-			InfoController.GetInstance().AddMessage("Undocking successful, good Flight!");
+			infoController.AddMessage("Undocking successful, good Flight!");
 		}
 	}
 
@@ -203,14 +211,14 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		menuController.ToggleStationMenu(this, stationName);
 	}
 
-	public void RequestDocking(Spacecraft requester, bool aiRequest = false)
+	public void RequestDocking(Spacecraft requester)
 	{
 		// TODO: Check if Ship is on Fire etc.
 		if(!dockedSpacecraft.Contains(requester))
 		{
 			if(!expectedDockings.ContainsValue(requester))
 			{
-				if(aiRequest || (requester.GetTransform().position - transform.position).sqrMagnitude <= maxApproachDistance)
+				if(requester != localPlayerMainSpacecraft || (requester.GetTransform().position - transform.position).sqrMagnitude <= maxApproachDistance)
 				{
 					float maxAngle = float.MinValue;
 					DockingPort alignedPort = null;
@@ -232,34 +240,42 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 					{
 						expectedDockings.Add(alignedPort, requester);
 						alignedPort.HotkeyDown();
-						if(!aiRequest)
-						{
-							StartCoroutine(DockingTimeout(alignedPort, requester));
-						}
 
-						if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+						if(requester == localPlayerMainSpacecraft)
 						{
-							InfoController.GetInstance().AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetActionName() + "!");
+							dockingTimeoutCoroutine = DockingTimeout(alignedPort, requester);
+							StartCoroutine(dockingTimeoutCoroutine);
+
+							infoController.AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetActionName() + "!");
 						}
 					}
-					else if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+					else if(requester == localPlayerMainSpacecraft)
 					{
-						InfoController.GetInstance().AddMessage("No free Docking Ports available!");
+						infoController.AddMessage("No free Docking Ports available!");
 					}
 				}
-				else if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
+				else if(requester == localPlayerMainSpacecraft)
 				{
-					InfoController.GetInstance().AddMessage("You are too far away to request Docking Permission!");
+					infoController.AddMessage("You are too far away to request Docking Permission!");
 				}
 			}
-			else
+			else if(requester == localPlayerMainSpacecraft)
 			{
-				InfoController.GetInstance().AddMessage("You already have an active Docking Permission for this Station!");
+				string portName = "Unknown Port";
+				foreach(DockingPort port in expectedDockings.Keys)
+				{
+					if(expectedDockings[port] == localPlayerMainSpacecraft)
+					{
+						portName = port.GetActionName();
+						break;
+					}
+				}
+				infoController.AddMessage("You already have an active Docking Permission for Port " + portName + "!");
 			}
 		}
-		else
+		else if(requester == localPlayerMainSpacecraft)
 		{
-			InfoController.GetInstance().AddMessage("You are already docked at this Station!");
+			infoController.AddMessage("You are already docked at this Station!");
 		}
 	}
 
@@ -401,11 +417,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				{
 					if(buyer == localPlayerMainInventory)
 					{
-						InfoController.GetInstance().AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!");
+						infoController.AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!");
 					}
 					else
 					{
-						InfoController.GetInstance().AddMessage("Not enough Storage Capacity on their tiny Station!");
+						infoController.AddMessage("Not enough Storage Capacity on their tiny Station!");
 					}
 				}
 			}
@@ -413,11 +429,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				if(buyer == localPlayerMainInventory)
 				{
-					InfoController.GetInstance().AddMessage("Don't get greedy, they don't have that much!");
+					infoController.AddMessage("Don't get greedy, they don't have that much!");
 				}
 				else
 				{
-					InfoController.GetInstance().AddMessage("They don't fall for your Trick of selling Stuff you don't possess!");
+					infoController.AddMessage("They don't fall for your Trick of selling Stuff you don't possess!");
 				}
 			}
 		}
@@ -425,11 +441,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		{
 			if(buyer == localPlayerMainInventory)
 			{
-				InfoController.GetInstance().AddMessage("Not enough Cash and they refuse your Credit Cards!");
+				infoController.AddMessage("Not enough Cash and they refuse your Credit Cards!");
 			}
 			else
 			{
-				InfoController.GetInstance().AddMessage("You successfully decapitalized this Station and they can not afford to buy more!");
+				infoController.AddMessage("You successfully decapitalized this Station and they can not afford to buy more!");
 			}
 		}
 
@@ -450,7 +466,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			supplyAmounts[i] = inventoryController.GetGoodAmount(materials[i].goodName);
 			if(supplyAmounts[i] < materials[i].amount)
 			{
-				InfoController.GetInstance().AddMessage("Not enough " + materials[i].goodName + " available at this Station!");
+				infoController.AddMessage("Not enough " + materials[i].goodName + " available at this Station!");
 				return false;
 			}
 
@@ -460,7 +476,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		if(totalPrice > localPlayerMainInventory.GetMoney())
 		{
-			InfoController.GetInstance().AddMessage("You are too poor to buy the Construction Materials!");
+			infoController.AddMessage("You are too poor to buy the Construction Materials!");
 			return false;
 		}
 
@@ -506,13 +522,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		if(sum > inventoryController.GetFreeCapacity(goodManager.GetGood(materials[0].goodName)))
 		{
-			InfoController.GetInstance().AddMessage("Not enough Storage Capacity available in this Station!");
+			infoController.AddMessage("Not enough Storage Capacity available in this Station!");
 			return false;
 		}
 
 		if(totalPrice > inventoryController.GetMoney())
 		{
-			InfoController.GetInstance().AddMessage("The Station is too poor to buy the Deconstruction Materials!");
+			infoController.AddMessage("The Station is too poor to buy the Deconstruction Materials!");
 			return false;
 		}
 
@@ -531,6 +547,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private IEnumerator DockingTimeout(DockingPort port, Spacecraft requester)
 	{
+		infoController.SetDockingExpiryTime(Time.realtimeSinceStartup + (dockingTimeout / Time.timeScale));
+
 		yield return waitForDockingTimeout;
 
 		if(port.IsActive() && port.IsFree())
@@ -538,10 +556,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			port.HotkeyDown();
 			expectedDockings.Remove(port);
 
-			if(requester == SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft())
-			{
-				InfoController.GetInstance().AddMessage("Docking Permission expired!");
-			}
+			infoController.AddMessage("Docking Permission expired!");
 		}
 	}
 
