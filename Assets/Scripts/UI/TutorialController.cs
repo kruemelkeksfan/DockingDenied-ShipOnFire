@@ -176,7 +176,7 @@ public class TutorialController : MonoBehaviour
 		next = false;
 		
 		HighlightButton(velocityButton);
-		tutorialMessageField.text = "You can toggle Velocity Markers in the Top Bar\nThe blue Line shows your Velocity in Relation to the last clicked Target\nThe green Line shows the Difference between your Velocity and perfect Orbiting Velocity";
+		tutorialMessageField.text = "You can toggle Velocity Markers in the Top Bar\nThe orange Line shows your Velocity in Relation to the last clicked Target\nThe green Line shows the Difference between your Velocity and perfect Orbiting Velocity";
 		do
 		{
 			yield return waitForTutorialUpdateInterval;

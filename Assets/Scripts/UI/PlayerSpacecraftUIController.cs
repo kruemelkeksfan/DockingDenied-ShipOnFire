@@ -124,8 +124,8 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		flightData = new Vector3(rigidbody.position.magnitude - surfaceAltitude, (target != null ? (rigidbody.velocity - target.velocity).magnitude : 0.0f), orbitalVelocity.magnitude);
 		UpdateVelocityVector(velocityVector, (target != null ? (rigidbody.velocity - target.velocity) : Vector2.zero), flightData.y, scaleFactor);
 		UpdateVelocityVector(orbitalVector, orbitalVelocity, flightData.z, scaleFactor);
-		UpdateNavVector(targetNavVector, (target != null ? target.position : Vector2.zero), (target != null ? (target.position - rigidbody.position).magnitude : 0.0f), scaleFactor);
-		UpdateNavVector(planetNavVector, Vector2.zero, flightData.x, scaleFactor);
+		UpdateNavVector(targetNavVector, (target != null ? target.position : Vector2.zero), scaleFactor);
+		UpdateNavVector(planetNavVector, Vector2.zero, scaleFactor);
 	}
 
 	private void UpdateVelocityVector(RectTransform vector, Vector2 velocity, float velocityMagnitude, float scaleFactor)
@@ -142,12 +142,12 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		}
 	}
 
-	private void UpdateNavVector(RectTransform vector, Vector2 targetPosition, float targetDistance, float scaleFactor)
+	private void UpdateNavVector(RectTransform vector, Vector2 targetPosition, float scaleFactor)
 	{
-		if(vector.gameObject.activeSelf && targetDistance > 0.0f)
+		if(vector.gameObject.activeSelf && targetPosition != rigidbody.position)
 		{
 			Vector2 direction = uiTransform.InverseTransformPoint(targetPosition);															// Vector from local Origin to Target Position in local Space
-			vector.sizeDelta = new Vector2(navVectorWidth * scaleFactor, targetDistance);
+			vector.sizeDelta = new Vector2(navVectorWidth * scaleFactor, direction.magnitude);
 			vector.localRotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - rigidbody.position);
 			vector.anchoredPosition = direction * 0.5f;
 		}

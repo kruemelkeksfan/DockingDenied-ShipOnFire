@@ -128,7 +128,7 @@ public class InfoController : MonoBehaviour, IListener
 			textBuilder.Clear();
 			textBuilder.Append("Altitude - ");
 			textBuilder.Append((int)flightData.x);
-			textBuilder.Append("km / Station Speed - ");
+			textBuilder.Append("km / Target Speed - ");
 			textBuilder.Append(flightData.y.ToString("F4"));
 			textBuilder.Append("km/s / Orbital Speed - ");
 			textBuilder.Append(flightData.z.ToString("F4"));
