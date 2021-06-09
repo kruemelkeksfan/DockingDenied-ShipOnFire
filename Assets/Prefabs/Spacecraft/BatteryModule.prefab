@@ -62,7 +62,7 @@ MonoBehaviour:
     amount: 4
   - goodName: Silicon
     amount: 10
-  description: An Energy Storage capable of storing up to 10kWh.
+  description: An Energy Storage capable of storing up to 20kWh.
   capacitor:
     capacity: 72000
     charge: 0
