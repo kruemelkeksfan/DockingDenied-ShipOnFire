@@ -411,7 +411,7 @@ public class QuestManager : MonoBehaviour, IListener
 			quest.infoInt = -int.Parse(taskItems[1]);
 
 			InventoryController inventoryController = quest.destination.GetInventoryController();
-			inventoryController.Withdraw(quest.infoString, inventoryController.GetGoodAmount(quest.infoString));
+			inventoryController.Withdraw(quest.infoString, (uint) (inventoryController.GetGoodAmount(quest.infoString) * 0.5f));
 		}
 		else if(tasks[quest.task].description.StartsWith("Buy"))
 		{
