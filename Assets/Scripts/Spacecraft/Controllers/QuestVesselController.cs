@@ -85,30 +85,33 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void UpdateNotify()
 	{
-		Vector2? uiPoint = ScreenUtility.WorldToUIPoint(transform.position, camera, cameraTransform, uiTransform);
-		if(uiPoint.HasValue)
-		{
-			mapMarker.localScale = Vector3.one;
-			mapMarker.anchoredPosition = uiPoint.Value;
-
-			float distance = (transform.position - localPlayerSpacecraftTransform.position).magnitude;
-			if(distance > decimalDigitThreshold)
-			{
-				mapMarkerDistance.text = distance.ToString("F0") + "km";
-			}
-			else
-			{
-				mapMarkerDistance.text = distance.ToString("F2") + "km";
-			}
-		}
-		else
-		{
-			mapMarker.localScale = Vector3.zero;
-		}
-
 		if(quest.progress >= 1.0f && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
 		{
 			StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));
+			mapMarker.localScale = Vector3.zero;
+		}
+		else
+		{
+			Vector2? uiPoint = ScreenUtility.WorldToUIPoint(transform.position, camera, cameraTransform, uiTransform);
+			if(uiPoint.HasValue)
+			{
+				mapMarker.localScale = Vector3.one;
+				mapMarker.anchoredPosition = uiPoint.Value;
+
+				float distance = (transform.position - localPlayerSpacecraftTransform.position).magnitude;
+				if(distance > decimalDigitThreshold)
+				{
+					mapMarkerDistance.text = distance.ToString("F0") + "km";
+				}
+				else
+				{
+					mapMarkerDistance.text = distance.ToString("F2") + "km";
+				}
+			}
+			else
+			{
+				mapMarker.localScale = Vector3.zero;
+			}
 		}
 	}
 

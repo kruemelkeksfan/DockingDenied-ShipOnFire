@@ -10108,7 +10108,7 @@ MonoBehaviour:
   spawnAreaRadius: 2
   spawnHeight: 4
   approachSpeed: 0.2
-  disappearingAcceleration: 0.002
+  disappearingAcceleration: 0.0001
 --- !u!4 &1818884380
 Transform:
   m_ObjectHideFlags: 0
