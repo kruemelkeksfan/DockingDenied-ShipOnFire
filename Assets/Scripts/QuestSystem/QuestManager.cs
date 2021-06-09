@@ -225,7 +225,7 @@ public class QuestManager : MonoBehaviour, IListener
 		foreach(string goodName in goods.Keys)
 		{
 			goodNames[i] = goodName;
-			goodRewards[i] = Mathf.RoundToInt((float)rewardValue / (float)goods[goodName].price);
+			goodRewards[i] = Mathf.RoundToInt(rewardValue / (goods[goodName].price * 0.5f));								// * 0.5 bc Prices at Stations are Shit and Goods therefore have less Utility than Money
 			++i;
 		}
 
