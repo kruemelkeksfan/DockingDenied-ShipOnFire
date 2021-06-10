@@ -191,7 +191,7 @@ public class BuildingMenu : MonoBehaviour
 				}
 				else
 				{
-					infoController.AddMessage("You can not decontruct the Command Module, since barely anybody wants your Crews Bodies to bust open like Piñatas in open Space!");
+					infoController.AddMessage("Can't deconstruct Command Module, barely anybody wants the Crews Bodies to bust open like Piñatas in Space!");
 				}
 			}
 		}

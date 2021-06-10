@@ -13,6 +13,7 @@ public class InventoryController : MonoBehaviour, IListener
 	private HashSet<Capacitor> batteries = null;
 	private float transferEnergy = 0.0f;
 	private double storedEnergy = 0.0f;
+	private double energyCapacity = 0.0f;
 	private int money = 0;
 	private Dictionary<GoodManager.State, List<Container>> containers = null;
 	private InfoController resourceDisplayController = null;
@@ -303,18 +304,16 @@ public class InventoryController : MonoBehaviour, IListener
 			}
 
 			storedEnergy = 0.0f;
-			if(energy > 0.0f)
+			energyCapacity = 0.0f;
+			foreach(Capacitor battery in batteries)
 			{
-				foreach(Capacitor battery in batteries)
+				if(energy > 0.0f)
 				{
-					if(energy <= 0.0f)
-					{
-						break;
-					}
-
 					energy = battery.Charge(energy);
-					storedEnergy += battery.charge;
 				}
+
+				storedEnergy += battery.charge;
+				energyCapacity += battery.capacity;
 			}
 
 			if(energy < 0.0f)
@@ -335,7 +334,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 	public string GetEnergyKWH()
 	{
-		return (storedEnergy * 0.00027777).ToString("F2");			// 0.00027777 is the approximate Conversion Factor from kWs to kWh, bc (1 / 60) / 60 == 1 * 0.00027777
+		return (storedEnergy * 0.00027777).ToString("F2") + "/" + (energyCapacity * 0.00027777).ToString("F2") + "kWh";         // 0.00027777 is the approximate Conversion Factor from kWs to kWh, bc (1 / 60) / 60 == 1 * 0.00027777
 	}
 
 	public int GetMoney()

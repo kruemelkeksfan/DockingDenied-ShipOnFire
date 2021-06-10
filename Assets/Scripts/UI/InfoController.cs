@@ -14,7 +14,7 @@ public class InfoController : MonoBehaviour, IListener
 		public float timestamp;
 	}
 
-	public static InfoController instance = null;
+	private static InfoController instance = null;
 	private static bool helpActive = true;
 
 	[SerializeField] private Text messageField = null;
@@ -36,6 +36,7 @@ public class InfoController : MonoBehaviour, IListener
 	private bool updateBuildingResourceDisplay = true;
 	private bool showBuildingResourceDisplay = false;
 	private float expiryTime = -1.0f;
+	private bool flightControls = true;
 
 	public static InfoController GetInstance()
 	{
@@ -58,7 +59,6 @@ public class InfoController : MonoBehaviour, IListener
 		Notify();
 	}
 
-	// TODO: Put this into a Method which only gets called when a new Message is added or a Message Timestamp runs out (Coroutine)
 	private void Update()
 	{
 		if(updateResourceDisplay)
@@ -67,7 +67,6 @@ public class InfoController : MonoBehaviour, IListener
 			textBuilder.Append(inventoryController.GetMoney());
 			textBuilder.Append("$ / Energy - ");
 			textBuilder.Append(inventoryController.GetEnergyKWH());
-			textBuilder.Append("kWh");
 			resourceDisplay.text = textBuilder.ToString();
 			/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
 		+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/
@@ -124,29 +123,36 @@ public class InfoController : MonoBehaviour, IListener
 		}
 		else if(!showBuildingResourceDisplay)
 		{
-			Vector3 flightData = playerSpacecraftUIController.GetFlightData();
-			textBuilder.Clear();
-			textBuilder.Append("Altitude - ");
-			textBuilder.Append((int)flightData.x);
-			textBuilder.Append("km / Target Speed - ");
-			textBuilder.Append(flightData.y.ToString("F4"));
-			textBuilder.Append("km/s / Orbital Speed - ");
-			textBuilder.Append(flightData.z.ToString("F4"));
-			textBuilder.Append("km/s");
-			if(expiryTime > 0.0f)
+			if(flightControls)
 			{
-				if(Time.realtimeSinceStartup >= expiryTime)
+				Vector3 flightData = playerSpacecraftUIController.GetFlightData();
+				textBuilder.Clear();
+				textBuilder.Append("Altitude - ");
+				textBuilder.Append((int)flightData.x);
+				textBuilder.Append("km / Target Speed - ");
+				textBuilder.Append(flightData.y.ToString("F4"));
+				textBuilder.Append("km/s / Orbital Speed - ");
+				textBuilder.Append(flightData.z.ToString("F4"));
+				textBuilder.Append("km/s");
+				if(expiryTime > 0.0f)
 				{
-					expiryTime = -1.0f;
+					if(Time.realtimeSinceStartup >= expiryTime)
+					{
+						expiryTime = -1.0f;
+					}
+					else
+					{
+						textBuilder.Append(" / Docking Permission - ");
+						textBuilder.Append((int)(expiryTime - Time.realtimeSinceStartup));
+						textBuilder.Append(" Seconds");
+					}
 				}
-				else
-				{
-					textBuilder.Append(" / Docking Permission - ");
-					textBuilder.Append((int)(expiryTime - Time.realtimeSinceStartup));
-					textBuilder.Append(" Seconds");
-				}
+				secondaryDisplay.text = textBuilder.ToString();
 			}
-			secondaryDisplay.text = textBuilder.ToString();
+			else
+			{
+				secondaryDisplay.text = "Menu open - Flight Controls blocked";
+			}
 		}
 
 		if(Input.GetButtonDown("ShowHelp"))
@@ -262,5 +268,10 @@ public class InfoController : MonoBehaviour, IListener
 	public void SetDockingExpiryTime(float expiryTime)
 	{
 		this.expiryTime = expiryTime;
+	}
+
+	public void SetFlightControls(bool flightControls)
+	{
+		this.flightControls = flightControls;
 	}
 }

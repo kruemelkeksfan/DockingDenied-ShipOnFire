@@ -35,6 +35,7 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private Transform mapMarkerParent = null;
 	// TODO: Somehow control Flight Control bool with all of this
 	private QuestManager questManager = null;
+	private InfoController infoController = null;
 	private HotkeyModule activeModule = null;
 	private SpaceStationController activeStation = null;
 	private QuestVesselController activeQuestVessel = null;
@@ -66,6 +67,7 @@ public class MenuController : MonoBehaviour, IListener
 		Notify();
 
 		questManager = QuestManager.GetInstance();
+		infoController = InfoController.GetInstance();
 	}
 
 	public void Notify()
@@ -409,7 +411,9 @@ public class MenuController : MonoBehaviour, IListener
 
 	public void UpdateFlightControls()
 	{
-		localPlayerMainInputController.SetFlightControls(activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !inventoryMenu.gameObject.activeSelf && !mainMenu.activeSelf);
+		bool flightControls = activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !inventoryMenu.gameObject.activeSelf && !mainMenu.activeSelf;
+		localPlayerMainInputController.SetFlightControls(flightControls);
+		infoController.SetFlightControls(flightControls);
 	}
 
 	private IEnumerator UpdateNextUpdateField(float lastStationUpdate, float stationUpdateInterval)

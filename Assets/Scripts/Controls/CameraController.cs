@@ -17,7 +17,7 @@ public class CameraController : MonoBehaviour, IListener
 	private Vector3 startRotation = Vector3.zero;
 	private Vector3 localPosition;
 	private Vector3 localRotation;
-	private bool fixedCamera = true;
+	private bool fixedCamera = false;
 	private float sqrPlanetSafetyRadius = 0.0f;
 
 	private void Start()
