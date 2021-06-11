@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.RegularExpressions;
@@ -7,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class BuildingMenu : MonoBehaviour
+public class BuildingMenu : MonoBehaviour, IListener
 {
 	private struct CurrentModule
 	{
@@ -50,13 +49,16 @@ public class BuildingMenu : MonoBehaviour
 	[SerializeField] private Material zoneValidMaterial = null;
 	[SerializeField] private Material zoneInvalidMaterial = null;
 	[SerializeField] private string blueprintFolder = "Blueprints";
-	[SerializeField] private Spacecraft spacecraft = null;              // TODO: Get this from SpacecraftManager
+	[SerializeField] private TextAsset starterShip = null;
 	[SerializeField] private Text cheaterModeText = null;
 	private MenuController menuController = null;
 	private SpacecraftManager spacecraftManager = null;
 	private InfoController infoController = null;
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
+	private Spacecraft localPlayerMainSpacecraft = null;
+	private Transform localPlayerMainSpacecraftTransform = null;
+	private new Camera camera = null;
 	private Vector3 lastMousePosition = Vector3.zero;
 	private Vector2Int lastGridPosition = Vector2Int.zero;
 	private Plane buildingPlane = new Plane(Vector3.back, 0.0f);
@@ -70,8 +72,6 @@ public class BuildingMenu : MonoBehaviour
 	private SpacecraftBlueprintController.SpacecraftData selectedBlueprintData = new SpacecraftBlueprintController.SpacecraftData();
 	private GoodManager.Load[] selectedBlueprintCosts = null;
 	private Dictionary<string, Module> modulePrefabDictionary = null;
-	private Transform spacecraftTransform = null;
-	private new Camera camera = null;
 	private bool cheaterMode = false;
 
 	public static BuildingMenu GetInstance()
@@ -114,18 +114,26 @@ public class BuildingMenu : MonoBehaviour
 		}
 
 		menuController = MenuController.GetInstance();
-		spacecraftManager = SpacecraftManager.GetInstance();
 		infoController = InfoController.GetInstance();
-		spacecraftTransform = spacecraft.GetTransform();
 		camera = Camera.main;
 
-		reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));       // Add one Reserve Zone for Erase Highlighting
+		spacecraftManager = SpacecraftManager.GetInstance();
+		spacecraftManager.AddSpacecraftChangeListener(this);
+		Notify();
+
+		reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, localPlayerMainSpacecraftTransform));       // Add one Reserve Zone for Erase Highlighting
 		reservedZoneTransforms.Add(reservedZoneRenderers[0].GetComponent<Transform>());
 		reservedZoneTransforms[0].gameObject.SetActive(false);
 
 		gameObject.SetActive(false);
 		blueprintMenu.gameObject.SetActive(false);
 		infoController.SetShowBuildingResourceDisplay(false);
+	}
+
+	public void Notify()
+	{
+		localPlayerMainSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
+		localPlayerMainSpacecraftTransform = localPlayerMainSpacecraft.GetTransform();
 	}
 
 	private void Update()
@@ -175,14 +183,14 @@ public class BuildingMenu : MonoBehaviour
 		}
 		else if(erase && Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
 		{
-			Module module = spacecraft.GetModule(gridPosition);
+			Module module = localPlayerMainSpacecraft.GetModule(gridPosition);
 			if(module != null)
 			{
 				if(module.GetModuleName() != "Command Module")
 				{
 					Vector3 position = module.GetTransform().position;
 					Constructor constructor = null;
-					if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), spacecraft)) != null)
+					if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), localPlayerMainSpacecraft)) != null)
 					{
 						constructor?.StartConstruction(position);
 
@@ -199,7 +207,7 @@ public class BuildingMenu : MonoBehaviour
 		{
 			if(Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
 			{
-				Module module = spacecraft.GetModule(gridPosition);
+				Module module = localPlayerMainSpacecraft.GetModule(gridPosition);
 				if(module != null)
 				{
 					HotkeyModule hotkeyModule = module as HotkeyModule;
@@ -294,7 +302,7 @@ public class BuildingMenu : MonoBehaviour
 
 	private void SpawnModule(int moduleIndex)
 	{
-		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], spacecraftTransform));
+		currentModule = new CurrentModule(moduleIndex, GameObject.Instantiate<Module>(modulePrefabs[moduleIndex], localPlayerMainSpacecraftTransform));
 		currentModule.transform.localScale *= 1.02f;
 		currentModule.module.Rotate(rotation);
 	}
@@ -312,11 +320,13 @@ public class BuildingMenu : MonoBehaviour
 			GameObject.Destroy(blueprintContentPane.GetChild(i).gameObject);
 		}
 
+		Button blueprintButton;
+		RectTransform blueprintButtonRectTransform;
 		string[] blueprintPaths = SpacecraftBlueprintController.GetBlueprintPaths(blueprintFolder);
 		for(int i = 0; i < blueprintPaths.Length; ++i)
 		{
-			Button blueprintButton = GameObject.Instantiate<Button>(blueprintButtonPrefab, blueprintContentPane);
-			RectTransform blueprintButtonRectTransform = blueprintButton.GetComponent<RectTransform>();
+			blueprintButton = GameObject.Instantiate<Button>(blueprintButtonPrefab, blueprintContentPane);
+			blueprintButtonRectTransform = blueprintButton.GetComponent<RectTransform>();
 
 			int startIndex = blueprintPaths[i].LastIndexOf(Path.DirectorySeparatorChar) + 1;
 			int endIndex = blueprintPaths[i].LastIndexOf(".");
@@ -327,6 +337,16 @@ public class BuildingMenu : MonoBehaviour
 				SelectBlueprint(localBlueprintPath);
 			});
 		}
+
+		blueprintButton = GameObject.Instantiate<Button>(blueprintButtonPrefab, blueprintContentPane);
+		blueprintButtonRectTransform = blueprintButton.GetComponent<RectTransform>();
+
+		blueprintButton.GetComponentInChildren<Text>().text = "Starter Ship";
+		TextAsset localBlueprint = starterShip;
+		blueprintButton.onClick.AddListener(delegate
+		{
+			SelectBlueprint(localBlueprint);
+		});
 	}
 
 	public void SaveBlueprint()
@@ -337,7 +357,7 @@ public class BuildingMenu : MonoBehaviour
 			name = "X" + DateTime.Now.ToString("ddMMyyyyHHmmss");
 		}
 
-		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder, name, spacecraft.GetModules());
+		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder, name, localPlayerMainSpacecraft.GetModules());
 		RefreshBlueprintList();
 		ToggleController.GetInstance().Toggle("SaveBlueprint");
 	}
@@ -348,6 +368,28 @@ public class BuildingMenu : MonoBehaviour
 		DeselectModule();
 
 		selectedBlueprintData = SpacecraftBlueprintController.LoadBlueprintModules(blueprintPath);
+		selectedBlueprintCosts = SpacecraftBlueprintController.CalculateBlueprintCosts(selectedBlueprintData);
+		infoController.SetBuildingCosts(selectedBlueprintCosts);
+		blueprintLoadPanel.SetActive(true);
+
+		List<Vector2Int> reservedZoneList = new List<Vector2Int>(64);
+		foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
+		{
+			// TODO: Do this more elegantly but in a Way that still works in Standalone Player
+			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type]);
+			reservedZoneList.AddRange(module.GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
+			GameObject.Destroy(module);
+		}
+		reservedZones = reservedZoneList.ToArray();
+	}
+
+	// TODO: Fix Code Duplication
+	public void SelectBlueprint(TextAsset blueprint)
+	{
+		menuController.CloseModuleMenu();
+		DeselectModule();
+
+		selectedBlueprintData = SpacecraftBlueprintController.LoadBlueprintModules(blueprint);
 		selectedBlueprintCosts = SpacecraftBlueprintController.CalculateBlueprintCosts(selectedBlueprintData);
 		infoController.SetBuildingCosts(selectedBlueprintCosts);
 		blueprintLoadPanel.SetActive(true);
@@ -375,20 +417,20 @@ public class BuildingMenu : MonoBehaviour
 
 	public void ConfirmBlueprint()
 	{
-		if(spacecraft.GetModules().Count <= 1)
+		if(localPlayerMainSpacecraft.GetModules().Count <= 1)
 		{
 			foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 			{
-				if(!CheckBuildingSpaceFree(reservedZones, modulePrefabDictionary[moduleData.type], spacecraftTransform.rotation, true, true))
+				if(!CheckBuildingSpaceFree(reservedZones, modulePrefabDictionary[moduleData.type], localPlayerMainSpacecraftTransform.rotation, true, true))
 				{
 					InfoController.GetInstance().AddMessage("Not enough free Building Space to construct Blueprint!");
 					return;
 				}
 			}
 
-			if(cheaterMode || FindBuildingConstructor(spacecraftTransform.position, selectedBlueprintCosts) != null)
+			if(cheaterMode || FindBuildingConstructor(localPlayerMainSpacecraftTransform.position, selectedBlueprintCosts) != null)
 			{
-				SpacecraftBlueprintController.InstantiateModules(selectedBlueprintData, spacecraftTransform);
+				SpacecraftBlueprintController.InstantiateModules(selectedBlueprintData, localPlayerMainSpacecraftTransform);
 				DeselectBlueprint();
 			}
 		}
@@ -408,7 +450,7 @@ public class BuildingMenu : MonoBehaviour
 				{
 					if(i >= reservedZoneTransforms.Count)
 					{
-						reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));
+						reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, localPlayerMainSpacecraftTransform));
 						reservedZoneTransforms.Add(reservedZoneRenderers[i].GetComponent<Transform>());
 					}
 					else
@@ -434,7 +476,7 @@ public class BuildingMenu : MonoBehaviour
 				{
 					if(i >= reservedZoneTransforms.Count)
 					{
-						reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, spacecraftTransform));
+						reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, localPlayerMainSpacecraftTransform));
 						reservedZoneTransforms.Add(reservedZoneRenderers[i].GetComponent<Transform>());
 					}
 					else
@@ -461,7 +503,7 @@ public class BuildingMenu : MonoBehaviour
 			{
 				foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 				{
-					if(!CheckBuildingSpaceFree(reservedZones, modulePrefabDictionary[moduleData.type], spacecraftTransform.rotation, true, true))
+					if(!CheckBuildingSpaceFree(reservedZones, modulePrefabDictionary[moduleData.type], localPlayerMainSpacecraftTransform.rotation, true, true))
 					{
 						buildable = false;
 						break;
@@ -487,7 +529,7 @@ public class BuildingMenu : MonoBehaviour
 
 	private bool CheckBuildingSpaceFree(Vector2Int[] reservedPositions, Module module, Quaternion moduleRotation, bool ignoreCommandModule = false, bool ignoreAttachmentPoints = false)
 	{
-		if(!spacecraft.PositionsAvailable(reservedPositions, module.HasAttachableReservePositions(), module.HasOverlappingReservePositions(), ignoreCommandModule, ignoreAttachmentPoints))
+		if(!localPlayerMainSpacecraft.PositionsAvailable(reservedPositions, module.HasAttachableReservePositions(), module.HasOverlappingReservePositions(), ignoreCommandModule, ignoreAttachmentPoints))
 		{
 			return false;
 		}
@@ -495,7 +537,7 @@ public class BuildingMenu : MonoBehaviour
 		foreach(Vector2Int reservedPosition in reservedPositions)
 		{
 			Collider2D overlap;
-			if((overlap = Physics2D.OverlapBox(GridToWorldPosition(reservedPosition), buildingGridSizeVector, moduleRotation.eulerAngles.z)) != null && !overlap.isTrigger && overlap.gameObject != spacecraft.gameObject)
+			if((overlap = Physics2D.OverlapBox(GridToWorldPosition(reservedPosition), buildingGridSizeVector, moduleRotation.eulerAngles.z)) != null && !overlap.isTrigger && overlap.gameObject != localPlayerMainSpacecraft.gameObject)
 			{
 				return false;
 			}
@@ -558,7 +600,7 @@ public class BuildingMenu : MonoBehaviour
 
 	public Vector2Int WorldToGridPosition(Vector3 position)
 	{
-		return Vector2Int.RoundToInt(spacecraftTransform.InverseTransformPoint(position) * inverseBuildingGridSize);
+		return Vector2Int.RoundToInt(localPlayerMainSpacecraftTransform.InverseTransformPoint(position) * inverseBuildingGridSize);
 	}
 
 	public Vector2Int LocalToGridPosition(Vector3 position)
@@ -568,7 +610,7 @@ public class BuildingMenu : MonoBehaviour
 
 	public Vector3 GridToWorldPosition(Vector2Int position)
 	{
-		return spacecraftTransform.TransformPoint(((Vector2)position) * buildingGridSize);
+		return localPlayerMainSpacecraftTransform.TransformPoint(((Vector2)position) * buildingGridSize);
 	}
 
 	public Vector3 GridToLocalPosition(Vector2Int position)

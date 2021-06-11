@@ -123,17 +123,9 @@ public class SpacecraftBlueprintController
 		}
 	}
 
-	public static void LoadBlueprint(string blueprintPath, Transform spacecraftTransform)
+	public static SpacecraftData LoadBlueprintModules(TextAsset blueprint)
 	{
-		using(StreamReader reader = new StreamReader(blueprintPath))
-		{
-			InstantiateModules(JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd()), spacecraftTransform);
-		}
-	}
-
-	public static void LoadBlueprint(TextAsset blueprint, Transform spacecraftTransform)
-	{
-		InstantiateModules(JsonUtility.FromJson<SpacecraftData>(blueprint.text), spacecraftTransform);
+		return JsonUtility.FromJson<SpacecraftData>(blueprint.text);
 	}
 
 	public static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)

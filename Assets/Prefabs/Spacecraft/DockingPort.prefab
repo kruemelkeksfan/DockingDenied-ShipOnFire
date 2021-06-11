@@ -5186,13 +5186,12 @@ MonoBehaviour:
   - goodName: Aluminium
     amount: 20
   - goodName: Copper
-    amount: 4
-  - goodName: Gold
     amount: 2
+  - goodName: Gold
+    amount: 1
   - goodName: Silicon
-    amount: 4
+    amount: 2
   description: Used to couple Vessels, click the placed Module for more Settings.
-  moduleSettingMenu: {fileID: 2930098445418603330}
   actionNameField: {fileID: 7320006615892210955}
   hotkeySelection: {fileID: 9193948741579083494}
   dockingLocation: {fileID: 618445566396342334}
@@ -5373,12 +5372,6 @@ PrefabInstance:
 --- !u!224 &6530644758583427277 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6606729608960383883, guid: 2a01285213ae9204c9997c2f37f95ead,
-    type: 3}
-  m_PrefabInstance: {fileID: 76089906107145030}
-  m_PrefabAsset: {fileID: 0}
---- !u!1 &2930098445418603330 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3001541806796830724, guid: 2a01285213ae9204c9997c2f37f95ead,
     type: 3}
   m_PrefabInstance: {fileID: 76089906107145030}
   m_PrefabAsset: {fileID: 0}

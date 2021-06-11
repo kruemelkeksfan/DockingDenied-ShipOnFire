@@ -5064,7 +5064,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   questDataFile: {fileID: 4900000, guid: 542c987d82d7f054692db6e7f8e0d257, type: 3}
-  rewardValue: 200
+  rewardValue: 150
   rewardCount: 3
   monetaryRewardChance: 0.4
   questVesselSpawnRange:
@@ -11048,7 +11048,7 @@ MonoBehaviour:
   zoneValidMaterial: {fileID: 2100000, guid: 6798cdb6f00365040892dc6057e11cb5, type: 2}
   zoneInvalidMaterial: {fileID: 2100000, guid: b9bf4012bf512bb4396df1611d20910c, type: 2}
   blueprintFolder: Blueprints
-  spacecraft: {fileID: 1360578268}
+  starterShip: {fileID: 4900000, guid: 4986527e53550ed4dab24d390fd1ebc6, type: 3}
   cheaterModeText: {fileID: 1485970782}
 --- !u!1 &2001742872
 GameObject:

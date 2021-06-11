@@ -51,7 +51,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 		spacecraft = GetComponent<Spacecraft>();
 		transform = spacecraft.GetTransform();
-		SpacecraftBlueprintController.LoadBlueprint(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)], transform);
+		SpacecraftBlueprintController.InstantiateModules(SpacecraftBlueprintController.LoadBlueprintModules(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)]), transform);
 
 		rigidbody = GetComponent<Rigidbody2D>();
 		camera = Camera.main;
