@@ -332,9 +332,9 @@ public class InventoryController : MonoBehaviour, IListener
 		return storedEnergy;
 	}
 
-	public string GetEnergyKWH()
+	public string GetEnergyKWH(bool showTotal = false)
 	{
-		return (storedEnergy * 0.00027777).ToString("F2") + "/" + (energyCapacity * 0.00027777).ToString("F2") + "kWh";         // 0.00027777 is the approximate Conversion Factor from kWs to kWh, bc (1 / 60) / 60 == 1 * 0.00027777
+		return (storedEnergy * 0.00027777).ToString("F2") + (showTotal ? ("/" + (energyCapacity * 0.00027777).ToString("F2") + "kWh") : "");	// 0.00027777 is the approximate Conversion Factor from kWs to kWh, bc (1 / 60) / 60 == 1 * 0.00027777
 	}
 
 	public int GetMoney()

@@ -63,8 +63,6 @@ public class QuestManager : MonoBehaviour, IListener
 	[Tooltip("Range in which Quest Vessels will spawn around the Station.")]
 	[SerializeField] private MinMax questVesselSpawnRange = new MinMax(4.0f, 12.0f);
 	[SerializeField] private Rigidbody2D questVesselPrefab = null;
-	[Tooltip("Radius around the Vessel which must be free of any Colliders before Spawn.")]
-	[SerializeField] private float questVesselSpawnClearance = 0.2f;
 	private SpawnController spawnController = null;
 	private InventoryController localPlayerMainInventory = null;
 	private BackstoryData[] backstories = null;

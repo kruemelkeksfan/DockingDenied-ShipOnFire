@@ -66,7 +66,7 @@ public class InfoController : MonoBehaviour, IListener
 			textBuilder.Clear();
 			textBuilder.Append(inventoryController.GetMoney());
 			textBuilder.Append("$ / Energy - ");
-			textBuilder.Append(inventoryController.GetEnergyKWH());
+			textBuilder.Append(inventoryController.GetEnergyKWH(true));
 			resourceDisplay.text = textBuilder.ToString();
 			/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
 		+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/

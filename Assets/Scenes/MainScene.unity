@@ -1126,6 +1126,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: d739d2c748e404e4488852f095a58554, type: 3}
+--- !u!114 &232713349 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+    type: 3}
+  m_PrefabInstance: {fileID: 1702889204}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4e29b1a8efbd4b44bb3f3716e73f07ff, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &257524313 stripped
 MonoBehaviour:
   m_CorrespondingSourceObject: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
@@ -1730,6 +1742,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Enabled
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6188606278163628312, guid: 563dc166c0dffa8498e07f185cb0614a,
+        type: 3}
+      propertyPath: startingMoney
+      value: 1600
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 563dc166c0dffa8498e07f185cb0614a, type: 3}
@@ -2761,8 +2778,16 @@ MonoBehaviour:
     m_RichText: 1
     m_HorizontalOverflow: 0
     m_VerticalOverflow: 0
-    m_LineSpacing: 1
-  m_Text: Tutorial Messages
+    m_LineSpacing: 1.5
+  m_Text: 'Tutorial Messages
+
+    Line 1
+
+    Line 2
+
+    Line 3
+
+    Line 4'
 --- !u!222 &525535479
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -5072,7 +5097,6 @@ MonoBehaviour:
     max: 12
   questVesselPrefab: {fileID: 6497912318156362320, guid: c347a9d1101a45e41aac3af9b415db46,
     type: 3}
-  questVesselSpawnClearance: 0.2
 --- !u!4 &938566358
 Transform:
   m_ObjectHideFlags: 0
@@ -8334,10 +8358,13 @@ MonoBehaviour:
   tutorialUpdateInterval: 0.5
   tutorialMessageField: {fileID: 525535478}
   buildingMenu: {fileID: 2000540775}
+  moduleControlDisplay: {fileID: 82966304}
   keyBindingDisplay: {fileID: 371359020}
   buildButton: {fileID: 1173115931}
   buildAreaButton: {fileID: 730489021}
+  blueprintScrollPane: {fileID: 452516121}
   velocityButton: {fileID: 1221168059}
+  navLineButton: {fileID: 232713349}
   highlightColor: {r: 0.7529412, g: 0.3764706, b: 0, a: 1}
   nextButton: {fileID: 205045155}
   skipButton: {fileID: 367900225}
@@ -10255,7 +10282,7 @@ PrefabInstance:
     - target: {fileID: 3156262727191227366, guid: 1ca514a5797dc634f975385bddb1e330,
         type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -100
+      value: -110
       objectReference: {fileID: 0}
     - target: {fileID: 3156262727191227366, guid: 1ca514a5797dc634f975385bddb1e330,
         type: 3}
@@ -11048,7 +11075,7 @@ MonoBehaviour:
   zoneValidMaterial: {fileID: 2100000, guid: 6798cdb6f00365040892dc6057e11cb5, type: 2}
   zoneInvalidMaterial: {fileID: 2100000, guid: b9bf4012bf512bb4396df1611d20910c, type: 2}
   blueprintFolder: Blueprints
-  starterShip: {fileID: 4900000, guid: 4986527e53550ed4dab24d390fd1ebc6, type: 3}
+  starterShip: {fileID: 4900000, guid: bd09b4a28a3510b4b9ec518a059b6d4b, type: 3}
   cheaterModeText: {fileID: 1485970782}
 --- !u!1 &2001742872
 GameObject:

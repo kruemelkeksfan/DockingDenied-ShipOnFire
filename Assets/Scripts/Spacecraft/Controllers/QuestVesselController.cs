@@ -220,7 +220,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 						}
 						else
 						{
-							InfoController.GetInstance().AddMessage("Energy could not be supplied, Player Vessel Batteries are charged with " + localPlayerMainInventory.GetEnergyKWH() + "!");
+							InfoController.GetInstance().AddMessage("Energy could not be supplied, your Batteries are charged with " + localPlayerMainInventory.GetEnergyKWH() + "!");
 						}
 						UpdateQuestVesselMenu();
 					};
