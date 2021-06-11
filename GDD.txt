@@ -58,3 +58,17 @@ Test Feedback:
 -Docking to Station Port activated for a Towing Quest deactivates the Port
 -Docking once to a wrong Port locks the Player out of the Station forever
 -Docking Timeout Display would be useful
+
+0.4
+-Change Default Cam Mode to "turn with Ship"
+-Show Maximum in Energy Display
+-Control Lock Display
+-Deconstruct Command Module Error message Typo
+-Build Area Color needs more Contrast
+-Nerf Quest Rewards again
+-Provide Starter Ship in Tutorial instead of Building Tutorial
+-Give Hint to close Station Menu when activating Docking Port
+-Build Area Tutorial Step not clear
+-Click Quest Vessel Marker Hint in Tutorial
+-Hint about Navigation Lines
+-Hint about Restart Button in Tutorial
