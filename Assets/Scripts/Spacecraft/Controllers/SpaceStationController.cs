@@ -45,6 +45,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private QuestManager questManager = null;
 	private MenuController menuController = null;
 	private InfoController infoController = null;
+	private QuestFeedbackController questFeedbackController = null;
 	private Spacecraft spacecraft = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
@@ -101,6 +102,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		infoController = InfoController.GetInstance();
+		questFeedbackController = QuestFeedbackController.GetInstance();
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 
@@ -286,6 +288,22 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			QuestManager.Quest activeQuest = questManager.GetActiveQuest(this);
 			if(activeQuest != null)
 			{
+				if(questSelection != null)
+				{
+					QuestManager.Quest[] rejectedQuests = new QuestManager.Quest[2];
+					int i = 0;
+					foreach(QuestManager.Quest quest in questSelection)
+					{
+						if(quest != activeQuest)
+						{
+							rejectedQuests[i] = quest;
+							++i;
+						}
+					}
+
+					questFeedbackController.RejectQuests(rejectedQuests);
+				}
+
 				questSelection = null;
 				menuController.UpdateQuest(this, activeQuest, 1, true, dockedSpacecraft.Contains(localPlayerMainSpacecraft));
 			}

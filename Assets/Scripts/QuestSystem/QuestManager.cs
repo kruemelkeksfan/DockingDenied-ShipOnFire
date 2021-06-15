@@ -37,6 +37,7 @@ public class QuestManager : MonoBehaviour, IListener
 		public string description;
 	}
 
+	[Serializable]
 	public class Quest
 	{
 		public int backstory;
@@ -49,6 +50,7 @@ public class QuestManager : MonoBehaviour, IListener
 		public VesselType vesselType;
 		public string infoString;
 		public int infoInt;
+		public bool feedbackRequested;
 	}
 
 	private static QuestManager instance = null;
@@ -64,6 +66,7 @@ public class QuestManager : MonoBehaviour, IListener
 	[SerializeField] private MinMax questVesselSpawnRange = new MinMax(4.0f, 12.0f);
 	[SerializeField] private Rigidbody2D questVesselPrefab = null;
 	private SpawnController spawnController = null;
+	private QuestFeedbackController questFeedbackController = null;
 	private InventoryController localPlayerMainInventory = null;
 	private BackstoryData[] backstories = null;
 	private QuestGiverData[] questGivers = null;
@@ -227,6 +230,7 @@ public class QuestManager : MonoBehaviour, IListener
 			++i;
 		}
 
+		questFeedbackController = QuestFeedbackController.GetInstance();
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
 		localPlayerMainInventory = spacecraftManager.GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
@@ -428,6 +432,8 @@ public class QuestManager : MonoBehaviour, IListener
 			}
 		}
 
+		quest.feedbackRequested = false;
+
 		return quest;
 	}
 
@@ -445,6 +451,13 @@ public class QuestManager : MonoBehaviour, IListener
 	public bool CompleteQuest(SpaceStationController spaceStation)
 	{
 		Quest quest = activeQuests[spaceStation];
+
+		if(!quest.feedbackRequested)
+		{
+			questFeedbackController.RequestFeedback(quest);
+			quest.feedbackRequested = true;
+		}
+
 		for(int i = 0; i < quest.rewards.Length; ++i)
 		{
 			if(quest.rewards[i].Key == "$")
