@@ -10,19 +10,24 @@ There is an "Erase"-button on the right side of the building menu.
 
 #### Why does my Spacecraft not fly straight?
 Check if your thrusters are placed symmetrically.
+
 Toggle the center of mass display in the top bar of your screen and check if the center of mass is in the middle of your craft.
+
 Containers are loaded one at a time, this can lead to imbalance. Therefore place containers as close to the center of thrust as possible.
+
 Also check if you have enough energy, thrusters start to give uneven thrust when they are not supplied enough electric charge.
 
 #### I can't control my Spacecraft, help me!
 Press Q or E to stop unwanted rotation of your vessel.
+
 For this to work properly, you will need at least 2 thrusters in at least 1 direction, instead of the bare minimum 1 thruster per direction.
 An easy setup is 2 thrusters to the front and 2 towards the back and 1 thruster per side.
 If this still does not help and you feel like you are pressing the wrong keys intuitively, change camera mode by pressing C.
 
 #### My Log is spammed and I can't see the new Error Messages anymore!
 Hold L to clear the log.
-Also if something does not work, don't spam the button. Treat every piece of software as if it was Win95 is a good guideline.
+
+Also, if something does not work, don't spam the button. "Treat every piece of software as if it was Win95" is a good guideline.
 
 #### Why am I not coming any closer, even though I have been accelerating towards my Target for Ages?
 Thats difficult.
