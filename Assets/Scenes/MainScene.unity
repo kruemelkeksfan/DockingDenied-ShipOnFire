@@ -2641,7 +2641,7 @@ PrefabInstance:
     - target: {fileID: 6188606278163628312, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: startingMoney
-      value: 1600
+      value: 2000
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 563dc166c0dffa8498e07f185cb0614a, type: 3}

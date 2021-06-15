@@ -589,12 +589,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
 			foreach(string goodName in goods.Keys)
 			{
-				inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, inventoryController.GetGoodAmount(goodName)));
-
 				if(inventoryController.GetGoodAmount(goodName) < goods[goodName].consumption * maxGoodStockFactor)
 				{
 					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(1, goods[goodName].consumption * 2));
 				}
+
+				inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, inventoryController.GetGoodAmount(goodName)));
 			}
 			inventoryController.TransferMoney(UnityEngine.Random.Range(minProfit, maxProfit));
 
