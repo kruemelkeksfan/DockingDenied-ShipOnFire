@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class QuestManager : MonoBehaviour, IListener
 {
-	public enum TaskType { Destroy, Bribe, JumpStart, Supply, Plunder, Tow, Trade };
+	public enum TaskType { /* TODO: Destroy, */Bribe, JumpStart, Supply, Plunder, Tow, Trade };
 	public enum VesselType { Unknown, Fugitive, Customs, Pirate, Combat, Helpless, Trading };
 
 	[Serializable]
@@ -134,11 +134,11 @@ public class QuestManager : MonoBehaviour, IListener
 		}
 		for(int i = 0; i < tasks.Length; ++i)
 		{
-			if(tasks[i].description.StartsWith("Destroy"))
+			/* TODO: if(tasks[i].description.StartsWith("Destroy"))
 			{
 				taskTypes[TaskType.Destroy].Add(i);
 			}
-			else if(tasks[i].description.StartsWith("Bribe"))
+			else */if(tasks[i].description.StartsWith("Bribe"))
 			{
 				taskTypes[TaskType.Bribe].Add(i);
 			}
@@ -249,6 +249,11 @@ public class QuestManager : MonoBehaviour, IListener
 	{
 		Quest quest = new Quest();
 
+		foreach(TaskType task in this.taskTypes.Keys)
+		{
+			Debug.Log(task + ": " + this.taskTypes[task].Count);
+		}
+
 		if(taskTypes == null || taskTypes.Length <= 0)
 		{
 			quest.task = UnityEngine.Random.Range(0, tasks.Length);
@@ -331,7 +336,7 @@ public class QuestManager : MonoBehaviour, IListener
 		quest.progress = 0.001f;
 
 		// TODO: Use Reverse from taskTypes-Dictionary to save Performance (String Comparisons)
-		if(tasks[quest.task].description.StartsWith("Destroy"))
+		/* TODO: if(tasks[quest.task].description.StartsWith("Destroy"))
 		{
 			quest.taskType = TaskType.Destroy;
 			if(tasks[quest.task].description.Contains("Fugitive Vessel"))
@@ -357,7 +362,7 @@ public class QuestManager : MonoBehaviour, IListener
 			quest.infoString = null;
 			quest.infoInt = 0;
 		}
-		else if(tasks[quest.task].description.StartsWith("Bribe"))
+		else */if(tasks[quest.task].description.StartsWith("Bribe"))
 		{
 			quest.taskType = TaskType.Bribe;
 			quest.vesselType = VesselType.Customs;
@@ -441,7 +446,7 @@ public class QuestManager : MonoBehaviour, IListener
 	{
 		activeQuests.Add(quest.destination, quest);
 
-		if(quest.taskType == TaskType.Destroy || quest.taskType == TaskType.Bribe || quest.taskType == TaskType.JumpStart
+		if(/* TODO: quest.taskType == TaskType.Destroy || */quest.taskType == TaskType.Bribe || quest.taskType == TaskType.JumpStart
 			|| quest.taskType == TaskType.Supply || quest.taskType == TaskType.Plunder || quest.taskType == TaskType.Tow)
 		{
 			StartCoroutine(spawnController.SpawnObject(questVesselPrefab, quest.destination.GetTransform().position, questVesselSpawnRange, 11, quest));

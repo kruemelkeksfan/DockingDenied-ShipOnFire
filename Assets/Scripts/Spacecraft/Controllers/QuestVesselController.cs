@@ -184,12 +184,12 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		mapMarkerName.text = quest.vesselType.ToString() + " Vessel";
 		vesselName = mapMarkerName.text;
 
-		if(quest.taskType == QuestManager.TaskType.Destroy)
+		/* TODO: if(quest.taskType == QuestManager.TaskType.Destroy)
 		{
 			hint = "Kill Me!";
 			interactable = false;
 		}
-		else if(quest.taskType == QuestManager.TaskType.Bribe)
+		else */if(quest.taskType == QuestManager.TaskType.Bribe)
 		{
 			hint = "Dock to interact!";
 			interactable = true;

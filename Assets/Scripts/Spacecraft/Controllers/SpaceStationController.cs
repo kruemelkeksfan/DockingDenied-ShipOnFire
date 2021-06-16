@@ -67,6 +67,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private HashSet<Spacecraft> dockedSpacecraft = null;
 	private QuestManager.TaskType[] firstTasks = null;
 	private QuestManager.TaskType[] secondaryTasks = null;
+	private QuestManager.TaskType[] allTasks = null;
 	private QuestManager.Quest[] questSelection = null;
 	private bool updateQuestSelection = true;
 	private float lastStationUpdate = 0.0f;
@@ -108,6 +109,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		firstTasks = new QuestManager.TaskType[] { QuestManager.TaskType.Bribe, QuestManager.TaskType.JumpStart, QuestManager.TaskType.Tow };
 		secondaryTasks = new QuestManager.TaskType[] { QuestManager.TaskType.Trade };
+		allTasks = (QuestManager.TaskType[])Enum.GetValues(typeof(QuestManager.TaskType));
 
 		Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
 		foreach(string goodName in goods.Keys)
@@ -311,7 +313,20 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				if(questSelection == null || updateQuestSelection)
 				{
-					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this, firstTasks), questManager.GenerateQuest(this, secondaryTasks), questManager.GenerateQuest(this) };
+					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this, firstTasks), questManager.GenerateQuest(this, secondaryTasks), null };
+					QuestManager.TaskType[] thirdTasks = questSelection[0].task == questSelection[1].task ? new QuestManager.TaskType[allTasks.Length - 1] : new QuestManager.TaskType[allTasks.Length - 2];
+					int i = 0;
+					Debug.Log("New " + questSelection[0].taskType + " " + questSelection[1].taskType);
+					foreach(QuestManager.TaskType taskType in allTasks)
+					{
+						if(taskType != questSelection[0].taskType && taskType != questSelection[1].taskType)
+						{
+							thirdTasks[i] = taskType;
+							++i;
+							Debug.Log(taskType);
+						}
+					}
+					questSelection[2] = questManager.GenerateQuest(this, thirdTasks);
 					updateQuestSelection = false;
 				}
 
