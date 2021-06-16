@@ -316,14 +316,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this, firstTasks), questManager.GenerateQuest(this, secondaryTasks), null };
 					QuestManager.TaskType[] thirdTasks = questSelection[0].task == questSelection[1].task ? new QuestManager.TaskType[allTasks.Length - 1] : new QuestManager.TaskType[allTasks.Length - 2];
 					int i = 0;
-					Debug.Log("New " + questSelection[0].taskType + " " + questSelection[1].taskType);
 					foreach(QuestManager.TaskType taskType in allTasks)
 					{
 						if(taskType != questSelection[0].taskType && taskType != questSelection[1].taskType)
 						{
 							thirdTasks[i] = taskType;
 							++i;
-							Debug.Log(taskType);
 						}
 					}
 					questSelection[2] = questManager.GenerateQuest(this, thirdTasks);

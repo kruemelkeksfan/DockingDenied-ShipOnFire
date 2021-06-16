@@ -249,11 +249,6 @@ public class QuestManager : MonoBehaviour, IListener
 	{
 		Quest quest = new Quest();
 
-		foreach(TaskType task in this.taskTypes.Keys)
-		{
-			Debug.Log(task + ": " + this.taskTypes[task].Count);
-		}
-
 		if(taskTypes == null || taskTypes.Length <= 0)
 		{
 			quest.task = UnityEngine.Random.Range(0, tasks.Length);
