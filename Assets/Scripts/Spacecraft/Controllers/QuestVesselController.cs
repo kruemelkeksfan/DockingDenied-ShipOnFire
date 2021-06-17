@@ -125,8 +125,9 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		if(quest.taskType == QuestManager.TaskType.Tow && otherPort.GetComponentInParent<SpaceStationController>() == quest.destination)
 		{
 			quest.progress = 1.0f;
-			UpdateQuestVesselMenu();
 		}
+
+		UpdateQuestVesselMenu();
 	}
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
@@ -140,6 +141,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			StartCoroutine(ReactivateDockingPort(port));
 		}
+
+		UpdateQuestVesselMenu();
 	}
 
 	public void Notify()
