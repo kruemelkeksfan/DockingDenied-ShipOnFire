@@ -9629,6 +9629,7 @@ MonoBehaviour:
   - {fileID: 519607388}
   enjoymentField: {fileID: 907113907}
   suggestionField: {fileID: 634849013}
+  serverUri: https://www.sportaner.org/BscMax/index.php
 --- !u!4 &1200548513
 Transform:
   m_ObjectHideFlags: 0
@@ -13688,7 +13689,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.2509804, b: 1, a: 0.7529412}
+  m_Color: {r: 0, g: 0.2509804, b: 1, a: 0.8784314}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:
@@ -15320,7 +15321,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_Material: {fileID: 0}
-  m_Color: {r: 0, g: 0.2509804, b: 1, a: 0.7529412}
+  m_Color: {r: 0, g: 0.2509804, b: 1, a: 0.8784314}
   m_RaycastTarget: 1
   m_Maskable: 1
   m_OnCullStateChanged:

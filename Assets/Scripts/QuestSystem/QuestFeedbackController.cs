@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net.Http;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -50,9 +52,13 @@ public class QuestFeedbackController : MonoBehaviour
 	[SerializeField] private Toggle[] reasonFields = { };
 	[SerializeField] private Dropdown enjoymentField = null;
 	[SerializeField] private InputField suggestionField = null;
+	[SerializeField] private string serverUri = "http://localhost";
 	private Dictionary<SpaceStationController, QuestManager.Quest[]> rejectedQuests = null;
 	private QuestManager.Quest quest = null;
 	private List<string> selectedRewards = null;
+	//private System.Threading.Tasks.Task<HttpResponseMessage> response = null;
+	//private System.Threading.Tasks.Task<string> responseMessage = null;
+	private HttpClient client = null;
 
 	public static QuestFeedbackController GetInstance()
 	{
@@ -62,6 +68,7 @@ public class QuestFeedbackController : MonoBehaviour
 	private void Awake()
 	{
 		rejectedQuests = new Dictionary<SpaceStationController, QuestManager.Quest[]>(4);
+		client = new HttpClient();
 
 		instance = this;
 	}
@@ -156,12 +163,25 @@ public class QuestFeedbackController : MonoBehaviour
 		feedback.enjoymentFeedback = enjoymentField.value;
 		feedback.suggestions = suggestionField.text;
 
-		Debug.Log(JsonUtility.ToJson(feedback));
-
-		// TODO: Send JSON Contents to Server (e.g. via HttpWebRequest)
+		// Debug.Log(JsonUtility.ToJson(feedback));
+		/*response = */client.GetAsync(serverUri + "?json=" + JsonUtility.ToJson(feedback));							// PostAsync() does not work, I've tried for hours
 
 		surveyPanel.SetActive(false);
 	}
+
+	/*private void Update()
+	{
+		if(response != null && response.IsCompleted)
+		{
+			Debug.Log(response.Result.StatusCode);
+			responseMessage = response.Result.Content.ReadAsStringAsync();
+		}
+
+		if(responseMessage != null && responseMessage.IsCompleted)
+		{
+			Debug.Log(responseMessage.Result);
+		}
+	}*/
 
 	public void CloseSurveyPanel()
 	{
