@@ -73,6 +73,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private float lastStationUpdate = 0.0f;
 	private Dictionary<string, GoodTradingInfo> tradingInventory;
 	private List<string> goodNames = null;
+	private bool spawnProtection = true;
 
 	private void Start()
 	{
@@ -603,12 +604,19 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
 			foreach(string goodName in goods.Keys)
 			{
+				if(!spawnProtection)
+				{
+					inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, inventoryController.GetGoodAmount(goodName)));
+				}
+				else if(localPlayerMainSpacecraft.GetModules().Count > 6)
+				{
+					spawnProtection = false;
+				}
+
 				if(inventoryController.GetGoodAmount(goodName) < goods[goodName].consumption * maxGoodStockFactor)
 				{
 					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(1, goods[goodName].consumption * 2));
 				}
-
-				inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, inventoryController.GetGoodAmount(goodName)));
 			}
 			inventoryController.TransferMoney(UnityEngine.Random.Range(minProfit, maxProfit));
 
