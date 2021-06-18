@@ -318,7 +318,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 						}
 					}
 
-					questFeedbackController.RejectQuests(rejectedQuests);
+					questFeedbackController.RejectQuests(rejectedQuests, this);
 					// questFeedbackController.RequestFeedback(activeQuest);														// Used for Feedback Transmission Testing
 
 					for(int j = 0; j < questSelection.Length; ++j)

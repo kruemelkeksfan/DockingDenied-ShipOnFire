@@ -351,7 +351,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 
 	public void SaveBlueprint()
 	{
-		string name = Regex.Replace(blueprintNameField.text, "[^a-zA-Z0-9_. ]{1}", "_");
+		string name = Regex.Replace(blueprintNameField.text, "[^a-zA-Z0-9_ ]{1}", "_");
 		if(name == null || name == "")
 		{
 			name = "X" + DateTime.Now.ToString("ddMMyyyyHHmmss");

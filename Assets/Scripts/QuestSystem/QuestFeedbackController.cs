@@ -27,6 +27,7 @@ public class QuestFeedbackController : MonoBehaviour
 		public int rewardFeedback;
 		public int effectFeedback;
 		public List<int> reasonFeedback;
+		public string otherReason;
 		public int enjoymentFeedback;
 		public string suggestions;
 	}
@@ -50,6 +51,7 @@ public class QuestFeedbackController : MonoBehaviour
 	[SerializeField] private Dropdown rewardField = null;
 	[SerializeField] private Dropdown effectField = null;
 	[SerializeField] private Toggle[] reasonFields = { };
+	[SerializeField] private InputField otherReasonField = null;
 	[SerializeField] private Dropdown enjoymentField = null;
 	[SerializeField] private InputField suggestionField = null;
 	[SerializeField] private string serverUri = "http://localhost";
@@ -100,11 +102,11 @@ public class QuestFeedbackController : MonoBehaviour
 		consentPanel.SetActive(false);
 	}
 
-	public void RejectQuests(QuestManager.Quest[] rejectedQuests)
+	public void RejectQuests(QuestManager.Quest[] rejectedQuests, SpaceStationController sourceStation)
 	{
-		if(accepted && rejectedQuests.Length > 0)
+		if(accepted)
 		{
-			this.rejectedQuests[rejectedQuests[0].destination] = rejectedQuests;
+			this.rejectedQuests[sourceStation] = rejectedQuests;
 		}
 	}
 
@@ -119,6 +121,20 @@ public class QuestFeedbackController : MonoBehaviour
 				selectedRewards.Add(reward.Value + " " + reward.Key);
 			}
 
+			backstoryField.value = 0;
+			questGiverField.value = 0;
+			taskDifficultyField.value = 0;
+			taskFunField.value = 0;
+			rewardField.value = 0;
+			effectField.value = 0;
+			for(int i = 0; i < reasonFields.Length; ++i)
+			{
+				reasonFields[i].isOn = false;
+			}
+			otherReasonField.text = "";
+			enjoymentField.value = 0;
+			suggestionField.text = "";
+
 			surveyPanel.SetActive(true);
 		}
 	}
@@ -131,18 +147,24 @@ public class QuestFeedbackController : MonoBehaviour
 		feedback.playtime = playtime;
 		feedback.selectedQuest = quest;
 		feedback.selectedRewards = selectedRewards;
-		feedback.rejectedQuest1 = rejectedQuests[quest.destination][0];
-		feedback.rejectedQuest2 = rejectedQuests[quest.destination][1];
+		feedback.rejectedQuest1 = rejectedQuests[quest.destination].Length > 0 ? rejectedQuests[quest.destination][0] : null;
+		feedback.rejectedQuest2 = rejectedQuests[quest.destination].Length > 1 ? rejectedQuests[quest.destination][1] : null;
 		List<string> rejectedRewards1 = new List<string>(3);
-		foreach(KeyValuePair<string, int> reward in feedback.rejectedQuest1.rewards)
+		if(feedback.rejectedQuest1 != null)
 		{
-			rejectedRewards1.Add(reward.Value + " " + reward.Key);
+			foreach(KeyValuePair<string, int> reward in feedback.rejectedQuest1.rewards)
+			{
+				rejectedRewards1.Add(reward.Value + " " + reward.Key);
+			}
 		}
 		feedback.rejectedRewards1 = rejectedRewards1;
 		List<string> rejectedRewards2 = new List<string>(3);
-		foreach(KeyValuePair<string, int> reward in feedback.rejectedQuest2.rewards)
+		if(feedback.rejectedQuest2 != null)
 		{
-			rejectedRewards2.Add(reward.Value + " " + reward.Key);
+			foreach(KeyValuePair<string, int> reward in feedback.rejectedQuest2.rewards)
+			{
+				rejectedRewards2.Add(reward.Value + " " + reward.Key);
+			}
 		}
 		feedback.rejectedRewards2 = rejectedRewards2;
 		feedback.backstoryFeedback = backstoryField.value;
@@ -160,11 +182,13 @@ public class QuestFeedbackController : MonoBehaviour
 			}
 		}
 		feedback.reasonFeedback = reasons;
+		feedback.otherReason = Regex.Replace(otherReasonField.text, "[^a-zA-Z0-9_ ]{1}", "_");
 		feedback.enjoymentFeedback = enjoymentField.value;
-		feedback.suggestions = suggestionField.text;
+		feedback.suggestions = Regex.Replace(suggestionField.text, "[^a-zA-Z0-9_ ]{1}", "_");
 
 		// Debug.Log(JsonUtility.ToJson(feedback));
-		/*response = */client.GetAsync(serverUri + "?json=" + JsonUtility.ToJson(feedback));							// PostAsync() does not work, I've tried for hours
+		/*response = */
+		client.GetAsync(serverUri + "?json=" + JsonUtility.ToJson(feedback));                           // PostAsync() does not work, I've tried for hours
 
 		surveyPanel.SetActive(false);
 	}
