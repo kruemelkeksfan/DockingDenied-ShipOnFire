@@ -30,23 +30,24 @@ public class DockingPort : HotkeyModule
 		rigidbody = gameObject.GetComponentInParent<Rigidbody2D>();
 	}
 
-	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
-	{
-		base.Build(position, listenUpdates, listenFixedUpdates);
-		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
-		portNameField.text = GetActionName();
-		AddDockingListener(spacecraft);
-	}
-
-	public override void Deconstruct()
+	protected override void OnDestroy()
 	{
 		if(!IsFree())
 		{
 			HotkeyDown();
 		}
 
-		ToggleController.GetInstance().RemoveToggleObject("PortNameplates", portNameField.gameObject);
-		base.Deconstruct();
+		ToggleController.GetInstance()?.RemoveToggleObject("PortNameplates", portNameField.gameObject);
+
+		base.OnDestroy();
+	}
+
+	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
+	{
+		base.Build(position, listenUpdates, listenFixedUpdates);
+		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
+		portNameField.text = GetActionName();
+		AddDockingListener(spacecraft);
 	}
 
 	private void OnTriggerEnter2D(Collider2D other)
