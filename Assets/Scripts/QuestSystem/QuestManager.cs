@@ -65,6 +65,7 @@ public class QuestManager : MonoBehaviour, IListener
 	[Tooltip("Range in which Quest Vessels will spawn around the Station.")]
 	[SerializeField] private MinMax questVesselSpawnRange = new MinMax(4.0f, 12.0f);
 	[SerializeField] private Rigidbody2D questVesselPrefab = null;
+	private GoodManager goodManager = null;
 	private SpawnController spawnController = null;
 	private QuestFeedbackController questFeedbackController = null;
 	private InventoryController localPlayerMainInventory = null;
@@ -138,7 +139,8 @@ public class QuestManager : MonoBehaviour, IListener
 			{
 				taskTypes[TaskType.Destroy].Add(i);
 			}
-			else */if(tasks[i].description.StartsWith("Bribe"))
+			else */
+			if(tasks[i].description.StartsWith("Bribe"))
 			{
 				taskTypes[TaskType.Bribe].Add(i);
 			}
@@ -218,6 +220,7 @@ public class QuestManager : MonoBehaviour, IListener
 
 	private void Start()
 	{
+		goodManager = GoodManager.GetInstance();
 		spawnController = SpawnController.GetInstance();
 		Dictionary<string, GoodManager.Good> goods = GoodManager.GetInstance().GetGoodDictionary();
 		goodNames = new string[goods.Count];
@@ -226,7 +229,7 @@ public class QuestManager : MonoBehaviour, IListener
 		foreach(string goodName in goods.Keys)
 		{
 			goodNames[i] = goodName;
-			goodRewards[i] = Mathf.RoundToInt(rewardValue / (goods[goodName].price * 0.5f));								// * 0.5 bc Prices at Stations are Shit and Goods therefore have less Utility than Money
+			goodRewards[i] = Mathf.RoundToInt(rewardValue / (goods[goodName].price * 0.5f));                                // * 0.5 bc Prices at Stations are Shit and Goods therefore have less Utility than Money
 			++i;
 		}
 
@@ -357,7 +360,8 @@ public class QuestManager : MonoBehaviour, IListener
 			quest.infoString = null;
 			quest.infoInt = 0;
 		}
-		else */if(tasks[quest.task].description.StartsWith("Bribe"))
+		else */
+		if(tasks[quest.task].description.StartsWith("Bribe"))
 		{
 			quest.taskType = TaskType.Bribe;
 			quest.vesselType = VesselType.Customs;
@@ -413,7 +417,7 @@ public class QuestManager : MonoBehaviour, IListener
 			quest.infoInt = -int.Parse(taskItems[1]);
 
 			InventoryController inventoryController = quest.destination.GetInventoryController();
-			inventoryController.Withdraw(quest.infoString, (uint) (inventoryController.GetGoodAmount(quest.infoString) * 0.5f));
+			inventoryController.Withdraw(quest.infoString, (uint)(inventoryController.GetGoodAmount(quest.infoString) * 0.5f));
 		}
 		else if(tasks[quest.task].description.StartsWith("Buy"))
 		{
@@ -458,6 +462,7 @@ public class QuestManager : MonoBehaviour, IListener
 			quest.feedbackRequested = true;
 		}
 
+		bool success = true;
 		for(int i = 0; i < quest.rewards.Length; ++i)
 		{
 			if(quest.rewards[i].Key == "$")
@@ -467,16 +472,26 @@ public class QuestManager : MonoBehaviour, IListener
 			}
 			else
 			{
-				if(localPlayerMainInventory.Deposit(quest.rewards[i].Key, (uint)quest.rewards[i].Value))
+				int amount = Mathf.Min(quest.rewards[i].Value, (int)localPlayerMainInventory.GetFreeCapacity(goodManager.GetGood(quest.rewards[i].Key)));
+				if(localPlayerMainInventory.Deposit(quest.rewards[i].Key, (uint)amount))
 				{
-					quest.rewards[i] = new KeyValuePair<string, int>(quest.rewards[i].Key, 0);
+					quest.rewards[i] = new KeyValuePair<string, int>(quest.rewards[i].Key, quest.rewards[i].Value - amount);
 				}
 				else
 				{
-					InfoController.GetInstance().AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!");
-					return false;
+					Debug.LogWarning("Quest Reward consisting of " + quest.rewards[i].Value + " " + quest.rewards[i].Key + " could not be deposited, although it should have been!");
 				}
 			}
+
+			if(quest.rewards[i].Value > 0)
+			{
+				success = false;
+			}
+		}
+		if(!success)
+		{
+			InfoController.GetInstance().AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!");
+			return false;
 		}
 
 		activeQuests.Remove(spaceStation);
