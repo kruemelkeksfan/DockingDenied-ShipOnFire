@@ -321,7 +321,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 					questFeedbackController.RejectQuests(rejectedQuests);
 					// questFeedbackController.RequestFeedback(activeQuest);														// Used for Feedback Transmission Testing
 
-					for(int j = 0; j <questSelection.Length; ++j)
+					for(int j = 0; j < questSelection.Length; ++j)
 					{
 						if(questSelection[j] == activeQuest)
 						{
@@ -538,7 +538,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			}
 
 			totalPrice += CalculateGoodPrice(materials[i].goodName, supplyAmounts[i], -(int)materials[i].amount);
-			++i;
 		}
 
 		if(totalPrice > localPlayerMainInventory.GetMoney())
@@ -554,7 +553,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				Debug.LogWarning("Construction Materials could not be bought, although they should be!");
 				return false;
 			}
-			++i;
 		}
 
 		return true;

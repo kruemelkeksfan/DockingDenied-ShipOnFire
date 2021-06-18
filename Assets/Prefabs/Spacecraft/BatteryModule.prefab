@@ -53,13 +53,13 @@ MonoBehaviour:
   overlappingReservePositions: 0
   buildingCosts:
   - goodName: Steel
-    amount: 10
+    amount: 5
   - goodName: Aluminium
-    amount: 25
+    amount: 15
   - goodName: Copper
-    amount: 10
+    amount: 8
   - goodName: Gold
-    amount: 4
+    amount: 2
   - goodName: Silicon
     amount: 6
   description: An Energy Storage capable of storing up to 20kWh.

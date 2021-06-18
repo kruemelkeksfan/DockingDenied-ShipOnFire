@@ -216,13 +216,13 @@ MonoBehaviour:
   overlappingReservePositions: 0
   buildingCosts:
   - goodName: Steel
-    amount: 10
+    amount: 5
   - goodName: Aluminium
-    amount: 30
+    amount: 20
   - goodName: Copper
     amount: 4
   - goodName: Gold
-    amount: 6
+    amount: 2
   - goodName: Silicon
     amount: 20
   description: Simple Solar Array generating 160kW.

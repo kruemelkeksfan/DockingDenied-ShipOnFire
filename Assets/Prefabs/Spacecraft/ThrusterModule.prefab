@@ -4869,13 +4869,13 @@ MonoBehaviour:
   overlappingReservePositions: 1
   buildingCosts:
   - goodName: Steel
-    amount: 10
+    amount: 5
   - goodName: Aluminium
-    amount: 20
+    amount: 15
   - goodName: Copper
     amount: 6
   - goodName: Gold
-    amount: 6
+    amount: 4
   - goodName: Silicon
     amount: 4
   description: An Ion Thruster which uses up to 160kW to generate Thrust.

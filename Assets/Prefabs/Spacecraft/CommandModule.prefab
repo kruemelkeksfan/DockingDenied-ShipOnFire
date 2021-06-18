@@ -132,9 +132,9 @@ MonoBehaviour:
   overlappingReservePositions: 0
   buildingCosts:
   - goodName: Steel
-    amount: 20
+    amount: 10
   - goodName: Aluminium
-    amount: 40
+    amount: 20
   - goodName: Copper
     amount: 6
   - goodName: Gold

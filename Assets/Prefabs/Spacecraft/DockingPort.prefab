@@ -5182,9 +5182,9 @@ MonoBehaviour:
   overlappingReservePositions: 1
   buildingCosts:
   - goodName: Steel
-    amount: 10
+    amount: 5
   - goodName: Aluminium
-    amount: 20
+    amount: 15
   - goodName: Copper
     amount: 2
   - goodName: Gold

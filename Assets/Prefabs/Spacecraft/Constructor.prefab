@@ -134,13 +134,13 @@ MonoBehaviour:
   overlappingReservePositions: 0
   buildingCosts:
   - goodName: Steel
-    amount: 20
+    amount: 15
   - goodName: Aluminium
-    amount: 30
-  - goodName: Copper
-    amount: 24
-  - goodName: Gold
     amount: 20
+  - goodName: Copper
+    amount: 20
+  - goodName: Gold
+    amount: 15
   - goodName: Silicon
     amount: 40
   description: Module for constructing other Modules in 400m Range.

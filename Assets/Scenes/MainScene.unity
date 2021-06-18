@@ -2641,7 +2641,7 @@ PrefabInstance:
     - target: {fileID: 6188606278163628312, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: startingMoney
-      value: 1600
+      value: 3200
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 563dc166c0dffa8498e07f185cb0614a, type: 3}
@@ -4463,36 +4463,41 @@ PrefabInstance:
     - target: {fileID: 7740333540509925732, guid: 34af019415eda094f824beb2e04c881a,
         type: 3}
       propertyPath: m_Options.m_Options.Array.size
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 7740333540509925732, guid: 34af019415eda094f824beb2e04c881a,
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[0].m_Text
-      value: No, all selectable quests were annoying
+      value: Not specified
       objectReference: {fileID: 0}
     - target: {fileID: 7740333540509925732, guid: 34af019415eda094f824beb2e04c881a,
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[1].m_Text
-      value: No, although I expected it to be
+      value: No, all selectable quests were annoying
       objectReference: {fileID: 0}
     - target: {fileID: 7740333540509925732, guid: 34af019415eda094f824beb2e04c881a,
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[2].m_Text
-      value: No, but I liked the quest giver
+      value: No, although I expected it to be
       objectReference: {fileID: 0}
     - target: {fileID: 7740333540509925732, guid: 34af019415eda094f824beb2e04c881a,
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[3].m_Text
-      value: No, but the reward was worth it
+      value: No, but I liked the quest giver
       objectReference: {fileID: 0}
     - target: {fileID: 7740333540509925732, guid: 34af019415eda094f824beb2e04c881a,
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[4].m_Text
-      value: Yes, it was fun
+      value: No, but the reward was worth it
       objectReference: {fileID: 0}
     - target: {fileID: 7740333540509925732, guid: 34af019415eda094f824beb2e04c881a,
         type: 3}
       propertyPath: m_Options.m_Options.Array.data[5].m_Text
+      value: Yes, it was fun
+      objectReference: {fileID: 0}
+    - target: {fileID: 7740333540509925732, guid: 34af019415eda094f824beb2e04c881a,
+        type: 3}
+      propertyPath: m_Options.m_Options.Array.data[6].m_Text
       value: Other
       objectReference: {fileID: 0}
     m_RemovedComponents: []
