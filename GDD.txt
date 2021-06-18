@@ -72,3 +72,16 @@ Test Feedback:
 -Click Quest Vessel Marker Hint in Tutorial
 -Hint about Navigation Lines
 -Hint about Restart Button in Tutorial
+
+0.6
+-Stations get to close to build Starter Ship during Tutorial Reading
+-Starter Ship Costs still inconsistent (maybe Station Stockpiles are full?)
+-Vectors glitch around (maybe bc of negative Euler Angles?)
+-Enjoyment Dropdown needs I-Dont-Care-Option
+-Instead of "Other"-Reason-Label make a Textfield
+-No Special Characters in Feedback-Textfields
+-Abandon Quest Button
+-Mark Stations with active Quests
+-Allow Completition of Quests when Player is docked to other Stations
+-Reset Feedback Survey Answers between Quests
+-Show Portnames bugged after a Vessel Despawns
