@@ -18,6 +18,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	[SerializeField] private float playerDespawnDistance = 0.2f;
 	[Tooltip("Delay for Reactivation of the Docking Port, if it is disabled, for Example after docking to the wrong Port of a Station")]
 	[SerializeField] private float dockingPortReactivateDelay = 20.0f;
+	[SerializeField] private float despawnDelay = 300.0f;
 	private RectTransform uiTransform = null;
 	private MenuController menuController = null;
 	private Spacecraft spacecraft = null;
@@ -41,6 +42,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	private QuestManager.Quest quest = null;
 	private bool interactable = false;
 	private bool playerDocked = false;
+	private float questCompleteTime = -1.0f;
 
 	private void Start()
 	{
@@ -85,10 +87,17 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void UpdateNotify()
 	{
-		if(quest.progress >= 1.0f && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
+		if(quest.progress >= 1.0f)
 		{
-			StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));
-			mapMarker.localScale = Vector3.zero;
+			if(questCompleteTime < 0.0f)
+			{
+				questCompleteTime = Time.time;
+				mapMarker.localScale = Vector3.zero;
+			}
+			else if(Time.time > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
+			{
+				StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));
+			}
 		}
 		else
 		{
@@ -192,7 +201,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			hint = "Kill Me!";
 			interactable = false;
 		}
-		else */if(quest.taskType == QuestManager.TaskType.Bribe)
+		else */
+		if(quest.taskType == QuestManager.TaskType.Bribe)
 		{
 			hint = "Dock to interact!";
 			interactable = true;

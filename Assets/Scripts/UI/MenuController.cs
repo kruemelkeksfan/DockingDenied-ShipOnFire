@@ -203,67 +203,89 @@ public class MenuController : MonoBehaviour, IListener
 		}
 	}
 
-	public void UpdateQuest(SpaceStationController requester, QuestManager.Quest quest, int position, bool active, bool playerDocked = false)
+	public void UpdateQuest(SpaceStationController requester, QuestManager.Quest quest, int position, bool active)
 	{
 		if(requester == activeStation)
 		{
-			stationQuestEntries[position].GetChild(1).GetComponent<Text>().text = questManager.GetBackstoryDescription(quest.backstory);
-			stationQuestEntries[position].GetChild(3).GetComponent<Text>().text = questManager.GetQuestGiverDescription(quest.questGiver);
-			stationQuestEntries[position].GetChild(5).GetComponent<Text>().text = questManager.GetTaskDescription(quest.task);
-
-			StringBuilder rewardString = new StringBuilder();
-			foreach(KeyValuePair<string, int> reward in quest.rewards)
+			if(quest != null)
 			{
-				rewardString.AppendLine(reward.Value + (reward.Key != "$" ? " " : "") + reward.Key);
-			}
-			stationQuestEntries[position].GetChild(7).GetComponent<Text>().text = rewardString.ToString();
+				stationQuestEntries[position].gameObject.SetActive(true);
 
-			Button button = stationQuestEntries[position].GetChild(8).GetComponentInChildren<Button>();
-			if(active)
-			{
-				stationQuestEntries[0].gameObject.SetActive(false);
-				stationQuestEntries[2].gameObject.SetActive(false);
+				stationQuestEntries[position].GetChild(1).GetComponent<Text>().text = questManager.GetBackstoryDescription(quest.backstory);
+				stationQuestEntries[position].GetChild(3).GetComponent<Text>().text = questManager.GetQuestGiverDescription(quest.questGiver);
+				stationQuestEntries[position].GetChild(5).GetComponent<Text>().text = questManager.GetTaskDescription(quest.task);
 
-				if(quest.progress < 1.0f)
+				StringBuilder rewardString = new StringBuilder();
+				foreach(KeyValuePair<string, int> reward in quest.rewards)
 				{
-					button.interactable = false;
-					button.GetComponentInChildren<Text>().text = Mathf.FloorToInt(quest.progress * 100.0f) + "%";
+					rewardString.AppendLine(reward.Value + (reward.Key != "$" ? " " : "") + reward.Key);
 				}
-				else
+				stationQuestEntries[position].GetChild(7).GetComponent<Text>().text = rewardString.ToString();
+
+				Button negativeButton = stationQuestEntries[position].GetChild(8).GetComponentInChildren<Button>();
+				Button positiveButton = stationQuestEntries[position].GetChild(9).GetComponentInChildren<Button>();
+				if(active)
 				{
-					if(playerDocked)
+					stationQuestEntries[0].gameObject.SetActive(false);
+					stationQuestEntries[2].gameObject.SetActive(false);
+
+					negativeButton.gameObject.SetActive(true);
+					SpaceStationController localActiveStation = activeStation;
+					negativeButton.onClick.RemoveAllListeners();
+					negativeButton.onClick.AddListener(delegate
 					{
-						button.interactable = true;
-						button.GetComponentInChildren<Text>().text = "Complete";
-						SpaceStationController localActiveStation = activeStation;
-						button.onClick.RemoveAllListeners();
-						button.onClick.AddListener(delegate
-						{
-							questManager.CompleteQuest(localActiveStation);
-							localActiveStation.UpdateQuests();
-						});
+						questManager.AbandonQuest(localActiveStation);
+						localActiveStation.UpdateQuests();
+					});
+
+					positiveButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(45.0f, -115.0f);
+					if(quest.progress < 1.0f)
+					{
+						positiveButton.interactable = false;
+						positiveButton.GetComponentInChildren<Text>().text = Mathf.FloorToInt(quest.progress * 100.0f) + "%";
 					}
 					else
 					{
-						button.interactable = false;
-						button.GetComponentInChildren<Text>().text = "Get back here!";
+						if(localPlayerMainSpacecraft.IsDockedToStation())
+						{
+							positiveButton.interactable = true;
+							positiveButton.GetComponentInChildren<Text>().text = "Complete";
+							positiveButton.onClick.RemoveAllListeners();
+							positiveButton.onClick.AddListener(delegate
+							{
+								questManager.CompleteQuest(localActiveStation);
+								localActiveStation.UpdateQuests();
+							});
+						}
+						else
+						{
+							positiveButton.interactable = false;
+							positiveButton.GetComponentInChildren<Text>().text = "Get back here!";
+						}
 					}
+				}
+				else
+				{
+					stationQuestEntries[position].gameObject.SetActive(true);
+
+					negativeButton.gameObject.SetActive(false);
+
+					positiveButton.interactable = true;
+					positiveButton.GetComponent<RectTransform>().anchoredPosition = new Vector2(0.0f, -115.0f);
+					positiveButton.GetComponentInChildren<Text>().text = "Accept";
+					QuestManager.Quest localQuest = quest;
+					SpaceStationController localActiveStation = activeStation;
+					positiveButton.onClick.RemoveAllListeners();
+					positiveButton.onClick.AddListener(delegate
+					{
+						questManager.AcceptQuest(localQuest);
+						localActiveStation.UpdateQuests();
+					});
 				}
 			}
 			else
 			{
-				stationQuestEntries[position].gameObject.SetActive(true);
-
-				button.interactable = true;
-				button.GetComponentInChildren<Text>().text = "Accept";
-				QuestManager.Quest localQuest = quest;
-				SpaceStationController localActiveStation = activeStation;
-				button.onClick.RemoveAllListeners();
-				button.onClick.AddListener(delegate
-				{
-					questManager.AcceptQuest(localQuest);
-					localActiveStation.UpdateQuests();
-				});
+				stationQuestEntries[position].gameObject.SetActive(false);
 			}
 		}
 		else

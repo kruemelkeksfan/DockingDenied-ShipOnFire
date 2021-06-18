@@ -18,6 +18,8 @@ MonoBehaviour:
     type: 3}
   decimalDigitThreshold: 100
   playerDespawnDistance: 1
+  dockingPortReactivateDelay: 20
+  despawnDelay: 300
 --- !u!1001 &1583003449038245521
 PrefabInstance:
   m_ObjectHideFlags: 0

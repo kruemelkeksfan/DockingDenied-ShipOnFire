@@ -25,7 +25,7 @@ PrefabInstance:
     - target: {fileID: 2606326412712895733, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
         type: 3}
       propertyPath: m_Name
-      value: MapMarker
+      value: MapMarkerQuestVessel
       objectReference: {fileID: 0}
     - target: {fileID: 3653227749583949900, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
         type: 3}
@@ -190,7 +190,7 @@ PrefabInstance:
     - target: {fileID: 8981650004055465417, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.size
-      value: 2
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 8981650004055465417, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
         type: 3}
@@ -225,7 +225,7 @@ PrefabInstance:
     - target: {fileID: 8981650004055465417, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
         type: 3}
       propertyPath: m_OnClick.m_PersistentCalls.m_Calls.Array.data[0].m_MethodName
-      value: ToggleQuestVesselMenu
+      value: UpdateQuestVesselMenu
       objectReference: {fileID: 0}
     - target: {fileID: 8981650004055465417, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
         type: 3}

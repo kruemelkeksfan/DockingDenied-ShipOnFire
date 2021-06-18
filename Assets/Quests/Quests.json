@@ -120,28 +120,28 @@
       "description": "Sell 40 Steel to Station"
     },
     {
-      "description": "Sell 50 Food to the Station"
+      "description": "Sell 40 Food to the Station"
     },
     {
-      "description": "Sell 20 Sanitary Products to the Station"
+      "description": "Sell 10 Sanitary Products to the Station"
     },
     {
-      "description": "Sell 10 Medicine to the Station"
+      "description": "Sell 5 Medicine to the Station"
     },
     {
-      "description": "Sell 100 Oxygen to the Station"
+      "description": "Sell 80 Oxygen to the Station"
     },
     {
-      "description": "Sell 100 Hydrogen to the Station"
+      "description": "Sell 80 Hydrogen to the Station"
     },
     {
       "description": "Buy 40 Steel from other Stations"
     },
     {
-      "description": "Buy 60 Silicon from other Stations"
+      "description": "Buy 30 Silicon from other Stations"
     },
     {
-      "description": "Buy 20 Drugs from other Stations"
+      "description": "Buy 6 Drugs from other Stations"
     },
     {
       "description": "Buy Goods for at least 200$ from other Stations"

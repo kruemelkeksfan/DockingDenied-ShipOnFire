@@ -102,7 +102,7 @@ public class QuestFeedbackController : MonoBehaviour
 
 	public void RejectQuests(QuestManager.Quest[] rejectedQuests)
 	{
-		if(accepted && rejectedQuests != null && rejectedQuests.Length > 0)
+		if(accepted && rejectedQuests.Length > 0)
 		{
 			this.rejectedQuests[rejectedQuests[0].destination] = rejectedQuests;
 		}

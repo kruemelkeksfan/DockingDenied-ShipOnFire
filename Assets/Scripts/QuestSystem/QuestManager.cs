@@ -328,7 +328,7 @@ public class QuestManager : MonoBehaviour, IListener
 			return lho.Key.CompareTo(rho.Key);
 		});
 
-		quest.progress = 0.001f;
+		quest.progress = 0.0002f;
 
 		// TODO: Use Reverse from taskTypes-Dictionary to save Performance (String Comparisons)
 		/* TODO: if(tasks[quest.task].description.StartsWith("Destroy"))
@@ -481,6 +481,13 @@ public class QuestManager : MonoBehaviour, IListener
 
 		activeQuests.Remove(spaceStation);
 		return true;
+	}
+
+	public void AbandonQuest(SpaceStationController spaceStation)
+	{
+		activeQuests[spaceStation].progress = 1.0f;
+
+		activeQuests.Remove(spaceStation);
 	}
 
 	public void NotifyTrade(SpaceStationController questStation, string goodName, int amount, int price)

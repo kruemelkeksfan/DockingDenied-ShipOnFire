@@ -384,6 +384,19 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		}
 	}
 
+	public bool IsDockedToStation()
+	{
+		foreach(KeyValuePair<Spacecraft, Transform> dockedSpacecraft in dockedSpacecraft)
+		{
+			if(dockedSpacecraft.Key.GetComponent<SpaceStationController>() != null)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	public Module GetModule(Vector2Int position)
 	{
 		if(modules.ContainsKey(position))

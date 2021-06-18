@@ -41,6 +41,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[Tooltip("Maximum Money Change of the Station per Economy Update.")]
 	[SerializeField] private int maxProfit = 200;
 	[SerializeField] private RectTransform tradingEntryPrefab = null;
+	[SerializeField] private ColorBlock questStationMarkerColors = new ColorBlock();
+	[SerializeField] private Color questStationTextColor = Color.red;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private MenuController menuController = null;
@@ -60,6 +62,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private RectTransform mapMarker = null;
 	private Text mapMarkerName = null;
 	private Text mapMarkerDistance = null;
+	private Button mapMarkerButton = null;
 	private string stationName = null;
 	private DockingPort[] dockingPorts = null;
 	private IEnumerator dockingTimeoutCoroutine = null;
@@ -74,6 +77,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private Dictionary<string, GoodTradingInfo> tradingInventory;
 	private List<string> goodNames = null;
 	private bool spawnProtection = true;
+	private bool newActiveQuest = true;
+	private ColorBlock originalMarkerColors = new ColorBlock();
+	private Color originalTextColor = Color.yellow;
 
 	private void Start()
 	{
@@ -95,9 +101,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		{
 			port.AddDockingListener(this);
 		}
+
 		expectedDockings = new Dictionary<DockingPort, Spacecraft>();
 		dockedSpacecraft = new HashSet<Spacecraft>();
-
 		tradingInventory = new Dictionary<string, GoodTradingInfo>();
 		goodNames = new List<string>();
 
@@ -291,13 +297,21 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			QuestManager.Quest activeQuest = questManager.GetActiveQuest(this);
 			if(activeQuest != null)
 			{
-				if(questSelection != null)
+				if(newActiveQuest)
 				{
-					QuestManager.Quest[] rejectedQuests = new QuestManager.Quest[2];
 					int i = 0;
 					foreach(QuestManager.Quest quest in questSelection)
 					{
-						if(quest != activeQuest)
+						if(quest != null && quest != activeQuest)
+						{
+							++i;
+						}
+					}
+					QuestManager.Quest[] rejectedQuests = new QuestManager.Quest[i];
+					i = 0;
+					foreach(QuestManager.Quest quest in questSelection)
+					{
+						if(quest != null && quest != activeQuest)
 						{
 							rejectedQuests[i] = quest;
 							++i;
@@ -306,14 +320,28 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 					questFeedbackController.RejectQuests(rejectedQuests);
 					// questFeedbackController.RequestFeedback(activeQuest);														// Used for Feedback Transmission Testing
+
+					for(int j = 0; j <questSelection.Length; ++j)
+					{
+						if(questSelection[j] == activeQuest)
+						{
+							questSelection[j] = null;
+							break;
+						}
+					}
+
+					newActiveQuest = false;
 				}
 
-				questSelection = null;
-				menuController.UpdateQuest(this, activeQuest, 1, true, dockedSpacecraft.Contains(localPlayerMainSpacecraft));
+				menuController.UpdateQuest(this, activeQuest, 1, true);
+
+				mapMarkerButton.colors = questStationMarkerColors;
+				mapMarkerName.color = questStationTextColor;
+				mapMarkerDistance.color = questStationTextColor;
 			}
 			else
 			{
-				if(questSelection == null || updateQuestSelection)
+				if(updateQuestSelection)
 				{
 					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this, firstTasks), questManager.GenerateQuest(this, secondaryTasks), null };
 					QuestManager.TaskType[] thirdTasks = questSelection[0].task == questSelection[1].task ? new QuestManager.TaskType[allTasks.Length - 1] : new QuestManager.TaskType[allTasks.Length - 2];
@@ -334,6 +362,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				{
 					menuController.UpdateQuest(this, questSelection[i], i, false);
 				}
+
+				newActiveQuest = true;
+
+				mapMarkerButton.colors = originalMarkerColors;
+				mapMarkerName.color = originalTextColor;
+				mapMarkerDistance.color = originalTextColor;
 			}
 		}
 	}
@@ -669,10 +703,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, menuController.GetMapMarkerParent());
 		mapMarkerName = mapMarker.GetChild(0).GetComponent<Text>();
 		mapMarkerDistance = mapMarker.GetChild(1).GetComponent<Text>();
-		mapMarker.GetComponent<Button>().onClick.AddListener(delegate
+		mapMarkerButton = mapMarker.GetComponent<Button>();
+		mapMarkerButton.onClick.AddListener(delegate
 		{
 			ToggleStationMenu();
 		});
+		originalMarkerColors = mapMarkerButton.colors;
+		originalTextColor = mapMarkerName.color;
 
 		mapMarkerName.text = stationName;
 		this.stationName = stationName;
