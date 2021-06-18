@@ -582,7 +582,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 			supplyAmounts[i] = inventoryController.GetGoodAmount(materials[i].goodName);
 			totalPrice += CalculateGoodPrice(materials[i].goodName, supplyAmounts[i], (int)materials[i].amount);
-			++i;
 		}
 
 		if(sum > inventoryController.GetFreeCapacity(goodManager.GetGood(materials[0].goodName)))
@@ -604,7 +603,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				Debug.LogWarning("Construction Materials could not be sold, although they should be!");
 				return false;
 			}
-			++i;
 		}
 
 		return true;
