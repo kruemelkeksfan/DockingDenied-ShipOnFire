@@ -45,7 +45,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		cameraTransform = camera.GetComponent<Transform>();
 
 		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, uiTransform.position, uiTransform.rotation, uiTransform);
-		minMapMarkerDisplayDistance *= minMapMarkerDisplayDistance;																			// Square to avoid Sqrt later on
+		minMapMarkerDisplayDistance *= minMapMarkerDisplayDistance;                                                                         // Square to avoid Sqrt later on
 
 		// Instantiate in reverse Order to render the more important Vectors on top
 		orbitalVector = GameObject.Instantiate<RectTransform>(vectorPrefab, uiTransform.position, uiTransform.rotation, uiTransform);
@@ -68,7 +68,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		toggleController.AddToggleObject("VelocityVectors", orbitalVector.gameObject);
 		toggleController.AddToggleObject("NavVectors", targetNavVector.gameObject);
 		toggleController.AddToggleObject("NavVectors", planetNavVector.gameObject);
-		
+
 		spacecraft.AddUpdateListener(this);
 	}
 
@@ -132,9 +132,15 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	{
 		if(vector.gameObject.activeSelf && velocityMagnitude > 0.0f)
 		{
-			vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocityMagnitude * vectorLengthFactor);
-			vector.localRotation = Quaternion.FromToRotation(uiTransform.up, velocity);
-			vector.anchoredPosition = uiTransform.InverseTransformDirection(velocity) * (vectorLengthFactor * 0.5f);
+			// Workaround for Rotation sometimes pointing in the wroing Direction for some Frames, probably a Unity Bug with Rotations near 180°
+			Vector2 position = uiTransform.InverseTransformDirection(velocity) * (vectorLengthFactor * 0.5f);
+			Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, velocity);
+			if(Mathf.Abs(Vector2.Dot(rotation * Vector2.right, position - (Vector2)uiTransform.localPosition)) < 0.0002f)
+			{
+				vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocityMagnitude * vectorLengthFactor);
+				vector.anchoredPosition = position;
+				vector.localRotation = rotation;
+			}
 		}
 		else
 		{
@@ -146,10 +152,15 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	{
 		if(vector.gameObject.activeSelf && targetPosition != rigidbody.position)
 		{
-			Vector2 direction = uiTransform.InverseTransformPoint(targetPosition);															// Vector from local Origin to Target Position in local Space
-			vector.sizeDelta = new Vector2(navVectorWidth * scaleFactor, direction.magnitude);
-			vector.localRotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - rigidbody.position);
-			vector.anchoredPosition = direction * 0.5f;
+			// Workaround for Rotation sometimes pointing in the wroing Direction for some Frames, probably a Unity Bug with Rotations near 180°
+			Vector2 direction = uiTransform.InverseTransformPoint(targetPosition);
+			Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - rigidbody.position);
+			if(Mathf.Abs(Vector2.Dot(rotation * Vector2.right, (direction * 0.5f) - (Vector2)uiTransform.localPosition)) < 0.0002f)
+			{                                                   // Vector from local Origin to Target Position in local Space
+				vector.sizeDelta = new Vector2(navVectorWidth * scaleFactor, direction.magnitude);
+				vector.anchoredPosition = direction * 0.5f;
+				vector.localRotation = rotation;
+			}
 		}
 		else
 		{
