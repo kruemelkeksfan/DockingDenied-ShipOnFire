@@ -27,7 +27,8 @@ public class Container : Module
 	public override void Deconstruct()
 	{
 		// Dump Contents manually to update their Module Mass in Spacecraft correctly
-		foreach(string loadName in loads.Keys)
+		List<string> loadKeys = new List<string>(loads.Keys);
+		foreach(string loadName in loadKeys)
 		{
 			Withdraw(loadName, loads[loadName]);
 		}
