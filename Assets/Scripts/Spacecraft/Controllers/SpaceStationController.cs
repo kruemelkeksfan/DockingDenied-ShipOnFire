@@ -661,7 +661,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 				if(inventoryController.GetGoodAmount(goodName) < goods[goodName].consumption * maxGoodStockFactor)
 				{
-					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(1, goods[goodName].consumption * 2));
+					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(goods[goodName].consumption * 0.5f, goods[goodName].consumption * 2));
 				}
 			}
 			inventoryController.TransferMoney(UnityEngine.Random.Range(minProfit, maxProfit));
