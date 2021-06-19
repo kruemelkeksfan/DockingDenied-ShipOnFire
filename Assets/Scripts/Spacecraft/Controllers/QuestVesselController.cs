@@ -93,6 +93,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			{
 				questCompleteTime = Time.time;
 				mapMarker.localScale = Vector3.zero;
+				quest.destination.AbortDocking(spacecraft);
 			}
 			else if(Time.time > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
 			{

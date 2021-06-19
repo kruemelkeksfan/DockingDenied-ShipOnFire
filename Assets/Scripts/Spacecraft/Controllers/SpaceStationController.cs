@@ -290,6 +290,19 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
+	public void AbortDocking(Spacecraft requester)
+	{
+		foreach(DockingPort port in expectedDockings.Keys)
+		{
+			if(expectedDockings[port] == requester)
+			{
+				port.HotkeyDown();
+				expectedDockings.Remove(port);
+				break;
+			}
+		}
+	}
+
 	public void UpdateQuests()
 	{
 		if(menuController.StationIsQuesting(this))
