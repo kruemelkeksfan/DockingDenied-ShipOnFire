@@ -158,7 +158,7 @@ public class DockingPort : HotkeyModule
 						connectedPort = otherPort;
 						otherPort.connectedPort = this;
 						otherPort.joint = joint;
-						docking = false;
+						
 						foreach(IDockingListener listener in dockingListeners)
 						{
 							listener.Docked(this, otherPort);
@@ -178,6 +178,8 @@ public class DockingPort : HotkeyModule
 						rigidbody.rotation += dRotation * dockingRotationSpeed * Time.fixedDeltaTime;
 					}
 				}
+
+				docking = false;
 			}
 		}
 	}
