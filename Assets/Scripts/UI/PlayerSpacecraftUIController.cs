@@ -124,7 +124,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		flightData = new Vector3(rigidbody.position.magnitude - surfaceAltitude, (target != null ? (rigidbody.velocity - target.velocity).magnitude : 0.0f), orbitalVelocity.magnitude);
 		UpdateVelocityVector(velocityVector, (target != null ? (rigidbody.velocity - target.velocity) : Vector2.zero), flightData.y, scaleFactor);
 		UpdateVelocityVector(orbitalVector, orbitalVelocity, flightData.z, scaleFactor);
-		UpdateNavVector(targetNavVector, (target != null ? target.position : Vector2.zero), scaleFactor);
+		UpdateNavVector(targetNavVector, (target != null ? target.position : rigidbody.position), scaleFactor);
 		UpdateNavVector(planetNavVector, Vector2.zero, scaleFactor);
 	}
 
