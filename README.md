@@ -1,5 +1,5 @@
 # DockingDenied-ShipOnFire
-A Space Sandbox Game with Building, Mining, Trading and Questing. Early Access.
+A Space Sandbox Game about Building, Questing and Trading. Early Access. Combat and Mining to be implemented...someday.
 
 ## FAQ
 #### Can I rotate Modules?
