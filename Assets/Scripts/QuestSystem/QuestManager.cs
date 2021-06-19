@@ -164,10 +164,6 @@ public class QuestManager : MonoBehaviour, IListener
 			{
 				taskTypes[TaskType.Trade].Add(i);
 			}
-			else if(tasks[i].description.StartsWith("Buy"))
-			{
-				taskTypes[TaskType.Trade].Add(i);
-			}
 		}
 
 		/*for(int i = 0; i < backstories.Length; ++i)
@@ -189,18 +185,18 @@ public class QuestManager : MonoBehaviour, IListener
 		{
 			for(int j = 0; j < backstories[i].questGivers.Length; ++j)
 			{
-				List<int> questGiverList = new List<int>(questGivers[backstories[i].questGivers[j]].tasks);
+				List<int> questGiverTasks = new List<int>(questGivers[backstories[i].questGivers[j]].tasks);
 				List<int> taskList = new List<int>();
 				foreach(int task in backstories[i].tasks)
 				{
-					if(questGiverList.Contains(task))
+					if(questGiverTasks.Contains(task))
 					{
 						taskList.Add(task);
 					}
 				}
 				if(taskList.Count <= 0)
 				{
-					Debug.LogWarning("No valid Combination for Backstory " + i + " and Quest Giver " + j + "!");
+					Debug.LogWarning("No valid Combination for Backstory " + i + " and Quest Giver " + backstories[i].questGivers[j] + "!");
 				}
 
 				for(int n = 0; n < taskList.Count; ++n)
@@ -419,22 +415,6 @@ public class QuestManager : MonoBehaviour, IListener
 			InventoryController inventoryController = quest.destination.GetInventoryController();
 			inventoryController.Withdraw(quest.infoString, (uint)(inventoryController.GetGoodAmount(quest.infoString) * 0.5f));
 		}
-		else if(tasks[quest.task].description.StartsWith("Buy"))
-		{
-			quest.taskType = TaskType.Trade;
-			quest.vesselType = VesselType.Unknown;
-			string[] taskItems = tasks[quest.task].description.Split(' ');
-			if(taskItems[1] == "Goods")
-			{
-				quest.infoString = "$";
-				quest.infoInt = -int.Parse(taskItems[5].Remove(taskItems[5].Length - 1, 1));
-			}
-			else
-			{
-				quest.infoString = taskItems[2] == "Sanitary" ? (taskItems[2] + " " + taskItems[3]) : taskItems[2];     // Quick and dirty Solutions for Good Names with Spaces
-				quest.infoInt = int.Parse(taskItems[1]);
-			}
-		}
 
 		quest.feedbackRequested = false;
 
@@ -507,26 +487,11 @@ public class QuestManager : MonoBehaviour, IListener
 
 	public void NotifyTrade(SpaceStationController questStation, string goodName, int amount, int price)
 	{
-		if(activeQuests.ContainsKey(questStation) && activeQuests[questStation].taskType == TaskType.Trade && activeQuests[questStation].infoString != "$" && activeQuests[questStation].infoInt < 0)
+		if(activeQuests.ContainsKey(questStation) && activeQuests[questStation].taskType == TaskType.Trade && activeQuests[questStation].infoInt < 0)
 		{
 			if(activeQuests[questStation].infoString == goodName)
 			{
 				activeQuests[questStation].progress += (float)amount / (float)activeQuests[questStation].infoInt;
-			}
-		}
-
-		foreach(SpaceStationController station in activeQuests.Keys)
-		{
-			if(station != questStation && activeQuests.ContainsKey(station) && activeQuests[station].taskType == TaskType.Trade && (activeQuests[station].infoString == "$" || activeQuests[station].infoInt > 0))
-			{
-				if(activeQuests[station].infoString == "$")
-				{
-					activeQuests[station].progress += (float)price / (float)activeQuests[station].infoInt;
-				}
-				else if(activeQuests[station].infoString == goodName)
-				{
-					activeQuests[station].progress += (float)amount / (float)activeQuests[station].infoInt;
-				}
 			}
 		}
 	}
