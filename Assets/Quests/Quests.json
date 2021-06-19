@@ -3,12 +3,12 @@
     {
       "description": "Fugitives threaten the Supply Situation of the station.",
       "questGivers": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 12 ],
-      "tasks": [ 6, 7, 8, 9 ]
+      "tasks": [ 6, 7, 8, 9, 11 ]
     },
     {
       "description": "Customs agency ships are inspecting trading vessels.",
       "questGivers": [ 0, 1, 2, 5, 6, 7, 8, 10 ],
-      "tasks": [ 0 ]
+      "tasks": [ 0, 11 ]
     },
     {
       "description": "Pirate ships are threatening transport vessels.",
@@ -33,7 +33,7 @@
     {
       "description": "The station is running out of supplies and would pay a large price.",
       "questGivers": [ 0, 1, 2, 3, 5, 6, 7, 8, 10, 12 ],
-      "tasks": [ 6, 7, 8, 9, 10 ]
+      "tasks": [ 6, 7, 8, 9, 10, 11 ]
     }
   ],
   "questGivers": [

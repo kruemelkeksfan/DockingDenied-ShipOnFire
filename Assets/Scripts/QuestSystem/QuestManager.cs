@@ -110,6 +110,10 @@ public class QuestManager : MonoBehaviour, IListener
 					}
 				}
 			}
+			if(taskBackstories[i].Count <= 0)
+			{
+				Debug.LogWarning("No valid Backstories for Task " + i + "!");
+			}
 
 			taskQuestGivers[i] = new List<int>();
 			for(int j = 0; j < questGivers.Length; ++j)
@@ -122,6 +126,10 @@ public class QuestManager : MonoBehaviour, IListener
 						break;
 					}
 				}
+			}
+			if(taskQuestGivers[i].Count <= 0)
+			{
+				Debug.LogWarning("No valid Quest Givers for Task " + i + "!");
 			}
 		}
 
