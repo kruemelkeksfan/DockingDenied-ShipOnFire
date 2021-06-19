@@ -85,3 +85,8 @@ Test Feedback:
 -Allow Completition of Quests when Player is docked to other Stations
 -Reset Feedback Survey Answers between Quests
 -Show Portnames bugged after a Vessel Despawns
+
+0.7
+-Display Bulk Price in Trading Menu
+-Buff Station Good Stock Renewal
+-Display Pull Up Warning before Entering the Atmossphere
