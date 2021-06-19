@@ -31,6 +31,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	[SerializeField] private float altitudeCheckInterval = 5.0f;
 	[Tooltip("Sea level Height above the Planet Center")]
 	[SerializeField] private float surfaceAltitude = 250.0f;
+	[SerializeField] private float pullUpWarningAltitude = 370.0f;
 	[Tooltip("Height at which Asteroids should start burning up")]
 	[SerializeField] private float atmossphereEntryAltitude = 320.0f;
 	[Tooltip("Height at which Asteroids should be completely destroyed")]
@@ -67,6 +68,7 @@ public class GravityWellController : MonoBehaviour, IListener
 		gravityObjects = new Dictionary<Rigidbody2D, AsteroidRecord?>();
 		deadGravityObjects = new HashSet<Rigidbody2D>();
 
+		pullUpWarningAltitude *= pullUpWarningAltitude;                                                                                                                     // Square to avoid Mathf.sqrt() later on
 		halfMaxAltitude = (globalAltitudeConstraint.max * 0.5f) * (globalAltitudeConstraint.max * 0.5f);
 		globalAltitudeConstraint = new MinMax(globalAltitudeConstraint.min * globalAltitudeConstraint.min, globalAltitudeConstraint.max * globalAltitudeConstraint.max);    // Square to avoid Mathf.sqrt() later on
 
@@ -130,22 +132,26 @@ public class GravityWellController : MonoBehaviour, IListener
 				float sqrOrbitalHeight = ((Vector2)gravityObject.position).sqrMagnitude;
 				if(((gravityObjects[gravityObject].HasValue && !gravityObjects[gravityObject].Value.touched
 					&& (sqrOrbitalHeight < gravityObjects[gravityObject].Value.altitudeConstraint.min || sqrOrbitalHeight > gravityObjects[gravityObject].Value.altitudeConstraint.max))
-					|| sqrOrbitalHeight < globalAltitudeConstraint.min || sqrOrbitalHeight > globalAltitudeConstraint.max || (gravityObject.gameObject == localPlayerMainSpacecraftObject && sqrOrbitalHeight > halfMaxAltitude))
+					|| sqrOrbitalHeight < globalAltitudeConstraint.min || sqrOrbitalHeight > globalAltitudeConstraint.max || (gravityObject.gameObject == localPlayerMainSpacecraftObject && (sqrOrbitalHeight < pullUpWarningAltitude || sqrOrbitalHeight > halfMaxAltitude)))
 					&& !deadGravityObjects.Contains(gravityObject))
 				{
 					if(gravityObject.gameObject == localPlayerMainSpacecraftObject)
 					{
-						if(sqrOrbitalHeight > globalAltitudeConstraint.max)
+						if(sqrOrbitalHeight < pullUpWarningAltitude && sqrOrbitalHeight > globalAltitudeConstraint.min)
+						{
+							if(infoController.GetMessageCount() <= 0)
+							{
+								infoController.AddMessage("Altitude critical, pull up!");
+							}
+							continue;
+						}
+						else if(sqrOrbitalHeight > globalAltitudeConstraint.max)
 						{
 							if(infoController.GetMessageCount() <= 0)
 							{
 								infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
 							}
 							continue;
-						}
-						else if(sqrOrbitalHeight < globalAltitudeConstraint.min)
-						{
-							infoController.AddMessage("Altitude critical, pull up!");
 						}
 						else if(sqrOrbitalHeight > halfMaxAltitude)
 						{

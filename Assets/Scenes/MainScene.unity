@@ -3511,11 +3511,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   altitudeCheckInterval: 5
   surfaceAltitude: 250
+  pullUpWarningAltitude: 370
   atmossphereEntryAltitude: 320
   destructionAltitude: 280
   globalAltitudeConstraint:
     min: 320
-    max: 10000
+    max: 2000
   atmossphericDensity: 0.2
   plasmaParticleSystemPrefab: {fileID: 2736846745620259419, guid: 11b17e94e5d60294898ba61c533a9b55,
     type: 3}
