@@ -138,7 +138,7 @@ public class TutorialController : MonoBehaviour
 		oldKeyBindingColor = keyBindingDisplay.color;
 		keyBindingHighlighted = true;
 		keyBindingDisplay.color = highlightColor;
-		tutorialMessageField.text = "Control your Ship with the Buttons shown on the right Side of your Screen\nNow align the activated Port of the Station and with that on your Ship\nThen come really close to complete the Docking";
+		tutorialMessageField.text = "Control your Ship with the Buttons shown on the right Side of your Screen\nNow align the activated Port of the Station with the Port of your Ship\nThen come really close to complete the Docking";
 		do
 		{
 			yield return waitForTutorialUpdateInterval;
