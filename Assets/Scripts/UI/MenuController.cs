@@ -319,7 +319,7 @@ public class MenuController : MonoBehaviour, IListener
 			for(int i = 1; i < tradingContentPane.childCount; ++i)
 			{
 				Transform child = tradingContentPane.GetChild(i);
-				amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(5).GetComponent<InputField>().text;
+				amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(6).GetComponent<InputField>().text;
 				GameObject.Destroy(child.gameObject);
 			}
 
@@ -330,11 +330,13 @@ public class MenuController : MonoBehaviour, IListener
 				string goodName = tradingEntry.GetChild(0).GetComponent<Text>().text;
 				if(amountSettings.ContainsKey(goodName))
 				{
-					tradingEntry.GetChild(5).GetComponent<InputField>().text = amountSettings[goodName];
+					tradingEntry.GetChild(3).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), -Mathf.Abs(int.Parse(amountSettings[goodName]))) + "$";
+					tradingEntry.GetChild(4).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), Mathf.Abs(int.Parse(amountSettings[goodName]))) + "$";
+					tradingEntry.GetChild(6).GetComponent<InputField>().text = amountSettings[goodName];
 				}
 				else
 				{
-					tradingEntry.GetChild(5).GetComponent<InputField>().text = "1";
+					tradingEntry.GetChild(6).GetComponent<InputField>().text = "1";
 				}
 			}
 

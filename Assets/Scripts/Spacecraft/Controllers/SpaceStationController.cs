@@ -11,13 +11,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	{
 		public uint playerAmount;
 		public uint stationAmount;
-		public int price;
 
-		public GoodTradingInfo(uint playerAmount, uint stationAmount, int price)
+		public GoodTradingInfo(uint playerAmount, uint stationAmount)
 		{
 			this.playerAmount = playerAmount;
 			this.stationAmount = stationAmount;
-			this.price = price;
 		}
 	}
 
@@ -395,13 +393,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			foreach(string goodName in playerInventory.Keys)
 			{
 				uint stationAmount = stationInventory.ContainsKey(goodName) ? stationInventory[goodName] : 0;
-				tradingInventory.Add(goodName, new GoodTradingInfo(playerInventory[goodName], stationAmount, CalculateGoodPrice(goodName, stationAmount)));
+				tradingInventory.Add(goodName, new GoodTradingInfo(playerInventory[goodName], stationAmount));
 			}
 			foreach(string goodName in stationInventory.Keys)
 			{
 				if(!tradingInventory.ContainsKey(goodName))
 				{
-					tradingInventory.Add(goodName, new GoodTradingInfo(0, stationInventory[goodName], CalculateGoodPrice(goodName, stationInventory[goodName])));
+					tradingInventory.Add(goodName, new GoodTradingInfo(0, stationInventory[goodName]));
 				}
 			}
 
@@ -416,33 +414,38 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				tradingEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodNames[i];
 				tradingEntryRectTransform.GetChild(1).GetComponent<Text>().text = tradingInventory[goodNames[i]].playerAmount.ToString();
 				tradingEntryRectTransform.GetChild(2).GetComponent<Text>().text = tradingInventory[goodNames[i]].stationAmount.ToString();
-				tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = tradingInventory[goodNames[i]].price + "$";
-				tradingEntryRectTransform.GetChild(4).GetComponent<Text>().text = goodManager.GetGood(goodNames[i]).decription;
+				tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = CalculateGoodPrice(goodNames[i], tradingInventory[goodNames[i]].stationAmount, -1) + "$";
+				tradingEntryRectTransform.GetChild(4).GetComponent<Text>().text = CalculateGoodPrice(goodNames[i], tradingInventory[goodNames[i]].stationAmount, 1) + "$";
+				tradingEntryRectTransform.GetChild(5).GetComponent<Text>().text = goodManager.GetGood(goodNames[i]).decription;
 
 				if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))
 				{
-					tradingEntryRectTransform.GetChild(5).gameObject.SetActive(true);
 					tradingEntryRectTransform.GetChild(6).gameObject.SetActive(true);
 					tradingEntryRectTransform.GetChild(7).gameObject.SetActive(true);
+					tradingEntryRectTransform.GetChild(8).gameObject.SetActive(true);
 
 					string localGoodName = goodNames[i];
-					InputField localAmountField = tradingEntryRectTransform.GetChild(5).GetComponent<InputField>();
+					InputField localAmountField = tradingEntryRectTransform.GetChild(6).GetComponent<InputField>();
 					InventoryController localPlayerInventory = localPlayerMainInventory;
 					InventoryController localStationInventory = inventoryController;
-					tradingEntryRectTransform.GetChild(6).GetComponent<Button>().onClick.AddListener(delegate
+					localAmountField.onEndEdit.AddListener(delegate
+					{
+						UpdateTrading();
+					});
+					tradingEntryRectTransform.GetChild(7).GetComponent<Button>().onClick.AddListener(delegate
 					{
 						Trade(localGoodName, 0, localPlayerInventory, localStationInventory, tradingInventory[localGoodName].stationAmount, localAmountField);
 					});
-					tradingEntryRectTransform.GetChild(7).GetComponent<Button>().onClick.AddListener(delegate
+					tradingEntryRectTransform.GetChild(8).GetComponent<Button>().onClick.AddListener(delegate
 					{
 						Trade(localGoodName, 0, localStationInventory, localPlayerInventory, tradingInventory[localGoodName].stationAmount, localAmountField);
 					});
 				}
 				else
 				{
-					tradingEntryRectTransform.GetChild(5).gameObject.SetActive(false);
 					tradingEntryRectTransform.GetChild(6).gameObject.SetActive(false);
 					tradingEntryRectTransform.GetChild(7).gameObject.SetActive(false);
+					tradingEntryRectTransform.GetChild(8).gameObject.SetActive(false);
 				}
 
 				tradingEntries[i] = tradingEntryRectTransform;
@@ -669,7 +672,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private int CalculateGoodPrice(string goodName, uint supplyAmount, int transactionAmount = 1)
+	public int CalculateGoodPrice(string goodName, uint supplyAmount, int transactionAmount = 1)
 	{
 		++supplyAmount;                                                                                         // Avoid supplyAmount == 0 without having supplyAmount == 0 and supplyAmount == 1 generate the same Price
 
@@ -680,7 +683,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		for(int i = 0; i < Mathf.Abs(transactionAmount); ++i)
 		{
 			// Price Formula is ((consumption * targetGoodStockFactor) / supplyAmount)^2 * basePrice
-			float newSupply = supplyAmount + ((i + 1) * sign);                                                  // Supply afterthis Unit is bought/sold
+			float newSupply = supplyAmount + ((i + 1) * sign);                                                  // Supply after this Unit is bought/sold
 			if(newSupply > 0.0f)
 			{
 				float supplyConstant = (good.consumption * targetGoodStockFactor) / newSupply;
