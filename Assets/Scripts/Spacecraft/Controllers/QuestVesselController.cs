@@ -149,6 +149,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 		if(!port.IsActive())
 		{
+			quest.progress = 0.0002f;
 			StartCoroutine(ReactivateDockingPort(port));
 		}
 
