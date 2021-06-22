@@ -90,3 +90,18 @@ Test Feedback:
 -Display Bulk Price in Trading Menu
 -Buff Station Good Stock Renewal
 -Display Pull Up Warning before Entering the Atmossphere
+
+0.8
+-Selling Quests still allow to buy Stuff before Accepting the Quest and selling it after Accepting
+-Better go back to complete Withdrawal, but needs an Exception for First Time Building Materials
+-Maybe replace Steel with other Trading Quest during Spawn Protection
+-Rework "Full Retard Sentence in Tutorial"
+-Reduce Quest Vessel Spawn Range to ease flying back to the Station even if the Quest takes longer
+-Navigation Lines and Velocity Vector default on
+-Tutorial Panel for more Contrast and Highlighting
+-Smaller Show-/Hide-Buttons
+-Show-/Hide-Buttons for Resource- and Flight-Info-Display
+-Change Keybinding-Display to Show-/Hide instead of F1
+-Rotation Cutoff (reduce Rotation Speed to 0 when it is very small)
+-Sound!
+-Somehow make clear that the Game has 2D Physics
