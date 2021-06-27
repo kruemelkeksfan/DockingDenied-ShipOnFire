@@ -50,7 +50,7 @@
       "tasks": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
     },
     {
-      "description": "A member of the council. As he comes toward you he kindly greets some people, most of which reply with a smile.",
+      "description": "A member of the council. As he comes toward you, he kindly greets some people, most of which reply with a smile.",
       "tasks": [ 0, 1, 2, 4, 5, 6, 7, 8, 9, 10 ]
     },
     {
@@ -78,7 +78,7 @@
       "tasks": [ 0, 3, 11, 12 ]
     },
     {
-      "description": "A Guerilla Organization with the Aim of overthrowing some tyrannic Rulers in this Sector.",
+      "description": "A Guerilla Organization with the Aim of overthrowing some tyrannical Rulers in this Sector.",
       "tasks": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12 ]
     },
     {
