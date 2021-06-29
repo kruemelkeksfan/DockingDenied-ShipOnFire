@@ -1,7 +1,7 @@
 {
   "backstories": [
     {
-      "description": "Fugitives threaten the Supply Situation of the station.",
+      "description": "Fugitives threaten the supply situation of the station.",
       "questGivers": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 12 ],
       "tasks": [ 6, 7, 8, 9, 11 ]
     },
@@ -70,23 +70,23 @@
       "tasks": [ 0, 1, 2, 4, 5, 6, 7, 8, 9, 10 ]
     },
     {
-      "description": "A mysterious hooded Figure, sitting in the Corner of the Room.",
+      "description": "A mysterious hooded figure, sitting in the corner of the room.",
       "tasks": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 ]
     },
     {
-      "description": "An infamous Pirate who is dreaded on the whole Station and beyond.",
+      "description": "An infamous pirate who is dreaded on the whole station and beyond.",
       "tasks": [ 0, 3, 11, 12 ]
     },
     {
-      "description": "A Guerilla Organization with the Aim of overthrowing some tyrannical Rulers in this Sector.",
+      "description": "A guerilla organization with the aim of overthrowing some tyrannical rulers in this sector.",
       "tasks": [ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12 ]
     },
     {
-      "description": "An anarchistic Group trying to destabilize Stations around the Planet to start a Revolution.",
+      "description": "An anarchistic group trying to destabilize stations around the planet to start a revolution.",
       "tasks": [ 11, 12 ]
     },
     {
-      "description": "A Government Commission for special Duties.",
+      "description": "A government commission for special duties.",
       "tasks": [ 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 ]
     }
   ],
