@@ -65,7 +65,7 @@ public class CameraController : MonoBehaviour, IListener
 			transform.position = new Vector3(transform.position.x, transform.position.y, -maxDistance);
 			localPosition = Quaternion.Inverse(rotation) * (transform.position - spacecraftTransform.position);
 		}
-		// Camera too far awy from the Action?
+		// Camera too far away from the Action?
 		if(Mathf.Abs(transform.position.x) > maxDistance || Mathf.Abs(transform.position.y) > maxDistance || Mathf.Abs(transform.position.z) > maxDistance)
 		{
 			transform.position = new Vector3(Mathf.Clamp(transform.position.x, -maxDistance, maxDistance), Mathf.Clamp(transform.position.y, -maxDistance, maxDistance), Mathf.Clamp(transform.position.z, -maxDistance, maxDistance));
