@@ -112,8 +112,7 @@ public class GravityWellController : MonoBehaviour, IListener
 				float sqrGravityDirectionMagnitude = gravityDirection.x * gravityDirection.x + gravityDirection.y * gravityDirection.y;
 				Vector2 gravity = (((gravitationalParameter
 					// TODO: Cancel out 1000.0f from next 2 Lines
-					// Convert from km to m for Calculation since 1 Unit is 1 km and use (a*b)^2 = a^2 * b^2 to avoid a Sqrt
-					// TODO: Your a genius, but you need the Sqrt later on anyways
+					// Convert from km to m for Calculation since 1 Unit is 1 km and use (a*b)^2 = a^2 * b^2
 					/ (sqrGravityDirectionMagnitude * (1000.0f * 1000.0f)))
 					// Convert Result from m/s back to km/s
 					/ 1000.0f)
