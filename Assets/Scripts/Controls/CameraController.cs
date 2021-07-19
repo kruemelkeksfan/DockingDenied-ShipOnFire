@@ -51,23 +51,27 @@ public class CameraController : MonoBehaviour, IListener
 		transform.position = spacecraftTransform.position + (rotation * localPosition);
 		transform.rotation = rotation;
 
+		// Check Camera Constraints and if violated, correct the current Position and reverse engineer the new unrotated (local)Position
+		// Camera too close/below the Physics Plane?
 		if(transform.position.z > maxZHeight)
 		{
 			transform.position = new Vector3(transform.position.x, transform.position.y, maxZHeight);
 			localPosition = Quaternion.Inverse(rotation) * (transform.position - spacecraftTransform.position);
 		}
+		// Camera too far from the Physics Plane?
+		// TODO: Is this necessary? Appears to be covered by next Condition
 		else if(localPosition.z < -maxDistance)
 		{
 			transform.position = new Vector3(transform.position.x, transform.position.y, -maxDistance);
 			localPosition = Quaternion.Inverse(rotation) * (transform.position - spacecraftTransform.position);
 		}
-
+		// Camera too far awy from the Action?
 		if(Mathf.Abs(transform.position.x) > maxDistance || Mathf.Abs(transform.position.y) > maxDistance || Mathf.Abs(transform.position.z) > maxDistance)
 		{
 			transform.position = new Vector3(Mathf.Clamp(transform.position.x, -maxDistance, maxDistance), Mathf.Clamp(transform.position.y, -maxDistance, maxDistance), Mathf.Clamp(transform.position.z, -maxDistance, maxDistance));
 			localPosition = Quaternion.Inverse(rotation) * (transform.position - spacecraftTransform.position);
 		}
-
+		// Camera inside the Planet?
 		if(transform.position.sqrMagnitude <= sqrPlanetSafetyRadius)
 		{
 			transform.position = transform.position.normalized * planetSafetyRadius;
