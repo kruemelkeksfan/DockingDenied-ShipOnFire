@@ -43,7 +43,7 @@ public class CameraController : MonoBehaviour, IListener
 			fixedCamera = !fixedCamera;
 		}
 
-		Quaternion rotation = Quaternion.Euler(localRotation);
+		Quaternion rotation = Quaternion.Euler(localRotation);	// TODO: Buffer this; Ternary Operator to SAVE THE PRECIOUS LINES!!!!
 		if(!fixedCamera)
 		{
 			rotation = spacecraftTransform.rotation * rotation;
