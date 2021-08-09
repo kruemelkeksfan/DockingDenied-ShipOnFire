@@ -1,107 +1,35 @@
-Future Modules:
-Fuel Cells for Electric Energy
-Hydrolysis Module (Hydrogen-/Oxygen Generator)
-(Thermo-) Nuclear Reactors for Electric Energy
-Rocket Thruster
-
-Multiplayer:
-Enum method = { Spawn, Despawn, UpdatePosition, ... }
-method-index gets send over network instead of string name
-method-struct with delegate (delegate calls the real method), parameter- and maybe returntype-info (how do these infos look like?)
-create array with method-structs at startup
-index will be method-enum-index, value the corresponding struct
-see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for delegates
-when receiving index and parameters over network, start delegate
-
-Test Feedback:
-
-0.1
--Ship Position/Direction Marker
--Velocity Markers
--Show Orientation Help Lines toward Planets/Targets
--Map Markers are shown in wrong Positions when they are behind Camera
--Port Name Toggling does not work after selecting Docking Port in Building Menu
--Hint on Module turning with Q/E in Tutorial
--Less Pauses between Tutorial Messages
--Dont restart Tutorial on Game Restart when it had been turned off
--Resource Cost Display shows up in the wrong Position
--Button to clear the Info Log
--Can build Modules even when out of Money
--Reduce Amount of Error Messages when Module building fails (turned out to be bc of the same Bug as above)
--Dont allow opening of multiple Station Menus at once
--Close Menus with Esc
--Module Blueprints skip between 2 Positions when Cursor is near a Grid Cell Boundary
--Autorun Button
-
-0.2
--Set 1 as Default Value in Trading Amount Fields
--Layer Vessel Markers behind other UI Elements
--Buff Thrusters
--Increase Turning Threshold on Thrusters
--Erase Marker sometimes does not disappear (maybe has to do with Main Menu?)
--NullReferenceException on Asteroid Collision
--Display Tutorial Messages in Extra Text Field
--Highlight Buttons in Tutorial
--Draw Attention to the Key Binding Display in the Tutorial
--Fixed Camera Mode (Camera does not follow Ship Rotation)
--Solar Modules can be built through Quest Vessel Solar Modules
--Don't let Users deconstruct an active Docking Port
--Let Buy Quests target another Station
--Spawn and Despawn Quest Vessels smoothly (Z-Fade)
--Speed (numeric) and Altitude Display
--Don't scroll Table Headers
-
-0.3
--Zoom in wrong Direction
--Planet Nav Vector too short
--Blue Vectors too dark on black Background
--Docking to Station Port activated for a Towing Quest deactivates the Port
--Docking once to a wrong Port locks the Player out of the Station forever
--Docking Timeout Display would be useful
-
-0.4
--Change Default Cam Mode to "turn with Ship"
--Show Maximum in Energy Display
--Control Lock Display
--Deconstruct Command Module Error message Typo
--Build Area Color needs more Contrast
--Nerf Quest Rewards again
--Provide Starter Ship in Tutorial instead of Building Tutorial
--Give Hint to close Station Menu when activating Docking Port
--Build Area Tutorial Step not clear
--Click Quest Vessel Marker Hint in Tutorial
--Hint about Navigation Lines
--Hint about Restart Button in Tutorial
-
-0.6
--Stations get to close to build Starter Ship during Tutorial Reading
--Starter Ship Costs still inconsistent (maybe Station Stockpiles are full?)
--Vectors glitch around (maybe bc of negative Euler Angles?)
--Enjoyment Dropdown needs I-Dont-Care-Option
--Instead of "Other"-Reason-Label make a Textfield
--No Special Characters in Feedback-Textfields
--Abandon Quest Button
--Mark Stations with active Quests
--Allow Completition of Quests when Player is docked to other Stations
--Reset Feedback Survey Answers between Quests
--Show Portnames bugged after a Vessel Despawns
-
-0.7
--Display Bulk Price in Trading Menu
--Buff Station Good Stock Renewal
--Display Pull Up Warning before Entering the Atmossphere
-
-0.8
--Selling Quests still allow to buy Stuff before Accepting the Quest and selling it after Accepting
--Better go back to complete Withdrawal, but needs an Exception for First Time Building Materials
--Maybe replace Steel with other Trading Quest during Spawn Protection
--Rework "Full Retard Sentence in Tutorial"
--Reduce Quest Vessel Spawn Range to ease flying back to the Station even if the Quest takes longer
--Navigation Lines and Velocity Vector default on
--Tutorial Panel for more Contrast and Highlighting
--Smaller Show-/Hide-Buttons
--Show-/Hide-Buttons for Resource- and Flight-Info-Display
--Change Keybinding-Display to Show-/Hide instead of F1
--Rotation Cutoff (reduce Rotation Speed to 0 when it is very small)
--Sound!
--Somehow make clear that the Game has 2D Physics
+Draw Orbits
+Economy 2.0
+New Quest System
+	only generate Quests for which the Requirements are met by the current Ship
+	various Tiers: bigger Ships get more difficult Quests and later Quests require bigger Ships (how to manage Progression?)
+Unlock System for Modules
+	(How?)
+Multiple Ships
+Copy-Paste-Building/Disconnected Build Fix
+Flickering Fix
+	put Ship Renderers in second Scene with more appropriate Scale
+	possibly join all Module Models to a single Model for Performance Reasons
+	draw Ship with a Camera in the second Scene
+	render Camera above Main Camera in primary Scene
+	if Ships are too far apart in the secondary Scene (e.g. further than View Distance), disregard the Proportions in Ship Positions
+		maybe difficult for more than 2 Ships, Ship A and B could be close together, but Ship C is close to A but not close to B. Solution?
+Mining
+Combat
+Crew
+Multiplayer
+	Enum method = { Spawn, Despawn, UpdatePosition, ... }
+	method-index gets send over network instead of string name
+	method-struct with delegate (delegate calls the real method), parameter- and maybe returntype-info (how do these infos look like?)
+	create array with method-structs at startup
+	index will be method-enum-index, value the corresponding struct
+	see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for delegates
+	when receiving index and parameters over network, start delegate
+More Modules
+	Fuel Cells for Electric Energy
+	Hydrolysis Module (Hydrogen-/Oxygen Generator)
+	(Thermo-) Nuclear Reactors for Electric Energy
+	Rocket Thruster
+Factions
+Radar System to detect missing Vessels and Enemies?
+CPU-System for limiting Ship Size (like Robocraft)?
