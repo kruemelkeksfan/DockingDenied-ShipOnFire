@@ -95,3 +95,5 @@
 -LOD for Spacecraft
 -Constructor Use should cost Energy
 -Add Text Outlines (Add Component -> UI -> Effects -> Outline) to all Texts (don't forget to set Alpha to 255)
+-Display internal CoM additionally to real CoM when Vessel is docked
+

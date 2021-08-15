@@ -1,19 +1,43 @@
-Draw Orbits
-Economy 2.0
+Physics 2.0
+	Subscenes + Rails
+	Analytic Orbits for on-railed Objects
+	1 Unit = 1m for un-railed Objects
+	Flickering Fix
+	Draw Orbits	
 New Quest System
+	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
 	only generate Quests for which the Requirements are met by the current Ship
 	various Tiers: bigger Ships get more difficult Quests and later Quests require bigger Ships (how to manage Progression?)
-Unlock System for Modules
-	(How?)
-Multiple Ships
-Copy-Paste-Building/Disconnected Build Fix
-Flickering Fix
-	put Ship Renderers in second Scene with more appropriate Scale
-	possibly join all Module Models to a single Model for Performance Reasons
-	draw Ship with a Camera in the second Scene
-	render Camera above Main Camera in primary Scene
-	if Ships are too far apart in the secondary Scene (e.g. further than View Distance), disregard the Proportions in Ship Positions
-		maybe difficult for more than 2 Ships, Ship A and B could be close together, but Ship C is close to A but not close to B. Solution?
+	Rework Tutorial
+Feedback Fixes
+Building System 2.0
+	Enable spawning Blueprints over existing Ships when external Constructor is used and has enough Capacity to store all Deconstruction Materials
+	Spawn Starter Ship instead of blank Command Module
+	Multiple Ships
+	Copy-Paste-Building
+	Disconnected Build Fix
+		Disconnected Parts are copied to Clipboard
+		Physically they continue existing, block building and can float into Infinity
+		Physically they are Trash and can be deconstructed or attacked
+		If they stay in Range of the Constructor and the Clipboard Content is pasted, they are automatically deconstructed
+		When Clipboard Content is pasted and the Trash is out-of-Range or was damaged, Player has to pay the Building Cost Difference
+	CPU-System for limiting Ship Size (like Robocraft)
+Economy 2.0
+	Un-randomize Economy
+	Production Stations (cheaper Prices for some Goods)
+	Resource Draining Events (Plagues, Attacks, Famines, Storage Module Fires, ...)
+	De-fund Starting Stocks of Stations to make the System poorer
+	AI Traders
+		Just virtual, no actual Ships
+		Certain Amount of Traders (affects overall Resource Distribution Effectivity)
+		Have unlimited Cash
+		Algorithm:
+			Buy Cheapest Goods at Station until? (Cargo Bay is full? Prices are too high? Station is empty?)
+			Allow only 1 Trader Transaction at once, to avoid all Traders buying the same Stuff and going the same Route
+			Travel to Station where they could sell for Max Profit (Travel Time depends linearly on Distance)
+			On Arrival, sell all their Cargo, no Matter how the Stocks changed
+			Repeat
+Component System
 Mining
 Combat
 Crew
@@ -30,6 +54,5 @@ More Modules
 	Hydrolysis Module (Hydrogen-/Oxygen Generator)
 	(Thermo-) Nuclear Reactors for Electric Energy
 	Rocket Thruster
+	Radar System to detect missing Vessels and Enemies?
 Factions
-Radar System to detect missing Vessels and Enemies?
-CPU-System for limiting Ship Size (like Robocraft)?
