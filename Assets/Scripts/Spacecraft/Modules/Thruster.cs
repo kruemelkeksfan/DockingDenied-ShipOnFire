@@ -52,24 +52,6 @@ public class Thruster : Module
 			thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * finalThrottle;
 			thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * finalThrottle;
 			thrustParticlesMain.startSizeZMultiplier = initialParticleSize.z * finalThrottle;
-
-			/*
-			// Manual Approach:
-
-			// M = r x F
-			// M - Torque
-			// r - Lever
-			// F - Thrust
-			Vector2 lever = ((Vector2)this.Position * WorldConsts.GRID_SIZE) - rigidbody.centerOfMass;
-			Vector2 thrust = spacecraftTransform.rotation * thrustVector * throttle * Time.fixedDeltaTime;
-			float torque = Vector3.Cross(lever, thrust).z;
-
-			// https://physics.stackexchange.com/questions/510025/linear-acceleration-on-a-spinning-satellite-with-an-unbalanced-force
-			float force = Mathf.Sqrt(thrust.sqrMagnitude - (torque * torque));															// c^2 = a^2 + b^2
-
-			rigidbody.velocity += -lever.normalized * (force / rigidbody.mass);
-			rigidbody.angularVelocity += torque / rigidbody.inertia;
-			*/
 		}
 	}
 
