@@ -45,7 +45,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private QuestManager questManager = null;
 	private MenuController menuController = null;
 	private InfoController infoController = null;
-	private QuestFeedbackController questFeedbackController = null;
 	private SpacecraftController spacecraft = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
@@ -108,7 +107,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		infoController = InfoController.GetInstance();
-		questFeedbackController = QuestFeedbackController.GetInstance();
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 
@@ -310,28 +308,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				if(newActiveQuest)
 				{
-					int i = 0;
-					foreach(QuestManager.Quest quest in questSelection)
-					{
-						if(quest != null && quest != activeQuest)
-						{
-							++i;
-						}
-					}
-					QuestManager.Quest[] rejectedQuests = new QuestManager.Quest[i];
-					i = 0;
-					foreach(QuestManager.Quest quest in questSelection)
-					{
-						if(quest != null && quest != activeQuest)
-						{
-							rejectedQuests[i] = quest;
-							++i;
-						}
-					}
-
-					questFeedbackController.RejectQuests(rejectedQuests, this);
-					// questFeedbackController.RequestFeedback(activeQuest);														// Used for Feedback Transmission Testing
-
 					for(int j = 0; j < questSelection.Length; ++j)
 					{
 						if(questSelection[j] == activeQuest)
