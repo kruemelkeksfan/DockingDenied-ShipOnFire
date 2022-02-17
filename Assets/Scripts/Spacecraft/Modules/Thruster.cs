@@ -10,6 +10,7 @@ public class Thruster : Module
 	[SerializeField] private float thrust = 1.0f;
 	private Transform spacecraftTransform = null;
 	private new Rigidbody2D rigidbody = null;
+	private GravityWellController gravityWellController = null;
 	private InventoryController inventoryController = null;
 	private Vector2 thrustVector = Vector2.zero;
 	private float throttle = 0.0f;
@@ -26,6 +27,7 @@ public class Thruster : Module
 		thrustVector = (transform.localRotation * Vector2.up) * thrust;
 		spacecraft.AddThruster(this);
 
+		gravityWellController = GravityWellController.GetInstance();
 		inventoryController = spacecraft.GetInventoryController();
 		inventoryController.AddEnergyConsumer(capacitor);
 
@@ -44,7 +46,10 @@ public class Thruster : Module
 
 	public override void FixedUpdateNotify()
 	{
-		if(constructed && throttle > 0.0f)
+		// Don't apply Thrust during a Frame in which the Origin shifted,
+		// because the Physics freak out when moving transform.position while Forces are being applied
+		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
+		if(constructed && throttle > 0.0f && !gravityWellController.IsOriginShifted())
 		{
 			float finalThrottle = throttle * capacitor.DischargePartial(energyConsumption * throttle * Time.fixedDeltaTime);
 			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustVector * finalThrottle * Time.fixedDeltaTime, transform.position, ForceMode2D.Impulse);
@@ -52,24 +57,6 @@ public class Thruster : Module
 			thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * finalThrottle;
 			thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * finalThrottle;
 			thrustParticlesMain.startSizeZMultiplier = initialParticleSize.z * finalThrottle;
-
-			/*
-			// Manual Approach:
-
-			// M = r x F
-			// M - Torque
-			// r - Lever
-			// F - Thrust
-			Vector2 lever = ((Vector2)this.Position * WorldConsts.GRID_SIZE) - rigidbody.centerOfMass;
-			Vector2 thrust = spacecraftTransform.rotation * thrustVector * throttle * Time.fixedDeltaTime;
-			float torque = Vector3.Cross(lever, thrust).z;
-
-			// https://physics.stackexchange.com/questions/510025/linear-acceleration-on-a-spinning-satellite-with-an-unbalanced-force
-			float force = Mathf.Sqrt(thrust.sqrMagnitude - (torque * torque));															// c^2 = a^2 + b^2
-
-			rigidbody.velocity += -lever.normalized * (force / rigidbody.mass);
-			rigidbody.angularVelocity += torque / rigidbody.inertia;
-			*/
 		}
 	}
 

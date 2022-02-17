@@ -199,7 +199,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 				}
 				else
 				{
-					infoController.AddMessage("Can't deconstruct Command Module, barely anybody wants the Crews Bodies to bust open like Piñatas in Space!");
+					infoController.AddMessage("Can't deconstruct Command Module, surely nobody wants to see the Crews Bodies bust open like Piñatas in Space!");
 				}
 			}
 		}
@@ -375,10 +375,10 @@ public class BuildingMenu : MonoBehaviour, IListener
 		List<Vector2Int> reservedZoneList = new List<Vector2Int>(64);
 		foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 		{
-			// TODO: Do this more elegantly but in a Way that still works in Standalone Player
+			// TODO: Do this more elegantly but in a Way that still works in Standalone Player, e.g. buffer Data permanently in Start() instead of Instantiating for each Construction
 			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type]);
 			reservedZoneList.AddRange(module.GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
-			GameObject.Destroy(module);
+			GameObject.Destroy(module.gameObject);
 		}
 		reservedZones = reservedZoneList.ToArray();
 	}
@@ -397,10 +397,10 @@ public class BuildingMenu : MonoBehaviour, IListener
 		List<Vector2Int> reservedZoneList = new List<Vector2Int>(64);
 		foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 		{
-			// TODO: Do this more elegantly but in a Way that still works in Standalone Player
+			// TODO: Do this more elegantly but in a Way that still works in Standalone Player, e.g. buffer Data permanently in Start() instead of Instantiating for each Construction
 			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type]);
 			reservedZoneList.AddRange(module.GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
-			GameObject.Destroy(module);
+			GameObject.Destroy(module.gameObject);
 		}
 		reservedZones = reservedZoneList.ToArray();
 	}

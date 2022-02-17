@@ -53,15 +53,15 @@ MonoBehaviour:
   overlappingReservePositions: 0
   buildingCosts:
   - goodName: Steel
-    amount: 5
-  - goodName: Aluminium
-    amount: 15
-  - goodName: Copper
-    amount: 8
-  - goodName: Gold
     amount: 2
-  - goodName: Silicon
+  - goodName: Aluminium
     amount: 6
+  - goodName: Copper
+    amount: 4
+  - goodName: Gold
+    amount: 1
+  - goodName: Silicon
+    amount: 1
   description: An Energy Storage capable of storing up to 20kWh.
   capacitor:
     capacity: 72000
@@ -93,7 +93,7 @@ Transform:
   m_GameObject: {fileID: 4989274293812750468}
   m_LocalRotation: {x: 0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: -0, y: 0, z: 0}
-  m_LocalScale: {x: 0.001, y: 0.001, z: 0.001}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 2551964282168049418}
   m_RootOrder: 0
@@ -114,7 +114,7 @@ MeshRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 4989274293812750468}
   m_Enabled: 1
-  m_CastShadows: 1
+  m_CastShadows: 0
   m_ReceiveShadows: 1
   m_DynamicOccludee: 1
   m_MotionVectors: 1

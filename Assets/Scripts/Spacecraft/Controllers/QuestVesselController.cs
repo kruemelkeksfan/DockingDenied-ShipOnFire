@@ -111,11 +111,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 				float distance = (transform.position - localPlayerSpacecraftTransform.position).magnitude;
 				if(distance > decimalDigitThreshold)
 				{
-					mapMarkerDistance.text = distance.ToString("F0") + "km";
+					mapMarkerDistance.text = (distance / 1000.0f).ToString("F0") + "km";
 				}
 				else
 				{
-					mapMarkerDistance.text = distance.ToString("F2") + "km";
+					mapMarkerDistance.text = (distance / 1000.0f).ToString("F2") + "km";
 				}
 			}
 			else
@@ -166,7 +166,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void ToggleQuestVesselMenu()
 	{
-		playerSpacecraftController.SetTarget(rigidbody);
+		playerSpacecraftController.SetTarget(transform, rigidbody);
 		menuController.ToggleQuestVesselMenu(this, vesselName, progress, hint, interactionLabel, (quest.progress < 1.0f && interactable && playerDocked) ? interaction : null);
 	}
 

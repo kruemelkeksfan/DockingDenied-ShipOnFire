@@ -48,7 +48,7 @@ public class AsteroidSpawner : MonoBehaviour
 		asteroidBeltChances = new float[asteroidBeltHeights.Length];
 		for(int i = 0; i < asteroidBeltHeights.Length; ++i)
 		{
-			float asteroidBeltArea = Mathf.PI * (asteroidBeltHeights[i].max * asteroidBeltHeights[i].max) - (asteroidBeltHeights[i].min * asteroidBeltHeights[i].min);      // Ring Area = (PI * R1^2) - (PI * R2^2)
+			float asteroidBeltArea = Mathf.PI * (asteroidBeltHeights[i].max * asteroidBeltHeights[i].max) - (asteroidBeltHeights[i].min * asteroidBeltHeights[i].min);			// Ring Area = (PI * R1^2) - (PI * R2^2)
 			asteroidBeltChances[i] = totalAsteroidBeltChances + asteroidBeltArea;
 			totalAsteroidBeltChances += asteroidBeltArea;
 		}

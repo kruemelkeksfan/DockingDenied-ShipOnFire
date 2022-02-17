@@ -46,6 +46,7 @@ public class Constructor : Module
 
 	public bool PositionInRange(Vector2 position)
 	{
+		// TODO: Why InverseTransformPosition in the 1st Part instead of using transform.position in the 2nd Part?
 		Vector2 direction = (Vector2)transform.InverseTransformPoint(position) - (Vector2)transform.localPosition;
 		return direction.x >= -constructionRange && direction.x <= constructionRange && direction.y >= -constructionRange && direction.y <= constructionRange;
 	}

@@ -20,8 +20,9 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 
 	[SerializeField] private Module commandModulePrefab = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
-	[Tooltip("Minimum Turning Force which must be exerted by a Thruster to consider it a turning Thruster")]
-	[SerializeField] private float turningForceThreshold = 0.002f;
+	[Tooltip("Minimum Fraction of Force which must be exerted by a Thruster in a Direction to add it to the corresponding Direction Thruster Group")]
+	[SerializeField] private float directionalForceThreshold = 0.2f;
+	private GravityWellController gravityWellController = null;
 	private Dictionary<Vector2Int, Module> modules = null;
 	private HashSet<IUpdateListener> updateListeners = null;
 	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
@@ -61,16 +62,17 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 
 	private void Start()
 	{
+		gravityWellController = GravityWellController.GetInstance();
+
 		buildingMenu = BuildingMenu.GetInstance();
 		halfGridSize = buildingMenu.GetGridSize() * 0.5f;
 		spacecraftCollider = GetComponent<PolygonCollider2D>();
 
-		if(modules.Count <= 0)                                                                      // If no Blueprint was loaded during Awake()
+		// If no Blueprint was loaded during Awake()
+		if(modules.Count <= 0)
 		{
 			GameObject.Instantiate<Module>(commandModulePrefab, transform).Build(Vector2Int.zero);
 		}
-
-		GetComponent<GravityController>().SetOptimalOrbitalVelocity();
 
 		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 		GravityWellController.GetInstance().AddGravityObject(GetComponent<Rigidbody2D>());
@@ -93,7 +95,8 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 			listener.UpdateNotify();
 		}
 
-		if(calculateCollider)                                           // Do this in Update instead of FixedUpdate(), since it might take some Time
+		// Do this in Update instead of FixedUpdate(), since it might take some Time
+		if(calculateCollider)
 		{
 			CalculateSpacecraftCollider();
 			calculateCollider = false;
@@ -111,7 +114,7 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 	public void Docked(DockingPort port, DockingPort otherPort)
 	{
 		Spacecraft otherSpacecraft = otherPort.GetSpacecraft();
-		if(!dockedSpacecraft.ContainsKey(otherSpacecraft))																		// First Caller manages both Spacecraft
+		if(!dockedSpacecraft.ContainsKey(otherSpacecraft))                                                                      // First Caller manages both Spacecraft
 		{
 			dockedSpacecraft.Add(otherSpacecraft, otherSpacecraft.transform);
 			otherSpacecraft.dockedSpacecraft.Add(this, transform);
@@ -124,7 +127,7 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 	public void Undocked(DockingPort port, DockingPort otherPort)
 	{
 		Spacecraft otherSpacecraft = otherPort.GetSpacecraft();
-		if(dockedSpacecraft.Remove(otherPort.GetSpacecraft()))																	// First Caller manages both Spacecraft
+		if(dockedSpacecraft.Remove(otherPort.GetSpacecraft()))                                                                  // First Caller manages both Spacecraft // TODO: What if attached via multiple Ports? (maybe check every other port in a foreach loop)
 		{
 			otherSpacecraft.dockedSpacecraft.Remove(this);
 
@@ -144,6 +147,17 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 
 	public void SetThrottles(float horizontal, float vertical, float rotationSpeed)
 	{
+		if(!Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(vertical, 0.0f))
+		{
+			gravityWellController.MarkSpacecraftThrusting(rigidbody, true);
+			// This Loop interferes with resetting objectRecord.thrusting here (Race Condition), so instead reset it in GravityWellController
+			foreach(Spacecraft spacecraft in dockedSpacecraft.Keys)
+			{
+				gravityWellController.MarkSpacecraftThrusting(spacecraft.rigidbody, true);
+			}
+		}
+
+		// TODO: Do we need inactiveThrusters? Or can simply all Thruster be set to 0 Throttle in the Beginning instead of at the End?
 		inactiveThrusters.Clear();
 		inactiveThrusters.UnionWith(thrusters[(int)ThrusterGroup.all]);
 
@@ -181,11 +195,12 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 	}
 
 	// TODO: Floating Point Errors will sum up in this Method, should regularily (e.g. every 100 Calls && dockedSpacecraft.Count <= 0) reset/recalculate all Values
+	// TODO: Unity.Rigidbody Max Mass is 1000000, so assure that this is not exceeded
 	public void UpdateModuleMass(Vector2 position = new Vector2(), float massDifference = 0.0f)
 	{
 		if(massDifference != 0.0f)
 		{
-			if(rigidbody.mass < 0.0002f)																							// Set Rigidbody Mass when updating for the first Time
+			if(rigidbody.mass < 0.0002f)                                                                                            // Set Rigidbody Mass when updating for the first Time
 			{
 				rigidbody.centerOfMass = position;
 				internalCenterOfMass = position;
@@ -203,7 +218,7 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 				spacecraft.UpdateForeignMass(transform, position, massDifference);
 			}
 		}
-		
+
 		thrusters[(int)ThrusterGroup.turnLeft].Clear();
 		thrusters[(int)ThrusterGroup.turnRight].Clear();
 		foreach(Thruster thruster in thrusters[(int)ThrusterGroup.all])
@@ -215,6 +230,7 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 	}
 
 	// TODO: Enable Stacking (recursive Calls for other Spacecraft which are docked to the foreign Spacecraft)
+	// TODO: Have 2 CoM-Indicators on Player Spacecraft, 1 for local CoM and 1 for docked CoM
 	public void UpdateForeignMass(Transform otherTransform, Vector2 position, float massDifference)
 	{
 		foreignMass += massDifference;
@@ -223,7 +239,7 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		{
 			rigidbody.centerOfMass += ((Vector2)transform.InverseTransformPoint(otherTransform.TransformPoint(position)) - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass + foreignMass));
 		}
-		// Docking Ports are usually not perfectly aligned while Docking, therefore a relatively random Error creeps into the Calculation, the following resets this Error
+		// Docking Ports are usually not perfectly aligned while Docking, therefore a random Error creeps into the Calculation, the following resets this Error
 		else
 		{
 			rigidbody.centerOfMass = internalCenterOfMass;
@@ -373,14 +389,20 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		// r - Lever
 		// F - Thrust
 		Vector2 lever = (Vector2)thruster.transform.localPosition - rigidbody.centerOfMass;
-		float torque = Vector3.Cross(lever, thruster.GetThrustVector()).z;
-		if(torque < -turningForceThreshold)
+		Vector2 thrust = thruster.GetThrustVector();
+		float torque = Vector3.Cross(lever, thrust).z;
+		// To find the Fraction of Thrust used for Rotation, Project thrust on lever, normalize by dividing by thrust.magnitude and subtract the Result from 100%
+		float rotationFraction = 1.0f - Mathf.Abs((Vector2.Dot(lever, thrust) / lever.magnitude) / thrust.magnitude);
+		if(rotationFraction > directionalForceThreshold)
 		{
-			thrusters[(int)ThrusterGroup.turnLeft].Add(thruster);
-		}
-		else if(torque > turningForceThreshold)
-		{
-			thrusters[(int)ThrusterGroup.turnRight].Add(thruster);
+			if(torque < 0.0f)
+			{
+				thrusters[(int)ThrusterGroup.turnLeft].Add(thruster);
+			}
+			else if(torque > 0.0f)
+			{
+				thrusters[(int)ThrusterGroup.turnRight].Add(thruster);
+			}
 		}
 	}
 
@@ -467,20 +489,20 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		thrusters[(int)ThrusterGroup.all].Add(thruster);
 
 		// Add linear Thrust Group
-		Vector2 thrust = thruster.GetThrustVector();
-		if(thrust.x < -0.0002f)
+		Vector2 thrust = thruster.GetThrustVector().normalized;
+		if(thrust.x < -directionalForceThreshold)
 		{
 			thrusters[(int)ThrusterGroup.left].Add(thruster);
 		}
-		if(thrust.x > 0.0002f)
+		if(thrust.x > directionalForceThreshold)
 		{
 			thrusters[(int)ThrusterGroup.right].Add(thruster);
 		}
-		if(thrust.y < -0.0002f)
+		if(thrust.y < -directionalForceThreshold)
 		{
 			thrusters[(int)ThrusterGroup.down].Add(thruster);
 		}
-		if(thrust.y > 0.0002f)
+		if(thrust.y > directionalForceThreshold)
 		{
 			thrusters[(int)ThrusterGroup.up].Add(thruster);
 		}

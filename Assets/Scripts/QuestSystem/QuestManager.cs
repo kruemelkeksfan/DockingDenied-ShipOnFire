@@ -68,6 +68,7 @@ public class QuestManager : MonoBehaviour, IListener
 	private GoodManager goodManager = null;
 	private SpawnController spawnController = null;
 	private QuestFeedbackController questFeedbackController = null;
+	private GravityWellController gravityWellController = null;
 	private InventoryController localPlayerMainInventory = null;
 	private BackstoryData[] backstories = null;
 	private QuestGiverData[] questGivers = null;
@@ -226,6 +227,7 @@ public class QuestManager : MonoBehaviour, IListener
 	{
 		goodManager = GoodManager.GetInstance();
 		spawnController = SpawnController.GetInstance();
+		gravityWellController = GravityWellController.GetInstance();
 		Dictionary<string, GoodManager.Good> goods = GoodManager.GetInstance().GetGoodDictionary();
 		goodNames = new string[goods.Count];
 		goodRewards = new int[goods.Count];
@@ -436,7 +438,8 @@ public class QuestManager : MonoBehaviour, IListener
 		if(/* TODO: quest.taskType == TaskType.Destroy || */quest.taskType == TaskType.Bribe || quest.taskType == TaskType.JumpStart
 			|| quest.taskType == TaskType.Supply || quest.taskType == TaskType.Plunder || quest.taskType == TaskType.Tow)
 		{
-			StartCoroutine(spawnController.SpawnObject(questVesselPrefab, quest.destination.GetTransform().position, questVesselSpawnRange, 11, quest));
+			StartCoroutine(spawnController.SpawnObject(questVesselPrefab,
+				gravityWellController.LocalToGlobalPosition(quest.destination.GetTransform().position), questVesselSpawnRange, 11, quest));
 		}
 	}
 

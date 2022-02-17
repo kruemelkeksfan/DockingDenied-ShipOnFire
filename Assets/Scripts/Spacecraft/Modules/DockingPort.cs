@@ -13,6 +13,7 @@ public class DockingPort : HotkeyModule
 	[SerializeField] private float dockingPositionThreshold = 0.00002f;
 	[SerializeField] private float dockingRotationThreshold = 0.2f;
 	[SerializeField] private Text portNameField = null;
+	private Transform spacecraftTransform = null;
 	private ParticleSystem magnetParticles = null;
 	private bool active = false;
 	private bool docking = false;
@@ -24,6 +25,9 @@ public class DockingPort : HotkeyModule
 	protected override void Awake()
 	{
 		base.Awake();
+
+		// Square to avoid Sqrt later on
+		dockingPositionThreshold *= dockingPositionThreshold;
 
 		magnetParticles = gameObject.GetComponentInChildren<ParticleSystem>();
 		dockingListeners = new List<IDockingListener>(2);
@@ -45,6 +49,7 @@ public class DockingPort : HotkeyModule
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
+		spacecraftTransform = spacecraft.GetTransform();
 		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
 		portNameField.text = GetActionName();
 		AddDockingListener(spacecraft);
@@ -131,6 +136,7 @@ public class DockingPort : HotkeyModule
 
 					Vector2 dPosition = otherPort.dockingLocation.position - dockingLocation.position;
 					float dRotation = ((otherPort.dockingLocation.rotation.eulerAngles.z + 180.0f) - dockingLocation.rotation.eulerAngles.z) % 360.0f;
+					// TODO: WTH are you doing here?!
 					if(dRotation < 0.0f)
 					{
 						dRotation += 360.0f;
@@ -143,10 +149,11 @@ public class DockingPort : HotkeyModule
 					rigidbody.velocity = otherRigidbody.velocity;
 					rigidbody.angularVelocity = otherRigidbody.angularVelocity;
 
+					// TODO: Why now Abs(dRotation)?!
 					if(dPosition.sqrMagnitude < dockingPositionThreshold && Mathf.Abs(dRotation) < dockingRotationThreshold)
 					{
-						rigidbody.position += dPosition;
-						rigidbody.rotation += dRotation;
+						spacecraftTransform.position += (Vector3)dPosition;
+						spacecraftTransform.Rotate(0.0f, 0.0f, dRotation);
 
 						joint = spacecraft.gameObject.AddComponent<FixedJoint2D>();
 						joint.connectedBody = otherRigidbody;
@@ -170,12 +177,12 @@ public class DockingPort : HotkeyModule
 						ToggleParticles();
 						otherPort.ToggleParticles();
 
-						break;                                                                                                                                  // Break in case the Connection gets seperated again by a DockingListener
+						break;																																// Break in case the Connection gets seperated again by a DockingListener
 					}
 					else
 					{
-						rigidbody.position += dPosition * dockingSpeed * Time.fixedDeltaTime;
-						rigidbody.rotation += dRotation * dockingRotationSpeed * Time.fixedDeltaTime;
+						spacecraftTransform.position += (Vector3)dPosition * dockingSpeed * Time.fixedDeltaTime;
+						spacecraftTransform.Rotate(0.0f, 0.0f, dRotation * dockingRotationSpeed * Time.fixedDeltaTime);
 					}
 				}
 

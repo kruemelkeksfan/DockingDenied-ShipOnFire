@@ -128,12 +128,20 @@ public class InfoController : MonoBehaviour, IListener
 				Vector3 flightData = playerSpacecraftUIController.GetFlightData();
 				textBuilder.Clear();
 				textBuilder.Append("Altitude - ");
-				textBuilder.Append((int)flightData.x);
-				textBuilder.Append("km / Target Speed - ");
-				textBuilder.Append(flightData.y.ToString("F4"));
-				textBuilder.Append("km/s / Orbital Speed - ");
-				textBuilder.Append(flightData.z.ToString("F4"));
-				textBuilder.Append("km/s");
+				textBuilder.Append((int)(flightData.x / 1000.0f));
+				textBuilder.Append(" km / Target Speed - ");
+				if(flightData.y >= 0.0f)
+				{
+					textBuilder.Append((flightData.y / 1000.0f).ToString("F4"));
+					textBuilder.Append(" km/s");
+				}
+				else
+				{
+					textBuilder.Append("No Target");
+				}
+				textBuilder.Append(" / Orbital Speed - ");
+				textBuilder.Append((flightData.z / 1000.0f).ToString("F4"));
+				textBuilder.Append(" km/s");
 				if(expiryTime > 0.0f)
 				{
 					if(Time.realtimeSinceStartup >= expiryTime)

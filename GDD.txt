@@ -3,11 +3,16 @@ Physics 2.0
 	Analytic Orbits for on-railed Objects
 	1 Unit = 1m for un-railed Objects
 	Flickering Fix
-	Draw Orbits	
+	Draw Orbits
+	Pausing and Time Scale
+	Moment of Inertia for Ships (http://dmorris.net/projects/tutorials/inertia.tensor.summary.pdf)
 New Quest System
+	Abandon JSON and generate Quests from pure Code
 	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
 	only generate Quests for which the Requirements are met by the current Ship
-	various Tiers: bigger Ships get more difficult Quests and later Quests require bigger Ships (how to manage Progression?)
+	various Tiers: later Quests require bigger Ships and spawn further away from Stations
+	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Difficulty and Spawn Distance)
+	Difficult Tasks/Boss Fights in Story Quests as memorable Milestones
 	Rework Tutorial
 Feedback Fixes
 Building System 2.0
@@ -21,7 +26,140 @@ Building System 2.0
 		Physically they are Trash and can be deconstructed or attacked
 		If they stay in Range of the Constructor and the Clipboard Content is pasted, they are automatically deconstructed
 		When Clipboard Content is pasted and the Trash is out-of-Range or was damaged, Player has to pay the Building Cost Difference
+	Symmetry Modes
+	Categories for Modules
 	CPU-System for limiting Ship Size (like Robocraft)
+	Somehow show CoM of individual Vessel AND CoM of all docked Vessels together
+	Redesign Command Module
+		Spacecraft don't have Windows
+		Pressure Hull on current Module would be a Nightmare
+	Lore
+		Planetary Nations are afraid of Cruise Missiles
+		Therefore they agreed on a "Free Flight Zone" around the equatorial Plane
+		Zone is very narrow, about 20m, to restrict possible planetary Attacks to a small Area
+		Spacecraft outside the Zone (even just partially outside) will be fired upon from the Surface
+Component System
+	Radiators
+ 		Components for Reactors, Weapons, Thrusters, Shields, etc.
+		Low Grade Radiators lead to overheating and Dysfunction
+Mining
+	Refineries for Ore to Material Conversion (different Components for different Materials)
+	Bloomeries for Iron + Steel Ingredients to Steel Conversion
+Combat
+	Combat Quests/Boss Fights
+	Weapons
+		Liquid Cooled Machineguns
+			Low Range
+			High Cadence
+			Solid Ammo
+			Low Impact
+			Low Penetration
+			Very low Debris Pollution per Shot, but many Shots
+		Explosive Cannons
+			Medium Range
+			Low Cadence
+			Different Ammo Types
+			Low-High Impact (depending on Ammo Type)
+			Low-Medium Penetration (depending on Ammo Type, HEATs?)
+			High Debris Pollution per Shot
+		Railguns
+			Long Range, Highest Precision
+			Low Cadence
+			Solid Ammo
+			Require lots of Energy per Shot
+			Requires good Capacitors
+			Medium Impact
+			High Penetration
+			Medium Debris Pollution per Shot
+		Explosive Rockets
+			Infinite Range
+			Can be launched into a Rendevous Orbit with their Target
+			If they get close to the Target (e.g. 50km), they switch to direct Homing and leave their Orbit
+			Large Impact
+			Low Penetration
+			Very high Debris Pollution per Rocket
+		No Lasers
+			Would be easy to reflect or defy otherwise (Cooling, heat-resistant Materials, ...)
+			Would produce a lot of difficult to manage Waste Heat on the firing Vessel
+		Firing Procedure
+			Player selects
+				Target Vessel
+				Target Point/Module
+				Sets a "Spray Area" (Gun Variation)
+			Calculate Lead
+				Naive (just calculate Lead from Distance and Velocities) or use Analytical Orbit, depending on Performance Implications
+				Iterative
+					Because Distance changes with every new Lead Calculation
+					Recalculate until new Lead is almost identical to old Lead or maximum Iteration Count is reached
+					Display Error of last Calculation for Player Fire Decision
+			Fire Bullet towards Lead Point and calculate it until it leaves the unrail-Box
+				Projectiles are not affected by Gravity for Simplicity and Performance (superior Target Computer would adjust for Gravity anyways)
+			Store Timestamp for projected Arrival Time
+			On Timestamp, load Collider of Target and its Vicinity
+			Calculate Bullet Spawn Point before Target and Bullet Direction from Accuracy and Shooter Location
+			Spawn Bullet and track it into Target
+			Hit?
+				Yes - Apply Damage
+				No - Increase Debris Count
+	Debris System
+		Debris can damage Modules if not neutralized by Shields
+		Shields pulverize (?) or magnetize and suck in (?) Debris (or how does it become neutralized?)
+		Stations have strong Shields and catch lots of Debris
+		Global Debris Level
+			Debris is produced by
+				Missing Shots in Combat
+				Destructing Modules in Combat
+			Steers chance of random Debris spawning in un-railed Areas
+				Whats this Chance exactly? Certainly a Function of Debris Count, but whats the Base Chance for 1 Particle?
+				Look up Thermodynamic Equations, e.g. p = 2m(N/V)v^2 => Chance that a Particle hits the Wall of a Cube?
+			Level is reduced passively by on-railed Stations
+			Level is reduced by neutralized Debris in un-railed Areas
+	Shields
+		Protect from
+			Debris Impacts
+			Projectiles
+			Rockets
+			Collisions
+		Consume Power for building up Shield
+		Power Loss on Impact calculated from Penetrator kinetic Energy
+		Can set Coverage Area
+			Final Shield Strength is Base Strength / Coverage Area
+	Scanner/Sensors
+		Component for Command Module
+		Different Ranges (ca. 500-5000km)
+		2 Types
+			Sensors
+				Observe all Objects in Radius
+				Can locate
+					Spacecraft
+					Rockets
+				Detection Range depends on
+					Heat Signature
+						depends on
+							Object Size (Solar Radiation)
+							Electric Consumption
+							Fuel Consumption
+							Sensor Quality
+				Displays Warnings when detecting incoming Rockets/Collisions
+				Passive (undetectable)
+			Scanners
+				Only observe a certain Angle
+				Rotation/Look Direction adjusted manually
+				Vastly superior Range
+				Can locate
+					Spacecraft
+					Asteroids
+					Projectiles/Rockets
+				Detection Range depends on
+					Object Speed
+					Object Size
+					Scanner Quality
+				More Info on tracked Objects
+					Modules
+					HP
+				Detection Angles depends on Scanner Quality
+				Displays Warnings when detecting incoming Projectiles/Rockets/Collisions
+				Active (gives away Sender Position)
 Economy 2.0
 	Un-randomize Economy
 	Production Stations (cheaper Prices for some Goods)
@@ -37,10 +175,6 @@ Economy 2.0
 			Travel to Station where they could sell for Max Profit (Travel Time depends linearly on Distance)
 			On Arrival, sell all their Cargo, no Matter how the Stocks changed
 			Repeat
-Component System
-Mining
-Combat
-Crew
 Multiplayer
 	Enum method = { Spawn, Despawn, UpdatePosition, ... }
 	method-index gets send over network instead of string name
@@ -55,4 +189,5 @@ More Modules
 	(Thermo-) Nuclear Reactors for Electric Energy
 	Rocket Thruster
 	Radar System to detect missing Vessels and Enemies?
+Crew
 Factions

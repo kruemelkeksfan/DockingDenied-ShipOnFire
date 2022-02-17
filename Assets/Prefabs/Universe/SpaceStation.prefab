@@ -14,10 +14,10 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mapMarkerPrefab: {fileID: 3653227749583949900, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
     type: 3}
-  decimalDigitThreshold: 100
-  maxApproachDistance: 1
-  dockingTimeout: 600
-  stationUpdateInterval: 600
+  decimalDigitThreshold: 100000
+  maxApproachDistance: 2000
+  dockingTimeout: 120
+  stationUpdateInterval: 120
   maxGoodStockFactor: 12
   targetGoodStockFactor: 6
   minProfit: -100
@@ -66,7 +66,7 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 500
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}

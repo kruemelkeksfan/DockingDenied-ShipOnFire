@@ -30,7 +30,8 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	private float scaleFactor = 1.0f;
 	private float velocityVectorWidth = 1.0f;
 	private float navVectorWidth = 1.0f;
-	private Rigidbody2D target = null;
+	private Transform targetTransform = null;
+	private Rigidbody2D targetRigidbody = null;
 	private float surfaceAltitude = 0.0f;
 	private Vector3 flightData = Vector3.zero;
 
@@ -61,7 +62,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		scaleFactor = Mathf.Abs(1.0f / cameraTransform.position.z);
 		velocityVectorWidth = velocityVector.sizeDelta.x;
 		navVectorWidth = planetNavVector.sizeDelta.x;
-		surfaceAltitude = GravityWellController.GetInstance().GetSurfaceAltitude();
+		surfaceAltitude = gravityWellController.GetSurfaceAltitude();
 
 		toggleController = ToggleController.GetInstance();
 		toggleController.AddToggleObject("VelocityVectors", velocityVector.gameObject);
@@ -120,22 +121,24 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 			mapMarker.gameObject.SetActive(false);
 		}
 
-		Vector2 orbitalVelocity = rigidbody.velocity - gravityWellController.CalculateOptimalOrbitalVelocity(rigidbody);
-		flightData = new Vector3(rigidbody.position.magnitude - surfaceAltitude, (target != null ? (rigidbody.velocity - target.velocity).magnitude : 0.0f), orbitalVelocity.magnitude);
-		UpdateVelocityVector(velocityVector, (target != null ? (rigidbody.velocity - target.velocity) : Vector2.zero), flightData.y, scaleFactor);
+		Vector2 orbitalVelocity = rigidbody.velocity - ((Vector2) gravityWellController.CalculateOptimalOrbitalVelocity(rigidbody));
+		flightData = new Vector3((float) gravityWellController.LocalToGlobalPosition(transform.position).Magnitude() - surfaceAltitude,
+			(targetRigidbody != null ? (rigidbody.velocity - targetRigidbody.velocity).magnitude : -1.0f), orbitalVelocity.magnitude);
+		UpdateVelocityVector(velocityVector, (targetRigidbody != null ? (rigidbody.velocity - targetRigidbody.velocity) : Vector2.zero), flightData.y, scaleFactor);
 		UpdateVelocityVector(orbitalVector, orbitalVelocity, flightData.z, scaleFactor);
-		UpdateNavVector(targetNavVector, (target != null ? target.position : rigidbody.position), scaleFactor);
-		UpdateNavVector(planetNavVector, Vector2.zero, scaleFactor);
+		UpdateNavVector(targetNavVector, (targetTransform != null ? targetTransform.position : transform.position), scaleFactor);
+		UpdateNavVector(planetNavVector, -gravityWellController.GetLocalOrigin(), scaleFactor);
 	}
 
+	// TODO: Switch to LineRenderer? What was the Problem with LineRenderer?
 	private void UpdateVelocityVector(RectTransform vector, Vector2 velocity, float velocityMagnitude, float scaleFactor)
 	{
 		if(vector.gameObject.activeSelf && velocityMagnitude > 0.0f)
 		{
-			// Workaround for Rotation sometimes pointing in the wroing Direction for some Frames, probably a Unity Bug with Rotations near 180°
 			Vector2 position = uiTransform.InverseTransformDirection(velocity) * (vectorLengthFactor * 0.5f);
 			Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, velocity);
-			if(Mathf.Abs(Vector2.Dot(rotation * Vector2.right, position - (Vector2)uiTransform.localPosition)) < 0.0002f)
+			// Workaround for Rotation sometimes pointing in the wrong Direction for some Frames, probably a Unity Bug with Rotations near 180°
+			if(Mathf.Abs(Vector2.Dot(rotation * Vector2.right, position - (Vector2)uiTransform.localPosition)) < 0.2f)
 			{
 				vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocityMagnitude * vectorLengthFactor);
 				vector.anchoredPosition = position;
@@ -148,15 +151,16 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		}
 	}
 
+	// TODO: Switch to LineRenderer? What was the Problem with LineRenderer?
 	private void UpdateNavVector(RectTransform vector, Vector2 targetPosition, float scaleFactor)
 	{
-		if(vector.gameObject.activeSelf && targetPosition != rigidbody.position)
+		if(vector.gameObject.activeSelf && targetPosition != (Vector2) transform.position)
 		{
-			// Workaround for Rotation sometimes pointing in the wroing Direction for some Frames, probably a Unity Bug with Rotations near 180°
 			Vector2 direction = uiTransform.InverseTransformPoint(targetPosition);
-			Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - rigidbody.position);
-			if(Mathf.Abs(Vector2.Dot(rotation * Vector2.right, (direction * 0.5f) - (Vector2)uiTransform.localPosition)) < 0.0002f)
-			{                                                   // Vector from local Origin to Target Position in local Space
+			Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - (Vector2) transform.position);
+			// Workaround for Rotation sometimes pointing in the wrong Direction for some Frames, probably a Unity Bug with Rotations near 180°
+			if(Mathf.Abs(Vector2.Dot(rotation * Vector2.right, (direction * 0.5f) - (Vector2)uiTransform.localPosition)) < 0.2f)
+			{
 				vector.sizeDelta = new Vector2(navVectorWidth * scaleFactor, direction.magnitude);
 				vector.anchoredPosition = direction * 0.5f;
 				vector.localRotation = rotation;
@@ -173,8 +177,9 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		return flightData;
 	}
 
-	public void SetTarget(Rigidbody2D target)
+	public void SetTarget(Transform targetTransform, Rigidbody2D targetRigidbody)
 	{
-		this.target = target;
+		this.targetTransform = targetTransform;
+		this.targetRigidbody = targetRigidbody;
 	}
 }

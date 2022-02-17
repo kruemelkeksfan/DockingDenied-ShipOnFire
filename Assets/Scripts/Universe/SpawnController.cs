@@ -7,13 +7,13 @@ public class SpawnController : MonoBehaviour
 	private static SpawnController instance = null;
 
 	[Tooltip("The clear area which is required for a new Object to spawn at a specific Position")]
-	[SerializeField] private float spawnAreaRadius = 2.0f;
+	[SerializeField] private float spawnAreaRadius = 200.0f;
 	[Tooltip("Height above the XY-Plane at which new Objects spawn before descending into the XY-Plane")]
-	[SerializeField] private float spawnHeight = 10.0f;
+	[SerializeField] private float spawnHeight = 10000.0f;
 	[Tooltip("Approach Velocity of freshly spawned Objects")]
-	[SerializeField] private float approachSpeed = 0.2f;
+	[SerializeField] private float approachSpeed = 200.0f;
 	[Tooltip("Acceleration of freshly despawned Objects")]
-	[SerializeField] private float disappearingAcceleration = 0.002f;
+	[SerializeField] private float disappearingAcceleration = 20.0f;
 	private AsteroidSpawner asteroidSpawner = null;
 	private GravityWellController gravityWellController = null;
 	private int layerMask = Physics2D.DefaultRaycastLayers;
@@ -36,11 +36,13 @@ public class SpawnController : MonoBehaviour
 		gravityWellController = GravityWellController.GetInstance();
 	}
 
-	public IEnumerator SpawnObject(Rigidbody2D spawnObjectPrefab, Vector2 spawnCenter, MinMax spawnRange, int layer, QuestManager.Quest quest = null)
+	public IEnumerator SpawnObject(Rigidbody2D spawnObjectPrefab, Vector2 globalSpawnCenter, MinMax spawnRange, int layer, QuestManager.Quest quest = null)
 	{
-		float orbitalAngle = Random.Range(0.0f, Mathf.PI * 2.0f);
-		float orbitalAltitude = Random.Range(spawnRange.min, spawnRange.max);
-		Vector2 position = spawnCenter + (new Vector2(Mathf.Sin(orbitalAngle), -Mathf.Cos(orbitalAngle)) * orbitalAltitude);
+		float alpha = Random.Range(0.0f, Mathf.PI * 2.0f);
+		float radius = Random.Range(spawnRange.min, spawnRange.max);
+		Vector2 position = gravityWellController.GlobalToLocalPosition(globalSpawnCenter
+			+ (new Vector2(Mathf.Cos(alpha), Mathf.Sin(alpha)) * radius));
+		// TODO: What if Position is blocked?!
 		if(Physics2D.OverlapCircle(position, spawnAreaRadius, layerMask) != null)
 		{
 			yield break;
@@ -56,12 +58,11 @@ public class SpawnController : MonoBehaviour
 		{
 			spawnObject.GetComponent<QuestVesselController>().SetQuest(quest);
 		}
-		spawnObject.velocity = gravityWellController.CalculateOptimalOrbitalVelocity(spawnObject);
 
 		Transform spawnObjectTransform = spawnObject.GetComponent<Transform>();
-		float spawnObjectExtents = Mathf.Max(spawnObjectTransform.GetComponent<Collider2D>().bounds.extents.x, 0.01f);
+		float spawnObjectExtents = Mathf.Max(spawnObjectTransform.GetComponent<Collider2D>().bounds.extents.x, 1.0f);
 		Vector3 spawnObjectSize = spawnObjectTransform.localScale;
-		while(spawnObject.transform.position.z > 0.001f && spawnObject.gameObject.layer != 9)                                                                   // Check if Asteroid is still in Approach and not decaying yet
+		while(spawnObject != null && spawnObject.transform.position.z > 0.1f && spawnObject.gameObject.layer != 9)                                                                   // Check if Asteroid is still in Approach and not decaying yet
 		{
 			if(spawnObject.transform.position.z < spawnObjectExtents)
 			{
@@ -75,7 +76,7 @@ public class SpawnController : MonoBehaviour
 			yield return null;
 		}
 
-		if(spawnObject.gameObject.layer != 9)
+		if(spawnObject != null && spawnObject.gameObject.layer != 9)
 		{
 			spawnObjectTransform.position = new Vector3(spawnObjectTransform.position.x, spawnObjectTransform.position.y, 0.0f);
 			spawnObjectTransform.localScale = spawnObjectSize;
@@ -100,7 +101,8 @@ public class SpawnController : MonoBehaviour
 		float speed = 0.0f;
 		while(despawnObject.transform.position.z < spawnHeight)
 		{
-			speed += disappearingAcceleration * Time.deltaTime;
+			// Add Sqrt(height) to Acceleration to accelerate Disappearance slightly
+			speed += (disappearingAcceleration + Mathf.Sqrt(despawnObject.transform.position.z)) * Time.deltaTime;
 			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * Time.deltaTime);
 			float currentSize = 1.0f - (despawnObject.transform.position.z / spawnHeight);
 			spawnObjectTransform.localScale = spawnObjectSize * currentSize;

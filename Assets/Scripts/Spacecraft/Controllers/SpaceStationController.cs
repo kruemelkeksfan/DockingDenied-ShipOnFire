@@ -148,11 +148,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			float distance = (transform.position - localPlayerMainTransform.position).magnitude;
 			if(distance > decimalDigitThreshold)
 			{
-				mapMarkerDistance.text = distance.ToString("F0") + "km";
+				mapMarkerDistance.text = (distance / 1000.0f).ToString("F0") + "km";
 			}
 			else
 			{
-				mapMarkerDistance.text = distance.ToString("F2") + "km";
+				mapMarkerDistance.text = (distance / 1000.0f).ToString("F2") + "km";
 			}
 		}
 		else
@@ -188,7 +188,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			}
 		}
 
-		//StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));								// Used for Despawn Testing
+		// StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));								// Used for Despawn Testing
 	}
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
@@ -216,7 +216,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void ToggleStationMenu()
 	{
-		playerSpacecraftController.SetTarget(rigidbody);
+		playerSpacecraftController.SetTarget(transform, rigidbody);
 		menuController.ToggleStationMenu(this, stationName);
 	}
 

@@ -2532,11 +2532,6 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 2
       objectReference: {fileID: 0}
-    - target: {fileID: 5754137889621204160, guid: 563dc166c0dffa8498e07f185cb0614a,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204188, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_Name
@@ -2550,12 +2545,12 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 399.99988
+      value: 799999.9
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_LocalPosition.y
-      value: -0.3
+      value: -300
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
@@ -2599,11 +2594,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204191, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 5754137889621204191, guid: 563dc166c0dffa8498e07f185cb0614a,
-        type: 3}
       propertyPath: essentialModules.Array.size
       value: 3
       objectReference: {fileID: 0}
@@ -2613,20 +2603,15 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 8808181452168659175, guid: 2fca3038c9958a1488b5094e0977d99f,
         type: 3}
-    - target: {fileID: 5754137890348040591, guid: 563dc166c0dffa8498e07f185cb0614a,
+    - target: {fileID: 5754137889756671904, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
-      propertyPath: m_LocalScale.x
-      value: 0.0005
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 5754137890348040591, guid: 563dc166c0dffa8498e07f185cb0614a,
+    - target: {fileID: 5754137890348040816, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
-      propertyPath: m_LocalScale.y
-      value: 0.0005
-      objectReference: {fileID: 0}
-    - target: {fileID: 5754137890348040591, guid: 563dc166c0dffa8498e07f185cb0614a,
-        type: 3}
-      propertyPath: m_LocalScale.z
-      value: -0.018
+      propertyPath: m_Enabled
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5754137890348040816, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
@@ -2843,14 +2828,14 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 22da0b090b4515244947d69beeaf0991, type: 3}
   - {fileID: 4900000, guid: 1cb6168fdf04b304db7516b14720cc14, type: 3}
   stationPositions:
-  - {x: 400, y: 0}
-  - {x: 0, y: -400}
-  - {x: -400, y: 0}
-  - {x: 0, y: 400}
-  - {x: 400, y: 400}
-  - {x: 400, y: -400}
-  - {x: -400, y: -400}
-  - {x: -400, y: 400}
+  - {x: 800000, y: 0}
+  - {x: 0, y: -800000}
+  - {x: -800000, y: 0}
+  - {x: 0, y: 800000}
+  - {x: 800000, y: 800000}
+  - {x: 800000, y: -800000}
+  - {x: -800000, y: -800000}
+  - {x: -800000, y: 800000}
 --- !u!4 &437986066
 Transform:
   m_ObjectHideFlags: 0
@@ -2980,11 +2965,11 @@ MonoBehaviour:
   - {fileID: 5112650389580486321, guid: f06c6a2e9edd1bb46936d4679e51dd7f, type: 3}
   densities:
   - 1
-  maxAsteroids: 600
+  maxAsteroids: 1000
   spawnInterval: 1
   asteroidBeltHeights:
-  - min: 348
-    max: 350
+  - min: 650000
+    max: 651000
 --- !u!4 &449989463
 Transform:
   m_ObjectHideFlags: 0
@@ -3491,35 +3476,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 488042605}
   m_CullTransparentMesh: 0
---- !u!1 &505599338 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
-    type: 3}
-  m_PrefabInstance: {fileID: 3034006641215750540}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &505599339
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 505599338}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bd6fa0c6b17d50549bb29ca8eef5e998, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  altitudeCheckInterval: 5
-  surfaceAltitude: 250
-  pullUpWarningAltitude: 370
-  atmossphereEntryAltitude: 320
-  destructionAltitude: 280
-  globalAltitudeConstraint:
-    min: 320
-    max: 2000
-  atmossphericDensity: 0.2
-  plasmaParticleSystemPrefab: {fileID: 2736846745620259419, guid: 11b17e94e5d60294898ba61c533a9b55,
-    type: 3}
 --- !u!224 &507596352 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 8466474887764416740, guid: 9595c6b144392064daf476eb9f4ae3d8,
@@ -7113,7 +7069,7 @@ MonoBehaviour:
   - goodName: Iron Ore
     decription: Raw iron oxide which can is the primary resource for steel production.
     state: 0
-    mass: 2.5
+    mass: 3
     volume: 1
     flammability: 0
     consumption: 12
@@ -7124,7 +7080,7 @@ MonoBehaviour:
   - goodName: Bauxite Ore
     decription: Bauxite contains lots of aluminium which can be extracted.
     state: 0
-    mass: 1.2
+    mass: 2.8
     volume: 1
     flammability: 0
     consumption: 10
@@ -7135,7 +7091,7 @@ MonoBehaviour:
   - goodName: Copper Ore
     decription: Raw copper ore which can be refined into copper.
     state: 0
-    mass: 2.2
+    mass: 2
     volume: 1
     flammability: 0
     consumption: 8
@@ -7168,7 +7124,7 @@ MonoBehaviour:
   - goodName: Steel
     decription: Common construction and engineering resource.
     state: 0
-    mass: 8
+    mass: 7.8
     volume: 1
     flammability: 0
     consumption: 24
@@ -7225,7 +7181,7 @@ MonoBehaviour:
     decription: Ingredients other than iron ore for steel production, like carbon,
       chromium, nickel, manganese and molybdenum.
     state: 0
-    mass: 8
+    mass: 5
     volume: 1
     flammability: 0.02
     consumption: 10
@@ -7248,7 +7204,7 @@ MonoBehaviour:
   - goodName: Hydrogen
     decription: Easily available and cheap rocket fuel.
     state: 1
-    mass: 0.04
+    mass: 0.07
     volume: 1
     flammability: 2
     consumption: 30
@@ -7260,7 +7216,7 @@ MonoBehaviour:
     decription: Oxidizer for rocket fuel combustion and also necessary for the operation
       of life support systems.
     state: 1
-    mass: 1.8
+    mass: 1.2
     volume: 1
     flammability: 0
     consumption: 40
@@ -7536,8 +7492,8 @@ MonoBehaviour:
   rewardCount: 3
   monetaryRewardChance: 0.4
   questVesselSpawnRange:
-    min: 4
-    max: 12
+    min: 4000
+    max: 12000
   questVesselPrefab: {fileID: 6497912318156362320, guid: c347a9d1101a45e41aac3af9b415db46,
     type: 3}
 --- !u!4 &938566358
@@ -7846,8 +7802,8 @@ Camera:
     y: 0
     width: 1
     height: 1
-  near clip plane: 0.02
-  far clip plane: 4000
+  near clip plane: 20
+  far clip plane: 8000000
   field of view: 60
   orthographic: 0
   orthographic size: 5
@@ -7874,11 +7830,11 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 963194225}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.08}
+  m_LocalPosition: {x: 0, y: 0, z: -60}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 17
+  m_Father: {fileID: 1360578271}
+  m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &963194229
 MonoBehaviour:
@@ -7892,12 +7848,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d2d52a1a394ea3d4795c73c19867b6a8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementSpeed: 0.008
+  movementSpeed: 0.006
   rotationSpeed: 1
   zoomSpeed: 4
-  maxZHeight: -0.04
-  maxDistance: 2000
-  planetSafetyRadius: 280
+  maxViewAngle: 70
+  maxZHeight: -40
+  maxDistance: 4000000
 --- !u!224 &969658260 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6966161580598859357, guid: 3c54a1c0705ac644daf98e79cf8bcbd2,
@@ -10787,7 +10743,7 @@ MonoBehaviour:
   uiTransform: {fileID: 2076587811}
   mapMarkerPrefab: {fileID: 2249281174222157506, guid: b7ff97fa78fab484297e444743f683e2,
     type: 3}
-  minMapMarkerDisplayDistance: 2
+  minMapMarkerDisplayDistance: 2000
   vectorPrefab: {fileID: 7898308147322084694, guid: be4fe62fc8d3a594f9103b4b4f86777c,
     type: 3}
   vectorLengthFactor: 20
@@ -14949,10 +14905,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4db8b07451e9fd146a28b98c846b3e67, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  spawnAreaRadius: 2
-  spawnHeight: 4
+  spawnAreaRadius: 200
+  spawnHeight: 10000
   approachSpeed: 0.2
-  disappearingAcceleration: 0.0001
+  disappearingAcceleration: 4
 --- !u!4 &1818884380
 Transform:
   m_ObjectHideFlags: 0
@@ -16398,7 +16354,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51733ac79b41b2745b1c5f2805ea5a11, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  buildingGridSize: 0.01
+  buildingGridSize: 10
   moduleButtonPrefab: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
     type: 3}
   blueprintButtonPrefab: {fileID: 4945649087749988764, guid: 1d504f26479cdd34197b68bc8a40fad6,
@@ -16698,7 +16654,7 @@ RectTransform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2076587810}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: -0.01}
+  m_LocalPosition: {x: 0, y: 0, z: -8.01}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 1360578271}
@@ -17246,25 +17202,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 664091068388133149, guid: 6f59274365b6eb449a06ee16f4007538,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
     - target: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
       propertyPath: m_Name
       value: Planet
-      objectReference: {fileID: 0}
-    - target: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
-        type: 3}
-      propertyPath: m_Layer
-      value: 10
-      objectReference: {fileID: 0}
-    - target: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
-        type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8025485152524623507, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
