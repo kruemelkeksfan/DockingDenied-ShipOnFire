@@ -94,10 +94,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 166f1617e4f1e6b49ae79e325dbb59bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  maxIterations: 200
+  minPrecision: 0.0001
   commandModulePrefab: {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193,
     type: 3}
   centerOfMassIndicator: {fileID: 5754137889756671905}
   directionalForceThreshold: 0.2
+  minAngularVelocity: 1
+  rotationStopTime: 2
 --- !u!114 &6188606278163628312
 MonoBehaviour:
   m_ObjectHideFlags: 0

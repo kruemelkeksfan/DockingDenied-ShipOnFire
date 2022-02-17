@@ -18,10 +18,16 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		all
 	};
 
+	private static WaitForFixedUpdate waitForFixedUpdate = null;
+
 	[SerializeField] private Module commandModulePrefab = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
 	[Tooltip("Minimum Fraction of Force which must be exerted by a Thruster in a Direction to add it to the corresponding Direction Thruster Group")]
 	[SerializeField] private float directionalForceThreshold = 0.2f;
+	[Tooltip("Rotations with less than this minAngularVelocity will be stopped after a short Time")]
+	[SerializeField] private float minAngularVelocity = 1.0f;
+	[Tooltip("Time until a slow Rotation will be stopped, if the angularVelocity stays too low")]
+	[SerializeField] private float rotationStopTime = 2.0f;
 	private Dictionary<Vector2Int, Module> modules = null;
 	private HashSet<IUpdateListener> updateListeners = null;
 	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
@@ -36,10 +42,13 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 	private PolygonCollider2D spacecraftCollider = null;
 	private Dictionary<SpacecraftController, Transform> dockedSpacecraft = null;
 	private bool thrusting = false;
+	private bool stoppingRotation = false;
 
 	protected override void Awake()
 	{
 		base.Awake();
+
+		waitForFixedUpdate = new WaitForFixedUpdate();
 
 		modules = new Dictionary<Vector2Int, Module>();
 		updateListeners = new HashSet<IUpdateListener>();
@@ -105,6 +114,11 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		foreach(IFixedUpdateListener listener in fixedUpdateListeners)
 		{
 			listener.FixedUpdateNotify();
+		}
+
+		if(!stoppingRotation && rigidbody.angularVelocity != 0.0f && Mathf.Abs(rigidbody.angularVelocity) < minAngularVelocity)
+		{
+			StartCoroutine(StopRotation());
 		}
 	}
 
@@ -401,6 +415,27 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 				thrusters[(int)ThrusterGroup.turnRight].Add(thruster);
 			}
 		}
+	}
+
+	private IEnumerator StopRotation()
+	{
+		stoppingRotation = true;
+
+		float startTime = Time.time;
+		do
+		{
+			yield return waitForFixedUpdate;
+
+			if(Mathf.Abs(rigidbody.angularVelocity) >= minAngularVelocity)
+			{
+				stoppingRotation = false;
+				yield break;
+			}
+		}
+		while(Time.time - startTime < rotationStopTime);
+		
+		rigidbody.angularVelocity = 0.0f;
+		stoppingRotation = false;
 	}
 
 	public override void ToggleRenderer(bool activateRenderer)
