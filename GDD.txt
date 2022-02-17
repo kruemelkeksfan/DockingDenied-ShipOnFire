@@ -6,45 +6,11 @@ Physics 2.0
 	Draw Orbits
 	Pausing and Time Scale
 	Moment of Inertia for Ships (http://dmorris.net/projects/tutorials/inertia.tensor.summary.pdf)
-New Quest System
-	Abandon JSON and generate Quests from pure Code
-	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
-	only generate Quests for which the Requirements are met by the current Ship
-	various Tiers: later Quests require bigger Ships and spawn further away from Stations
-	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Difficulty and Spawn Distance)
-	Difficult Tasks/Boss Fights in Story Quests as memorable Milestones
-	Rework Tutorial
 Feedback Fixes
-Building System 2.0
-	Enable spawning Blueprints over existing Ships when external Constructor is used and has enough Capacity to store all Deconstruction Materials
-	Spawn Starter Ship instead of blank Command Module
-	Multiple Ships
-	Copy-Paste-Building
-	Disconnected Build Fix
-		Disconnected Parts are copied to Clipboard
-		Physically they continue existing, block building and can float into Infinity
-		Physically they are Trash and can be deconstructed or attacked
-		If they stay in Range of the Constructor and the Clipboard Content is pasted, they are automatically deconstructed
-		When Clipboard Content is pasted and the Trash is out-of-Range or was damaged, Player has to pay the Building Cost Difference
-	Symmetry Modes
-	Categories for Modules
-	CPU-System for limiting Ship Size (like Robocraft)
-	Somehow show CoM of individual Vessel AND CoM of all docked Vessels together
-	Redesign Command Module
-		Spacecraft don't have Windows
-		Pressure Hull on current Module would be a Nightmare
-	Lore
-		Planetary Nations are afraid of Cruise Missiles
-		Therefore they agreed on a "Free Flight Zone" around the equatorial Plane
-		Zone is very narrow, about 20m, to restrict possible planetary Attacks to a small Area
-		Spacecraft outside the Zone (even just partially outside) will be fired upon from the Surface
 Component System
 	Radiators
  		Components for Reactors, Weapons, Thrusters, Shields, etc.
 		Low Grade Radiators lead to overheating and Dysfunction
-Mining
-	Refineries for Ore to Material Conversion (different Components for different Materials)
-	Bloomeries for Iron + Steel Ingredients to Steel Conversion
 Combat
 	Combat Quests/Boss Fights
 	Weapons
@@ -160,6 +126,48 @@ Combat
 				Detection Angles depends on Scanner Quality
 				Displays Warnings when detecting incoming Projectiles/Rockets/Collisions
 				Active (gives away Sender Position)
+New Quest System
+	Abandon JSON and generate Quests from pure Code
+	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
+	only generate Quests for which the Requirements are met by the current Ship
+	various Tiers: later Quests require bigger Ships and spawn further away from Stations
+	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Difficulty and Spawn Distance)
+	Difficult Tasks/Boss Fights in Story Quests as memorable Milestones
+	Rework Tutorial
+Multiplayer
+	Enum method = { Spawn, Despawn, UpdatePosition, ... }
+	method-index gets send over network instead of string name
+	method-struct with delegate (delegate calls the real method), parameter- and maybe returntype-info (how do these infos look like?)
+	create array with method-structs at startup
+	index will be method-enum-index, value the corresponding struct
+	see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for delegates
+	when receiving index and parameters over network, start delegate
+Building System 2.0
+	Enable spawning Blueprints over existing Ships when external Constructor is used and has enough Capacity to store all Deconstruction Materials
+	Spawn Starter Ship instead of blank Command Module
+	Multiple Ships
+	Copy-Paste-Building
+	Disconnected Build Fix
+		Disconnected Parts are copied to Clipboard
+		Physically they continue existing, block building and can float into Infinity
+		Physically they are Trash and can be deconstructed or attacked
+		If they stay in Range of the Constructor and the Clipboard Content is pasted, they are automatically deconstructed
+		When Clipboard Content is pasted and the Trash is out-of-Range or was damaged, Player has to pay the Building Cost Difference
+	Symmetry Modes
+	Categories for Modules
+	CPU-System for limiting Ship Size (like Robocraft)
+	Somehow show CoM of individual Vessel AND CoM of all docked Vessels together
+	Redesign Command Module
+		Spacecraft don't have Windows
+		Pressure Hull on current Module would be a Nightmare
+	Lore
+		Planetary Nations are afraid of Cruise Missiles
+		Therefore they agreed on a "Free Flight Zone" around the equatorial Plane
+		Zone is very narrow, about 20m, to restrict possible planetary Attacks to a small Area
+		Spacecraft outside the Zone (even just partially outside) will be fired upon from the Surface
+Mining
+	Refineries for Ore to Material Conversion (different Components for different Materials)
+	Bloomeries for Iron + Steel Ingredients to Steel Conversion
 Economy 2.0
 	Un-randomize Economy
 	Production Stations (cheaper Prices for some Goods)
@@ -175,14 +183,6 @@ Economy 2.0
 			Travel to Station where they could sell for Max Profit (Travel Time depends linearly on Distance)
 			On Arrival, sell all their Cargo, no Matter how the Stocks changed
 			Repeat
-Multiplayer
-	Enum method = { Spawn, Despawn, UpdatePosition, ... }
-	method-index gets send over network instead of string name
-	method-struct with delegate (delegate calls the real method), parameter- and maybe returntype-info (how do these infos look like?)
-	create array with method-structs at startup
-	index will be method-enum-index, value the corresponding struct
-	see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for delegates
-	when receiving index and parameters over network, start delegate
 More Modules
 	Fuel Cells for Electric Energy
 	Hydrolysis Module (Hydrogen-/Oxygen Generator)
