@@ -19,7 +19,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
 	protected new Transform transform = null;
-	protected Spacecraft spacecraft = null;
+	protected SpacecraftController spacecraft = null;
 	protected Vector2Int position = Vector2Int.zero;
 
 	protected virtual void Awake()
@@ -40,7 +40,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public virtual void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
-		spacecraft = gameObject.GetComponentInParent<Spacecraft>();
+		spacecraft = gameObject.GetComponentInParent<SpacecraftController>();
 
 		GoodManager goodManager = GoodManager.GetInstance();
 		mass = 0.0f;
@@ -147,7 +147,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return transform;
 	}
 
-	public Spacecraft GetSpacecraft()
+	public SpacecraftController GetSpacecraft()
 	{
 		return spacecraft;
 	}

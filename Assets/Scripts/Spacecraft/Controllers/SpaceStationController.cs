@@ -46,12 +46,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private MenuController menuController = null;
 	private InfoController infoController = null;
 	private QuestFeedbackController questFeedbackController = null;
-	private Spacecraft spacecraft = null;
+	private SpacecraftController spacecraft = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
 	private InventoryController inventoryController = null;
 	private RectTransform uiTransform = null;
-	private Spacecraft localPlayerMainSpacecraft = null;
+	private SpacecraftController localPlayerMainSpacecraft = null;
 	private Transform localPlayerMainTransform = null;
 	private InventoryController localPlayerMainInventory = null;
 	private PlayerSpacecraftUIController playerSpacecraftController = null;
@@ -64,8 +64,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private string stationName = null;
 	private DockingPort[] dockingPorts = null;
 	private IEnumerator dockingTimeoutCoroutine = null;
-	private Dictionary<DockingPort, Spacecraft> expectedDockings = null;
-	private HashSet<Spacecraft> dockedSpacecraft = null;
+	private Dictionary<DockingPort, SpacecraftController> expectedDockings = null;
+	private HashSet<SpacecraftController> dockedSpacecraft = null;
 	private QuestManager.TaskType[] firstTasks = null;
 	private QuestManager.TaskType[] secondaryTasks = null;
 	private QuestManager.TaskType[] allTasks = null;
@@ -88,7 +88,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 
 		maxApproachDistance *= maxApproachDistance;
-		spacecraft = GetComponent<Spacecraft>();
+		spacecraft = GetComponent<SpacecraftController>();
 		transform = spacecraft.GetTransform();
 		rigidbody = GetComponent<Rigidbody2D>();
 		inventoryController = GetComponent<InventoryController>();
@@ -100,8 +100,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			port.AddDockingListener(this);
 		}
 
-		expectedDockings = new Dictionary<DockingPort, Spacecraft>();
-		dockedSpacecraft = new HashSet<Spacecraft>();
+		expectedDockings = new Dictionary<DockingPort, SpacecraftController>();
+		dockedSpacecraft = new HashSet<SpacecraftController>();
 		tradingInventory = new Dictionary<string, GoodTradingInfo>();
 		goodNames = new List<string>();
 
@@ -165,7 +165,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	{
 		if(expectedDockings.ContainsKey(port))
 		{
-			Spacecraft otherSpacecraft = otherPort.GetComponentInParent<Spacecraft>();
+			SpacecraftController otherSpacecraft = otherPort.GetComponentInParent<SpacecraftController>();
 			if(expectedDockings[port] == otherSpacecraft)
 			{
 				expectedDockings.Remove(port);
@@ -193,13 +193,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
 	{
-		dockedSpacecraft.Remove(otherPort.GetComponentInParent<Spacecraft>());
+		dockedSpacecraft.Remove(otherPort.GetComponentInParent<SpacecraftController>());
 
 		if(port.IsActive() && !expectedDockings.ContainsKey(port))
 		{
 			port.HotkeyDown();
 		}
-		if(otherPort.GetComponentInParent<Spacecraft>() == localPlayerMainSpacecraft)
+		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerMainSpacecraft)
 		{
 			menuController.CloseStationMenu(this);
 			infoController.AddMessage("Undocking successful, good Flight!");
@@ -220,7 +220,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		menuController.ToggleStationMenu(this, stationName);
 	}
 
-	public void RequestDocking(Spacecraft requester)
+	public void RequestDocking(SpacecraftController requester)
 	{
 		// TODO: Check if Ship is on Fire etc.
 		if(!dockedSpacecraft.Contains(requester))
@@ -288,7 +288,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	public void AbortDocking(Spacecraft requester)
+	public void AbortDocking(SpacecraftController requester)
 	{
 		foreach(DockingPort port in expectedDockings.Keys)
 		{
@@ -624,7 +624,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		return true;
 	}
 
-	private IEnumerator DockingTimeout(DockingPort port, Spacecraft requester)
+	private IEnumerator DockingTimeout(DockingPort port, SpacecraftController requester)
 	{
 		infoController.SetDockingExpiryTime(Time.realtimeSinceStartup + (dockingTimeout / Time.timeScale));
 

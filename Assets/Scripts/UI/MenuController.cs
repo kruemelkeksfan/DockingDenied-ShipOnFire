@@ -40,7 +40,7 @@ public class MenuController : MonoBehaviour, IListener
 	private SpaceStationController activeStation = null;
 	private QuestVesselController activeQuestVessel = null;
 	private Dictionary<string, string> amountSettings = null;
-	private Spacecraft localPlayerMainSpacecraft = null;
+	private SpacecraftController localPlayerMainSpacecraft = null;
 	private InventoryController localPlayerMainInventory = null;
 	private InputController localPlayerMainInputController = null;
 

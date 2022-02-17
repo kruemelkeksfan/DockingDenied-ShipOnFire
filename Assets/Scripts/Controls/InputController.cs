@@ -6,7 +6,7 @@ public class InputController : MonoBehaviour, IUpdateListener
 {
 	[SerializeField] protected int hotkeyCount = 10;
 	protected Dictionary<int, HashSet<IHotkeyListener>> hotkeys = null;
-	protected Spacecraft spacecraft = null;
+	protected SpacecraftController spacecraft = null;
 	protected bool flightControls = true;
 
 	protected virtual void Awake()
@@ -20,7 +20,7 @@ public class InputController : MonoBehaviour, IUpdateListener
 
     protected virtual void Start()
 	{
-		spacecraft = GetComponent<Spacecraft>();
+		spacecraft = GetComponent<SpacecraftController>();
 		spacecraft.AddUpdateListener(this);
 	}
 

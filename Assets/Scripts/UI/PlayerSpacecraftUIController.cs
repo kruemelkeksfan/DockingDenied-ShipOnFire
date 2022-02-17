@@ -17,7 +17,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	[SerializeField] private Color planetNavVectorColor = Color.green;
 	private ToggleController toggleController = null;
 	private GravityWellController gravityWellController = null;
-	private Spacecraft spacecraft = null;
+	private SpacecraftController spacecraft = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
 	private new Camera camera = null;
@@ -39,7 +39,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	{
 		gravityWellController = GravityWellController.GetInstance();
 
-		spacecraft = GetComponent<Spacecraft>();
+		spacecraft = GetComponent<SpacecraftController>();
 		transform = spacecraft.GetTransform();
 		rigidbody = GetComponent<Rigidbody2D>();
 		camera = Camera.main;

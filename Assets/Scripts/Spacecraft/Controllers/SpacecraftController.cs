@@ -5,7 +5,7 @@ using UnityEngine;
 
 // TODO: What happens to attached Modules when link is severed? Maybe implement Shift LeftClick to make Selection and select the severed Modules automatically for easy Movement/Reattachment
 
-public class Spacecraft : MonoBehaviour, IDockingListener
+public class SpacecraftController : GravityObjectController, IDockingListener
 {
 	private enum ThrusterGroup
 	{
@@ -22,14 +22,11 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 	[SerializeField] private Transform centerOfMassIndicator = null;
 	[Tooltip("Minimum Fraction of Force which must be exerted by a Thruster in a Direction to add it to the corresponding Direction Thruster Group")]
 	[SerializeField] private float directionalForceThreshold = 0.2f;
-	private GravityWellController gravityWellController = null;
 	private Dictionary<Vector2Int, Module> modules = null;
 	private HashSet<IUpdateListener> updateListeners = null;
 	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
 	private BuildingMenu buildingMenu = null;
-	private new Transform transform = null;
 	private InventoryController inventoryController = null;
-	private new Rigidbody2D rigidbody = null;
 	private Vector2 internalCenterOfMass = Vector2.zero;
 	private float foreignMass = 0.0f;
 	private HashSet<Thruster>[] thrusters = null;
@@ -37,16 +34,17 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 	private bool calculateCollider = false;
 	private float halfGridSize = 0.0f;
 	private PolygonCollider2D spacecraftCollider = null;
-	private Dictionary<Spacecraft, Transform> dockedSpacecraft = null;
+	private Dictionary<SpacecraftController, Transform> dockedSpacecraft = null;
+	private bool thrusting = false;
 
-	private void Awake()
+	protected override void Awake()
 	{
+		base.Awake();
+
 		modules = new Dictionary<Vector2Int, Module>();
 		updateListeners = new HashSet<IUpdateListener>();
 		fixedUpdateListeners = new HashSet<IFixedUpdateListener>();
-		transform = gameObject.GetComponent<Transform>();
 		inventoryController = gameObject.GetComponent<InventoryController>();
-		rigidbody = gameObject.GetComponentInChildren<Rigidbody2D>();
 
 		thrusters = new HashSet<Thruster>[Enum.GetValues(typeof(ThrusterGroup)).Length];
 		for(int i = 0; i < thrusters.Length; ++i)
@@ -55,14 +53,14 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		}
 		inactiveThrusters = new HashSet<Thruster>();
 
-		dockedSpacecraft = new Dictionary<Spacecraft, Transform>(2);
+		dockedSpacecraft = new Dictionary<SpacecraftController, Transform>(2);
 
 		rigidbody.centerOfMass = Vector2.zero;
 	}
 
-	private void Start()
+	protected override void Start()
 	{
-		gravityWellController = GravityWellController.GetInstance();
+		base.Start();
 
 		buildingMenu = BuildingMenu.GetInstance();
 		halfGridSize = buildingMenu.GetGridSize() * 0.5f;
@@ -75,15 +73,14 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		}
 
 		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
-		GravityWellController.GetInstance().AddGravityObject(GetComponent<Rigidbody2D>());
+		gravityWellController.AddGravityObject(this);
 	}
 
 	private void OnDestroy()
 	{
-		Rigidbody2D rigidbody = GetComponent<Rigidbody2D>();
 		if(rigidbody != null)
 		{
-			GravityWellController.GetInstance()?.RemoveGravityObject(rigidbody);
+			gravityWellController?.RemoveGravityObject(rigidbody);
 		}
 		ToggleController.GetInstance()?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 	}
@@ -113,7 +110,7 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 
 	public void Docked(DockingPort port, DockingPort otherPort)
 	{
-		Spacecraft otherSpacecraft = otherPort.GetSpacecraft();
+		SpacecraftController otherSpacecraft = otherPort.GetSpacecraft();
 		if(!dockedSpacecraft.ContainsKey(otherSpacecraft))                                                                      // First Caller manages both Spacecraft
 		{
 			dockedSpacecraft.Add(otherSpacecraft, otherSpacecraft.transform);
@@ -126,7 +123,7 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
 	{
-		Spacecraft otherSpacecraft = otherPort.GetSpacecraft();
+		SpacecraftController otherSpacecraft = otherPort.GetSpacecraft();
 		if(dockedSpacecraft.Remove(otherPort.GetSpacecraft()))                                                                  // First Caller manages both Spacecraft // TODO: What if attached via multiple Ports? (maybe check every other port in a foreach loop)
 		{
 			otherSpacecraft.dockedSpacecraft.Remove(this);
@@ -149,11 +146,11 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 	{
 		if(!Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(vertical, 0.0f))
 		{
-			gravityWellController.MarkSpacecraftThrusting(rigidbody, true);
+			thrusting = true;
 			// This Loop interferes with resetting objectRecord.thrusting here (Race Condition), so instead reset it in GravityWellController
-			foreach(Spacecraft spacecraft in dockedSpacecraft.Keys)
+			foreach(SpacecraftController spacecraft in dockedSpacecraft.Keys)
 			{
-				gravityWellController.MarkSpacecraftThrusting(spacecraft.rigidbody, true);
+				spacecraft.thrusting = true;
 			}
 		}
 
@@ -213,7 +210,7 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 				internalCenterOfMass += (position - internalCenterOfMass) * (massDifference / rigidbody.mass);
 			}
 
-			foreach(Spacecraft spacecraft in dockedSpacecraft.Keys)
+			foreach(SpacecraftController spacecraft in dockedSpacecraft.Keys)
 			{
 				spacecraft.UpdateForeignMass(transform, position, massDifference);
 			}
@@ -406,9 +403,17 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		}
 	}
 
+	public override void ToggleRenderer(bool activateRenderer)
+	{
+		foreach(MeshRenderer renderer in gameObject.GetComponentsInChildren<MeshRenderer>())
+		{
+			renderer.enabled = activateRenderer;
+		}
+	}
+
 	public bool IsDockedToStation()
 	{
-		foreach(KeyValuePair<Spacecraft, Transform> dockedSpacecraft in dockedSpacecraft)
+		foreach(KeyValuePair<SpacecraftController, Transform> dockedSpacecraft in dockedSpacecraft)
 		{
 			if(dockedSpacecraft.Key.GetComponent<SpaceStationController>() != null)
 			{
@@ -417,6 +422,11 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		}
 
 		return false;
+	}
+
+	public bool IsThrusting()
+	{
+		return thrusting;
 	}
 
 	public Module GetModule(Vector2Int position)
@@ -441,14 +451,14 @@ public class Spacecraft : MonoBehaviour, IDockingListener
 		return dockedSpacecraft.Count;
 	}
 
-	public Transform GetTransform()
-	{
-		return transform;
-	}
-
 	public InventoryController GetInventoryController()
 	{
 		return inventoryController;
+	}
+
+	public void SetThrusting(bool thrusting)
+	{
+		this.thrusting = thrusting;
 	}
 
 	public void AddModule(Vector2Int position, Module module)

@@ -56,7 +56,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 	private InfoController infoController = null;
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
-	private Spacecraft localPlayerMainSpacecraft = null;
+	private SpacecraftController localPlayerMainSpacecraft = null;
 	private Transform localPlayerMainSpacecraftTransform = null;
 	private new Camera camera = null;
 	private Vector3 lastMousePosition = Vector3.zero;
@@ -572,7 +572,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 		return null;
 	}
 
-	private Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials, Spacecraft deconstructingSpacecraft)
+	private Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials, SpacecraftController deconstructingSpacecraft)
 	{
 		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
 		{

@@ -77,10 +77,11 @@ public class AsteroidSpawner : MonoBehaviour
 		}
 	}
 
-	public void AddAsteroid(Rigidbody2D asteroid, MinMax spawnRange)
+	// Receive Rigidbody instead of AsteroidController, since this is the first Method that requires the AsteroidController and casting as late as possible is desirable
+	public void AddAsteroid(Rigidbody2D asteroidRigidbody, MinMax spawnRange)
 	{
-		asteroid.mass *= densities[Random.Range(0, densities.Length)];
-		gravityWellController.AddGravityObject(asteroid, spawnRange);
+		asteroidRigidbody.mass *= densities[Random.Range(0, densities.Length)];
+		gravityWellController.AddGravityObject(asteroidRigidbody.GetComponent<AsteroidController>(), spawnRange);
 
 		++asteroidCount;
 	}

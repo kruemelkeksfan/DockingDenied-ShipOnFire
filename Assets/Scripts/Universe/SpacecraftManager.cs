@@ -6,20 +6,21 @@ public class SpacecraftManager : MonoBehaviour
 {
 	private struct PlayerSpacecraftRecord
 	{
-		public Spacecraft mainSpacecraft;
-		public List<Spacecraft> spacecraft;
+		public SpacecraftController mainSpacecraft;
+		public List<SpacecraftController> spacecraft;
 
-		public PlayerSpacecraftRecord(Spacecraft mainSpacecraft)
+		public PlayerSpacecraftRecord(SpacecraftController mainSpacecraft)
 		{
 			this.mainSpacecraft = mainSpacecraft;
-			this.spacecraft = new List<Spacecraft>();
-			this.spacecraft.Add(mainSpacecraft);
+
+			spacecraft = new List<SpacecraftController>();
+			spacecraft.Add(mainSpacecraft);
 		}
 	}
 
 	public static SpacecraftManager instance = null;
 
-	[SerializeField] private Spacecraft localPlayerSpacecraft = null;		// Temporary Solution until multiple Ships and Multiplayer is implemented
+	[SerializeField] private SpacecraftController localPlayerSpacecraft = null;		// Temporary Solution until multiple Ships and Multiplayer is implemented
 	private Dictionary<string, PlayerSpacecraftRecord> playerSpacecraft = null;
 	private List<Constructor> constructors = null;
 	// private List<SpaceStationController> aiSpacecraft = null;    // Enable if necessary
@@ -63,7 +64,7 @@ public class SpacecraftManager : MonoBehaviour
 		spacecraftChangeListeners.Remove(listener);
 	}
 
-	public Spacecraft GetLocalPlayerMainSpacecraft()
+	public SpacecraftController GetLocalPlayerMainSpacecraft()
 	{
 		return playerSpacecraft["LocalPlayer"].mainSpacecraft;
 	}

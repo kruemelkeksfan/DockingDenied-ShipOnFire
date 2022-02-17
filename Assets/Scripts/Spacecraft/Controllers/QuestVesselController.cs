@@ -21,10 +21,10 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	[SerializeField] private float despawnDelay = 300.0f;
 	private RectTransform uiTransform = null;
 	private MenuController menuController = null;
-	private Spacecraft spacecraft = null;
+	private SpacecraftController spacecraft = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
-	private Spacecraft localPlayerSpacecraft = null;
+	private SpacecraftController localPlayerSpacecraft = null;
 	private Transform localPlayerSpacecraftTransform = null;
 	private InventoryController localPlayerMainInventory = null;
 	private PlayerSpacecraftUIController playerSpacecraftController = null;
@@ -51,7 +51,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			waitForDockingPortReactivationDelay = new WaitForSeconds(dockingPortReactivateDelay);
 		}
 
-		spacecraft = GetComponent<Spacecraft>();
+		spacecraft = GetComponent<SpacecraftController>();
 		transform = spacecraft.GetTransform();
 		SpacecraftBlueprintController.InstantiateModules(SpacecraftBlueprintController.LoadBlueprintModules(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)]), transform);
 
@@ -127,7 +127,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void Docked(DockingPort port, DockingPort otherPort)
 	{
-		if(otherPort.GetComponentInParent<Spacecraft>() == localPlayerSpacecraft)
+		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerSpacecraft)
 		{
 			playerDocked = true;
 		}
@@ -142,7 +142,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
 	{
-		if(otherPort.GetComponentInParent<Spacecraft>() == localPlayerSpacecraft)
+		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerSpacecraft)
 		{
 			playerDocked = false;
 		}
@@ -275,7 +275,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			hint = "Dock to start Towing!";
 			interactable = false;
-			quest.destination.RequestDocking(GetComponentInParent<Spacecraft>());
+			quest.destination.RequestDocking(GetComponentInParent<SpacecraftController>());
 		}
 
 		UpdateQuestVesselMenu();

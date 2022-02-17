@@ -130,7 +130,7 @@ public class SpacecraftBlueprintController
 
 	public static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)
 	{
-		spacecraftTransform.gameObject.GetComponent<Spacecraft>().DeconstructModules();
+		spacecraftTransform.gameObject.GetComponent<SpacecraftController>().DeconstructModules();
 
 		Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)

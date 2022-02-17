@@ -91,7 +91,7 @@ public class TutorialController : MonoBehaviour
 			}
 		}
 		tutorialMessageField.text = "Load a basic Ship by selecting it from the Left\nAdd or remove Modules with the Buttons on the Right\nRotate Modules with [Q/E]\nBuilding Materials are automatically bought from the Station as long as their Stocks last";
-		Spacecraft playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
+		SpacecraftController playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
 		complete = false;
 		do
 		{

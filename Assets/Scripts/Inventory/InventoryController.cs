@@ -45,7 +45,7 @@ public class InventoryController : MonoBehaviour, IListener
 		goodManager = GoodManager.GetInstance();
 
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
-		resourceDisplayController = spacecraftManager.GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
+		resourceDisplayController = spacecraftManager.GetLocalPlayerMainSpacecraft() == GetComponent<SpacecraftController>() ? InfoController.GetInstance() : null;
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
 		StartCoroutine(UpdateEnergy());
@@ -53,7 +53,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 	public void Notify()
 	{
-		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
+		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<SpacecraftController>() ? InfoController.GetInstance() : null;
 		resourceDisplayController?.UpdateResourceDisplay();
 		resourceDisplayController?.UpdateBuildingResourceDisplay();
 	}

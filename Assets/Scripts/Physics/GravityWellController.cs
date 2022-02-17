@@ -5,273 +5,6 @@ using UnityEngine;
 
 public class GravityWellController : MonoBehaviour, IListener
 {
-	private class GravityObjectRecord
-	{
-		public GravityWellController gravityWellController = null;
-		public Transform transform = null;
-		public Rigidbody2D rigidbody = null;
-		public double gravitationalParameter = 0.0;
-		public double specificOrbitalEnergy = 0.0;
-		public double eccentricityMagnitude = 0.0;
-		public double semiMajorAxis = 0.0;
-		public double semiMinorAxis = 0.0;
-		public double phi = 0.0;
-		public double phiSin = 0.0;
-		public double phiCos = 1.0;
-		public double startMeanAnomaly = 0.0;
-		public Vector2Double orbitCenter = Vector2Double.zero;
-		public double orbitalPeriod = 0.0;
-		public bool clockwise = false;
-		public float startTime = 0.0f;
-		public double eccentricAnomalySin = 0.0;
-		public double eccentricAnomalyCos = 1.0;
-		public bool onRails = false;
-		public bool isAsteroid = false;
-		public MeshRenderer asteroidMeshRenderer = null;
-		public MinMax altitudeConstraint = new MinMax();
-		public bool touched = false;
-		public GameObject spacecraftGameObject = null;
-		public bool thrusting = false;
-		public bool decaying = false;
-
-		public GravityObjectRecord(GravityWellController gravityWellController, Transform transform, Rigidbody2D rigidbody, double gravitationalParameter)
-		{
-			this.gravityWellController = gravityWellController;
-			this.transform = transform;
-			this.rigidbody = rigidbody;
-			this.gravitationalParameter = gravitationalParameter;
-
-			spacecraftGameObject = transform.gameObject;
-		}
-
-		// TODO: Use Inheritance for Asteroid and Spacecraft GravityObjects
-		public GravityObjectRecord(GravityWellController gravityWellController, Transform transform, Rigidbody2D rigidbody, double gravitationalParameter, MinMax altitudeConstraint)
-		{
-			this.gravityWellController = gravityWellController;
-			this.transform = transform;
-			this.rigidbody = rigidbody;
-			this.gravitationalParameter = gravitationalParameter;
-
-			isAsteroid = true;
-			asteroidMeshRenderer = transform.gameObject.GetComponentInChildren<MeshRenderer>();
-			this.altitudeConstraint = new MinMax(altitudeConstraint.min * altitudeConstraint.min, altitudeConstraint.max * altitudeConstraint.max);
-		}
-
-		public bool OnRail(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
-		{
-			// Don't on-Rail thrusting or dying Objects to avoid interfering with Unity Physics or Destruction Coroutines
-			if(thrusting || decaying)
-			{
-				if(onRails)
-				{
-					UnRail();
-				}
-
-				return false;
-			}
-
-			double startPositionMagnitude = globalPosition.Magnitude();
-			Vector2Double perpendicularPosition = Vector2Double.Perpendicular(globalPosition);
-			double startVelocitySqrMagnitude = startVelocity.SqrMagnitude();
-			this.startTime = startTime;
-
-			// Determine orbital Direction
-			clockwise = Vector2Double.Dot(startVelocity, perpendicularPosition) < 0.0;
-			double gravitationalParameter = gravityWellController.GetGravitationalParameter();
-			// https://en.wikipedia.org/wiki/Orbital_elements
-			specificOrbitalEnergy = (startVelocitySqrMagnitude * 0.5) - (gravitationalParameter / startPositionMagnitude);
-			Vector2Double eccentricity = ((globalPosition * ((startVelocitySqrMagnitude / gravitationalParameter) - (1.0 / startPositionMagnitude)))
-				- (startVelocity * (Vector2Double.Dot(globalPosition, startVelocity) / gravitationalParameter)));
-			eccentricityMagnitude = eccentricity.Magnitude();
-			// https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes#Energy;_calculation_of_semi-major_axis_from_state_vectors
-			semiMajorAxis = -gravitationalParameter / (2.0 * specificOrbitalEnergy);
-			// https://en.wikipedia.org/wiki/Orbital_period
-			orbitalPeriod = 2.0 * Math.PI * Math.Sqrt((semiMajorAxis * semiMajorAxis * semiMajorAxis) / gravitationalParameter);
-			// Check for valid Eccentricity
-			if(eccentricityMagnitude > 0.02 && eccentricityMagnitude < (1.0 - 0.02))
-			{
-				semiMinorAxis = Math.Sqrt(1.0 - eccentricityMagnitude * eccentricityMagnitude) * semiMajorAxis;
-				// phi is the Angle by which the Orbit is rotated around the Origin of the Coordinate System
-				// Vector2.SignedAngle() returns the Result in Degrees, must convert to Radians!
-				phi = (Math.PI * 2.0) - Vector2.SignedAngle(eccentricity, Vector2.right) * Mathf.Deg2Rad;
-				phiSin = Math.Sin(phi);
-				phiCos = Math.Cos(phi);
-
-				// https://en.wikipedia.org/wiki/True_anomaly#From_state_vectors
-				double trueAnomalyCos = Vector2Double.Dot(eccentricity, globalPosition) / (eccentricityMagnitude * startPositionMagnitude);
-				// https://en.wikipedia.org/wiki/Eccentric_anomaly#From_the_true_anomaly
-				double eccentricAnomaly = Math.Acos((eccentricityMagnitude + trueAnomalyCos) / (1.0 + eccentricityMagnitude * trueAnomalyCos));
-				if(Vector2Double.Dot(eccentricity, perpendicularPosition) >= 0.0)
-				{
-					eccentricAnomaly = 2.0 * Math.PI - eccentricAnomaly;
-				}
-				eccentricAnomalySin = Math.Sin(eccentricAnomaly);
-				eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
-				// https://en.wikipedia.org/wiki/Mean_anomaly#Formulae
-				startMeanAnomaly = eccentricAnomaly - eccentricityMagnitude * eccentricAnomalySin;
-
-				// Calculate Center Point of the Ellipse
-				orbitCenter = -(new Vector2Double(
-					(semiMajorAxis * phiCos * eccentricAnomalyCos - semiMinorAxis * phiSin * eccentricAnomalySin),
-					(semiMajorAxis * phiSin * eccentricAnomalyCos + semiMinorAxis * phiCos * eccentricAnomalySin))
-					- globalPosition);
-			}
-			// Circular Orbit
-			else if(eccentricityMagnitude < (1.0 - 0.02 - double.Epsilon))
-			{
-				semiMinorAxis = semiMajorAxis;
-				// https://en.wikipedia.org/wiki/Orbital_period
-				// https://en.wikipedia.org/wiki/True_anomaly#From_state_vectors
-				// Use Vector2.right as makeshift Eccentricity
-				Vector2Double makeshiftEccentricity = new Vector2Double(1.0, 0.0);
-				double trueAnomalyCos = Vector2Double.Dot(makeshiftEccentricity, globalPosition) / startPositionMagnitude;
-				double eccentricAnomaly = Math.Acos(trueAnomalyCos);
-				if(Vector2Double.Dot(makeshiftEccentricity, perpendicularPosition) >= 0.0)
-				{
-					eccentricAnomaly = 2.0 * Math.PI - eccentricAnomaly;
-				}
-				eccentricAnomalySin = Math.Sin(eccentricAnomaly);
-				eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
-				startMeanAnomaly = eccentricAnomaly;
-			}
-			// Parabolic or hyperbolic Trajectory
-			// https://en.wikipedia.org/wiki/Parabolic_trajectory
-			// https://en.wikipedia.org/wiki/Hyperbolic_trajectory
-			else
-			{
-				Debug.LogWarning("Parabolic or Hyperbolic Trajectory detected!");
-				Debug.Log("Position: " + globalPosition);
-				Debug.Log("Velocity: " + startVelocity);
-				Debug.Log("Eccentricity: " + eccentricity);
-				LogOrbitalParameters();
-
-				UnRail();
-				return false;
-			}
-
-			if(orbitCenter.x < double.MinValue || orbitCenter.x > double.MaxValue
-					|| orbitCenter.y < double.MinValue || orbitCenter.y > double.MaxValue)
-			{
-				Debug.LogError("Faulty Orbital Parameters calculated!");
-				Debug.Log("Position: " + globalPosition);
-				Debug.Log("Velocity: " + startVelocity);
-				Debug.Log("Eccentricity: " + eccentricity);
-				LogOrbitalParameters();
-
-				UnRail();
-				return false;
-			}
-
-			rigidbody.simulated = false;
-			onRails = true;
-
-			return true;
-		}
-
-		public void UnRail()
-		{
-			if(onRails)
-			{
-				rigidbody.velocity = CalculateVelocity();
-			}
-
-			rigidbody.simulated = true;
-			onRails = false;
-		}
-
-		public Vector2Double CalculateOnRailPosition(int maxIterations, double minPrecision)
-		{
-			// Calculate Eccentric- and Mean Anomaly from current Time
-			// Calculate Mean Anomaly
-			double meanAnomaly = ((((clockwise ? -(Time.time - startTime) : (Time.time - startTime)) * 2.0 * Math.PI) / orbitalPeriod) + startMeanAnomaly) % (2.0 * Math.PI);
-
-			// Solve Kepler Equation and convert Mean Anomaly to Eccentric Anomaly
-			// https://en.wikipedia.org/wiki/Kepler%27s_equation#Numerical_approximation_of_inverse_problem
-			double eccentricAnomaly = meanAnomaly;
-			// Skip Calculation if Orbit is (almost) circular
-			if(eccentricityMagnitude > 0.02)
-			{
-				// Use different initial Guess for very elliptic Orbits
-				if(eccentricityMagnitude > 0.8)
-				{
-					eccentricAnomaly = Math.PI;
-				}
-
-				// Newton-Raphson
-				int i = 0;
-				double lastEccentricAnomaly = 0.0;
-				do
-				{
-					lastEccentricAnomaly = eccentricAnomaly;
-					eccentricAnomaly = eccentricAnomaly
-						- ((eccentricAnomaly - eccentricityMagnitude * eccentricAnomalySin - meanAnomaly)
-						/ (1.0 - eccentricityMagnitude * eccentricAnomalyCos));
-
-					eccentricAnomalySin = Math.Sin(eccentricAnomaly);
-					eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
-				}
-				while(i++ < maxIterations && !((eccentricAnomaly - lastEccentricAnomaly) < minPrecision && (eccentricAnomaly - lastEccentricAnomaly) > -minPrecision));
-
-				if(i >= maxIterations)
-				{
-					Debug.LogWarning("Exceeded Max Iterations during Newton-Raphson!");
-					Debug.Log("i: " + i);
-					Debug.Log("Last: " + lastEccentricAnomaly);
-					Debug.Log("Current: " + eccentricAnomaly);
-					LogOrbitalParameters();
-
-					UnRail();
-				}
-			}
-			else
-			{
-				eccentricAnomalySin = Math.Sin(eccentricAnomaly);
-				eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
-			}
-
-			// Position Calculation
-			// Using transform.position instead of rigidbody.centerOfMass, because the Difference is negligible
-			// Plug in all Parameters in Parameter-Form of Ellipse-Equation
-			// https://de.wikipedia.org/wiki/Ellipse#Ellipsengleichung_(Parameterform)
-			return orbitCenter + new Vector2Double(
-				(semiMajorAxis * phiCos * eccentricAnomalyCos - semiMinorAxis * phiSin * eccentricAnomalySin),
-				(semiMajorAxis * phiSin * eccentricAnomalyCos + semiMinorAxis * phiCos * eccentricAnomalySin));
-		}
-
-		public Vector2Double CalculateVelocity()
-		{
-			// M = ((2 * pi) / T) * (t - t0)
-			// M' = (2 * pi) / T
-			// M = E - e * sin(E)
-			// M' = (E - e * sin(E))'
-			// M' = E' - e * cos(E) * E'
-			// M' = E'(1 - e * cos(E))
-			// E' = M' / (1 - e * cos(E))
-			// E' = (2 * pi) / (T - T * e * cos(E))
-			double derivedEccentricAnomaly = (2.0 * Math.PI) / (orbitalPeriod - orbitalPeriod * eccentricityMagnitude * eccentricAnomalyCos);
-			return new Vector2Double(
-				(-semiMajorAxis * phiCos * eccentricAnomalySin * derivedEccentricAnomaly - semiMinorAxis * phiSin * eccentricAnomalyCos * derivedEccentricAnomaly),
-				(-semiMajorAxis * phiSin * eccentricAnomalySin * derivedEccentricAnomaly + semiMinorAxis * phiCos * eccentricAnomalyCos * derivedEccentricAnomaly));
-		}
-
-		private void LogOrbitalParameters()
-		{
-			Debug.Log("Gravitational Parameter: " + gravitationalParameter);
-			Debug.Log("Specific Orbital Energy: " + specificOrbitalEnergy);
-			Debug.Log("|Eccentricity|: " + eccentricityMagnitude);
-			Debug.Log("Semi-Major Axis: " + semiMajorAxis);
-			Debug.Log("Semi-Minor Axis: " + semiMinorAxis);
-			Debug.Log("Phi: " + phi);
-			Debug.Log("Orbit Center: " + orbitCenter);
-			Debug.Log("Orbital Period: " + orbitalPeriod);
-			Debug.Log("Clockwise: " + clockwise);
-			Debug.Log("sin(phi): " + phiSin);
-			Debug.Log("sin(eccenctricAnomaly): " + eccentricAnomalySin);
-			Debug.Log("cos(phi): " + phiCos);
-			Debug.Log("cos(eccenctricAnomaly): " + eccentricAnomalyCos);
-		}
-	}
-
 	public const double GRAVITY_CONSTANT = 0.000000000066743;
 
 	private static GravityWellController instance = null;
@@ -301,10 +34,6 @@ public class GravityWellController : MonoBehaviour, IListener
 	[SerializeField] private float plasmaMinDrag = 400.0f;
 	[Tooltip("Maximum Distance of the Player from the local Origin, before the Origin will be moved")]
 	[SerializeField] private float maxOriginDistance = 10000.0f;
-	[Tooltip("Maximum Amount of Iterations for eccentricAnomaly Calculation")]
-	[SerializeField] private int maxIterations = 200;
-	[Tooltip("Target Precision for eccentricAnomaly Calculation")]
-	[SerializeField] private double minPrecision = 0.0001;
 	[Tooltip("Distance to the Player at which all Objects are un-railed")]
 	[SerializeField] private float unrailDistance = 10000.0f;
 	[Tooltip("Distance to the Player at which un-railed Objects are on-railed again")]
@@ -315,7 +44,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	private GameObject localPlayerMainObject = null;
 	private Transform localPlayerMainTransform = null;
 	private double gravitationalParameter = 0.0f;
-	private Dictionary<Rigidbody2D, GravityObjectRecord> gravityObjects = null;
+	private Dictionary<Rigidbody2D, GravityObjectController> gravityObjects = null;
 	private float halfMaxAltitude = 0.0f;
 	private Vector2Double localOrigin = Vector2Double.zero;
 	private bool originShifted = false;
@@ -335,7 +64,7 @@ public class GravityWellController : MonoBehaviour, IListener
 			planetTransform = gameObject.GetComponent<Transform>();
 
 			gravitationalParameter = GRAVITY_CONSTANT * mass;
-			gravityObjects = new Dictionary<Rigidbody2D, GravityObjectRecord>();
+			gravityObjects = new Dictionary<Rigidbody2D, GravityObjectController>();
 
 			// Square Height Constraints to avoid Sqrt later on
 			halfMaxAltitude = (maximumAltitude * 0.5f) * (maximumAltitude * 0.5f);
@@ -370,61 +99,50 @@ public class GravityWellController : MonoBehaviour, IListener
 	private void FixedUpdate()
 	{
 		Vector2 playerPosition = localPlayerMainTransform.position;
+		float time = Time.time;
 		// Avoid Dictionary.Get() for Performance Reasons
-		foreach(KeyValuePair<Rigidbody2D, GravityObjectRecord> gravityObject in gravityObjects)
+		foreach(KeyValuePair<Rigidbody2D, GravityObjectController> gravityObject in gravityObjects)
 		{
 			// Buffer for Performance Reasons
-			GravityObjectRecord gravityObjectValue = gravityObject.Value;
-			Vector3 gravityObjectPosition = gravityObjectValue.transform.position;
+			GravityObjectController gravityObjectValue = gravityObject.Value;
+			Transform gravityObjectTransform = gravityObjectValue.GetTransform();
+			Vector3 gravityObjectPosition = gravityObjectTransform.position;
+			AsteroidController asteroid = gravityObjectValue as AsteroidController;
+			SpacecraftController spacecraft = null;
+			if(asteroid == null)
+			{
+				spacecraft = gravityObjectValue as SpacecraftController;
+			}
 
 			// Check onRails first, because we can simulate Gravity after unRailing, but we can not solve analytically after onRailing,
 			// because rigidbody.position is updated after FixedUpdate() and we therefore have to use an obsolete Position for onRailing anyways
 			// Also: onRailed Objects suffer less from skipped Frames anyways
-			if(gravityObjectValue.onRails)
+			if(gravityObjectValue.IsOnRails())
 			{
 				// TODO: Set a max Velocity Difference as [SerializeField], calculate next Check Time from max Velocity, Distance to closest Player and unrailDistance and skip Position Calculations until next Check Time
-				if(gravityObjectValue.thrusting || ((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude <= unrailDistance)
+				if((spacecraft != null && spacecraft.IsThrusting()) || ((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude <= unrailDistance)
 				{
 					gravityObjectValue.UnRail();
-
-					if(gravityObjectValue.isAsteroid)
-					{
-						gravityObjectValue.asteroidMeshRenderer.enabled = true;
-					}
-					else
-					{
-						foreach(MeshRenderer renderer in gravityObjectValue.spacecraftGameObject.GetComponentsInChildren<MeshRenderer>())
-						{
-							renderer.enabled = true;
-						}
-					}
+					gravityObjectValue.ToggleRenderer(true);
 				}
 				else
 				{
 					// Analytical Gravity Solution
-					Vector2Double position = GlobalToLocalPosition(gravityObjectValue.CalculateOnRailPosition(maxIterations, minPrecision));
-					gravityObjectValue.transform.position = new Vector3((float)position.x, (float)position.y, gravityObjectPosition.z);
+					Vector2Double position = GlobalToLocalPosition(gravityObjectValue.CalculateOnRailPosition(time));
+					gravityObjectTransform.position = new Vector3((float)position.x, (float)position.y, gravityObjectPosition.z);
 				}
 			}
 
 			// Check again, in case we unrailed above, to avoid skipping a Frame
-			if(!gravityObjectValue.onRails)
+			if(!gravityObjectValue.IsOnRails())
 			{
+				// Don't on-Rail thrusting or dying Objects to avoid interfering with Unity Physics or Destruction Coroutines
 				// Use Time from last Frame, since this Frames rigidbody.velocity and Forces have not been applied by the Physics Engine yet
-				if(((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude >= onrailDistance
+				if((spacecraft == null || !spacecraft.IsThrusting()) && !gravityObjectValue.IsDecaying()
+					&& ((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude >= onrailDistance
 					&& gravityObjectValue.OnRail(LocalToGlobalPosition(gravityObjectPosition), gravityObject.Key.velocity, Time.time - Time.fixedDeltaTime))
 				{
-					if(gravityObjectValue.isAsteroid)
-					{
-						gravityObjectValue.asteroidMeshRenderer.enabled = false;
-					}
-					else
-					{
-						foreach(MeshRenderer renderer in gravityObjectValue.spacecraftGameObject.GetComponentsInChildren<MeshRenderer>())
-						{
-							renderer.enabled = false;
-						}
-					}
+					gravityObjectValue.ToggleRenderer(false);
 				}
 				else
 				{
@@ -453,13 +171,13 @@ public class GravityWellController : MonoBehaviour, IListener
 			}
 
 			// Reset objectRecord.thrusting after Read, because it is difficult to reset in Spacecraft
-			gravityObjectValue.thrusting = false;
+			spacecraft?.SetThrusting(false);
 		}
 	}
 
 	public void Notify()
 	{
-		Spacecraft localPlayerMainSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
+		SpacecraftController localPlayerMainSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
 		localPlayerMainObject = localPlayerMainSpacecraft.gameObject;
 		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
 	}
@@ -487,9 +205,9 @@ public class GravityWellController : MonoBehaviour, IListener
 			despawnObjects.Clear();
 			foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
 			{
-				GravityObjectRecord objectRecord = gravityObjects[gravityObject];
+				GravityObjectController objectRecord = gravityObjects[gravityObject];
 
-				if(objectRecord.onRails)
+				if(objectRecord.IsOnRails())
 				{
 					// Objects on-Rails are not Origin-shifted and have reasonably stable Orbits
 					continue;
@@ -501,13 +219,14 @@ public class GravityWellController : MonoBehaviour, IListener
 					objectRecord.transform.position -= (Vector3)originShift;
 				}
 
+				AsteroidController asteroid = objectRecord as AsteroidController;
 				double sqrOrbitalAltitude = LocalToGlobalPosition(objectRecord.transform.position).SqrMagnitude();
-				if(((objectRecord.isAsteroid && !objectRecord.touched
-					&& (sqrOrbitalAltitude < objectRecord.altitudeConstraint.min || sqrOrbitalAltitude > objectRecord.altitudeConstraint.max))
+				if(((asteroid != null && !asteroid.IsTouched()
+					&& (sqrOrbitalAltitude < asteroid.GetAltitudeConstraint().min || sqrOrbitalAltitude > asteroid.GetAltitudeConstraint().max))
 					|| sqrOrbitalAltitude < atmosphereEntryAltitude || sqrOrbitalAltitude > maximumAltitude
 					|| (gravityObject.gameObject == localPlayerMainObject
 					&& (sqrOrbitalAltitude < pullUpWarningAltitude || sqrOrbitalAltitude > halfMaxAltitude)))
-					&& !objectRecord.decaying)
+					&& !objectRecord.IsDecaying())
 				{
 					if(gravityObject.gameObject == localPlayerMainObject)
 					{
@@ -547,7 +266,7 @@ public class GravityWellController : MonoBehaviour, IListener
 						despawnObjects.Add(gravityObject);
 					}
 
-					objectRecord.decaying = true;
+					objectRecord.SetDecaying(true);
 				}
 			}
 
@@ -571,7 +290,7 @@ public class GravityWellController : MonoBehaviour, IListener
 
 	private IEnumerator Deorbit(Rigidbody2D gravityObject)
 	{
-		GravityObjectRecord objectRecord = gravityObjects[gravityObject];
+		GravityObjectController objectRecord = gravityObjects[gravityObject];
 		objectRecord.UnRail();
 
 		MeshRenderer[] renderers = gravityObject.gameObject.GetComponentsInChildren<MeshRenderer>();
@@ -643,7 +362,7 @@ public class GravityWellController : MonoBehaviour, IListener
 							// TODO: Destroy Player Spacecraft if Altitude is too high
 							if(gravityObject.gameObject == localPlayerMainObject)
 							{
-								gravityObject.GetComponent<Spacecraft>().Kill();
+								gravityObject.GetComponent<SpacecraftController>().Kill();
 							}
 							else
 							{
@@ -669,7 +388,7 @@ public class GravityWellController : MonoBehaviour, IListener
 			}
 			else
 			{
-				gravityObjects[gravityObject].decaying = false;
+				objectRecord.SetDecaying(false);
 				GameObject.Destroy(plasmaParticles.gameObject);
 
 				yield break;
@@ -709,47 +428,22 @@ public class GravityWellController : MonoBehaviour, IListener
 		// TODO: Implement!
 	}
 
-	public void AddGravityObject(Rigidbody2D gravityObject, MinMax asteroidBeltHeight = new MinMax())
+	public void AddGravityObject(GravityObjectController gravityObject, MinMax? asteroidBeltHeight = null)
 	{
-		Transform gravityObjectTransform = gravityObject.GetComponent<Transform>();
-		gravityObjects.Add(gravityObject, ((asteroidBeltHeight.min != 0.0f || asteroidBeltHeight.max != 0.0f) ?
-			new GravityObjectRecord(this, gravityObjectTransform, gravityObject.GetComponent<Rigidbody2D>(), gravitationalParameter, asteroidBeltHeight)
-			: new GravityObjectRecord(this, gravityObjectTransform, gravityObject.GetComponent<Rigidbody2D>(), gravitationalParameter)));
-		gravityObject.velocity = CalculateOptimalOrbitalVelocity(gravityObject);
+		AsteroidController asteroid;
+		if(asteroidBeltHeight != null && (asteroid = gravityObject as AsteroidController) != null)
+		{
+			asteroid.SetAltitudeConstraint(asteroidBeltHeight.Value);
+		}
+
+		Rigidbody2D gravityObjectRigidbody = gravityObject.GetRigidbody();
+		gravityObjects.Add(gravityObjectRigidbody, gravityObject);
+		gravityObjectRigidbody.velocity = CalculateOptimalOrbitalVelocity(gravityObjectRigidbody);
 	}
 
 	public void RemoveGravityObject(Rigidbody2D gravityObject)
 	{
 		gravityObjects.Remove(gravityObject);
-	}
-
-	public void MarkSpacecraftThrusting(Rigidbody2D spacecraft, bool thrusting)
-	{
-		if(!gravityObjects[spacecraft].isAsteroid)
-		{
-			gravityObjects[spacecraft].thrusting = thrusting;
-		}
-	}
-
-	public bool MarkAsteroidTouched(Rigidbody2D asteroid, Rigidbody2D otherObject)
-	{
-		if(gravityObjects[asteroid].isAsteroid)
-		{
-			if(!gravityObjects[otherObject].isAsteroid || gravityObjects[otherObject].touched)
-			{
-				gravityObjects[asteroid].touched = true;
-
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-		else
-		{
-			return false;
-		}
 	}
 
 	public double GetGravitationalParameter()
