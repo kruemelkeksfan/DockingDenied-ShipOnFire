@@ -3,8 +3,11 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+// TODO: What if Player has multiple Spacecraft? Activate/deactivate this when switching Spacecraft
 public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 {
+	private static WaitForSecondsRealtime waitForOrbitUpdateInterval = null;
+
 	[SerializeField] private RectTransform uiTransform = null;
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[SerializeField] private float minMapMarkerDisplayDistance = 1.0f;
@@ -13,13 +16,23 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	[SerializeField] private Color velocityVectorColor = Color.blue;
 	[SerializeField] private Color orbitalVectorColor = Color.green;
 	[SerializeField] private RectTransform navVectorPrefab = null;
-	[SerializeField] private Color targetNavVectorColor = Color.red;
+	[SerializeField] private Color targetNavVectorColor = Color.blue;
 	[SerializeField] private Color planetNavVectorColor = Color.green;
+	[SerializeField] private Transform orbitMarkerPrefab = null;
+	[SerializeField] private Color targetOrbitMarkerColor = Color.blue;
+	[SerializeField] private Color playerOrbitMarkerColor = Color.green;
+	[SerializeField] private Vector3 largeOrbitMarkerScale = Vector3.one;
+	[SerializeField] private float orbitMarkerTimeStep = 0.01f;
+	[SerializeField] private int largeOrbitMarkerIntervall = 5;
+	[SerializeField] private float orbitUpdateIntervall = 2.0f;
 	private ToggleController toggleController = null;
 	private GravityWellController gravityWellController = null;
-	private SpacecraftController spacecraft = null;
-	private new Transform transform = null;
-	private new Rigidbody2D rigidbody = null;
+	private SpacecraftController playerSpacecraft = null;
+	private Transform playerSpacecraftTransform = null;
+	private Rigidbody2D playerSpacecraftRigidbody = null;
+	private SpacecraftController targetSpacecraft = null;
+	private Transform targetSpacecraftTransform = null;
+	private Rigidbody2D targetSpacecraftRigidbody = null;
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
 	private RectTransform mapMarker = null;
@@ -30,18 +43,22 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	private float scaleFactor = 1.0f;
 	private float velocityVectorWidth = 1.0f;
 	private float navVectorWidth = 1.0f;
-	private Transform targetTransform = null;
-	private Rigidbody2D targetRigidbody = null;
 	private float surfaceAltitude = 0.0f;
 	private Vector3 flightData = Vector3.zero;
+	private Vector3 smallOrbitMarkerScale = Vector3.one;
+	private Transform currentOrbitMarkerTarget = null;
+	private List<Transform> playerOrbitMarkers = null;
+	private List<Transform> targetOrbitMarkers = null;
 
 	private void Start()
 	{
+		waitForOrbitUpdateInterval = new WaitForSecondsRealtime(orbitUpdateIntervall);
+
 		gravityWellController = GravityWellController.GetInstance();
 
-		spacecraft = GetComponent<SpacecraftController>();
-		transform = spacecraft.GetTransform();
-		rigidbody = GetComponent<Rigidbody2D>();
+		playerSpacecraft = GetComponent<SpacecraftController>();
+		playerSpacecraftTransform = playerSpacecraft.GetTransform();
+		playerSpacecraftRigidbody = playerSpacecraft.GetRigidbody();
 		camera = Camera.main;
 		cameraTransform = camera.GetComponent<Transform>();
 
@@ -64,18 +81,28 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		navVectorWidth = planetNavVector.sizeDelta.x;
 		surfaceAltitude = gravityWellController.GetSurfaceAltitude();
 
+		playerOrbitMarkers = new List<Transform>();
+		targetOrbitMarkers = new List<Transform>();
+		Transform orbitMarker = GameObject.Instantiate<Transform>(orbitMarkerPrefab);
+		smallOrbitMarkerScale = orbitMarker.localScale;
+		orbitMarker.GetComponent<MeshRenderer>().material.color = playerOrbitMarkerColor;
+		orbitMarker.gameObject.SetActive(false);
+		playerOrbitMarkers.Add(orbitMarker);
+
 		toggleController = ToggleController.GetInstance();
 		toggleController.AddToggleObject("VelocityVectors", velocityVector.gameObject);
 		toggleController.AddToggleObject("VelocityVectors", orbitalVector.gameObject);
 		toggleController.AddToggleObject("NavVectors", targetNavVector.gameObject);
 		toggleController.AddToggleObject("NavVectors", planetNavVector.gameObject);
 
-		spacecraft.AddUpdateListener(this);
+		StartCoroutine(UpdateOrbitDisplay());
+
+		playerSpacecraft.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
 	{
-		spacecraft?.RemoveUpdateListener(this);
+		playerSpacecraft?.RemoveUpdateListener(this);
 
 		if(toggleController != null)
 		{
@@ -109,9 +136,9 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 	public void UpdateNotify()
 	{
-		float scaleFactor = (transform.position - cameraTransform.position).magnitude * this.scaleFactor;
+		float scaleFactor = (playerSpacecraftTransform.position - cameraTransform.position).magnitude * this.scaleFactor;
 
-		if((transform.position - cameraTransform.position).sqrMagnitude >= minMapMarkerDisplayDistance)
+		if((playerSpacecraftTransform.position - cameraTransform.position).sqrMagnitude >= minMapMarkerDisplayDistance)
 		{
 			mapMarker.gameObject.SetActive(true);
 			mapMarker.localScale = new Vector3(scaleFactor, scaleFactor, scaleFactor);
@@ -121,12 +148,19 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 			mapMarker.gameObject.SetActive(false);
 		}
 
-		Vector2 orbitalVelocity = rigidbody.velocity - ((Vector2) gravityWellController.CalculateOptimalOrbitalVelocity(rigidbody));
-		flightData = new Vector3((float) gravityWellController.LocalToGlobalPosition(transform.position).Magnitude() - surfaceAltitude,
-			(targetRigidbody != null ? (rigidbody.velocity - targetRigidbody.velocity).magnitude : -1.0f), orbitalVelocity.magnitude);
-		UpdateVelocityVector(velocityVector, (targetRigidbody != null ? (rigidbody.velocity - targetRigidbody.velocity) : Vector2.zero), flightData.y, scaleFactor);
+		// Awkward Replacement for parenting the Markers, since parenting leads to Rotation Issues
+		ShiftOrbitMarkers(playerSpacecraftTransform, playerOrbitMarkers);
+		if(currentOrbitMarkerTarget != null && targetOrbitMarkers.Count > 0)
+		{
+			ShiftOrbitMarkers(currentOrbitMarkerTarget, targetOrbitMarkers);
+		}
+
+		Vector2 orbitalVelocity = playerSpacecraftRigidbody.velocity - ((Vector2)gravityWellController.CalculateOptimalOrbitalVelocity(playerSpacecraftRigidbody));
+		flightData = new Vector3((float)gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position).Magnitude() - surfaceAltitude,
+			(targetSpacecraftRigidbody != null ? (playerSpacecraftRigidbody.velocity - targetSpacecraftRigidbody.velocity).magnitude : -1.0f), orbitalVelocity.magnitude);
+		UpdateVelocityVector(velocityVector, (targetSpacecraftRigidbody != null ? (playerSpacecraftRigidbody.velocity - targetSpacecraftRigidbody.velocity) : Vector2.zero), flightData.y, scaleFactor);
 		UpdateVelocityVector(orbitalVector, orbitalVelocity, flightData.z, scaleFactor);
-		UpdateNavVector(targetNavVector, (targetTransform != null ? targetTransform.position : transform.position), scaleFactor);
+		UpdateNavVector(targetNavVector, (targetSpacecraftTransform != null ? targetSpacecraftTransform.position : playerSpacecraftTransform.position), scaleFactor);
 		UpdateNavVector(planetNavVector, -gravityWellController.GetLocalOrigin(), scaleFactor);
 	}
 
@@ -154,10 +188,10 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	// TODO: Switch to LineRenderer? What was the Problem with LineRenderer?
 	private void UpdateNavVector(RectTransform vector, Vector2 targetPosition, float scaleFactor)
 	{
-		if(vector.gameObject.activeSelf && targetPosition != (Vector2) transform.position)
+		if(vector.gameObject.activeSelf && targetPosition != (Vector2)playerSpacecraftTransform.position)
 		{
 			Vector2 direction = uiTransform.InverseTransformPoint(targetPosition);
-			Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - (Vector2) transform.position);
+			Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - (Vector2)playerSpacecraftTransform.position);
 			// Workaround for Rotation sometimes pointing in the wrong Direction for some Frames, probably a Unity Bug with Rotations near 180°
 			if(Mathf.Abs(Vector2.Dot(rotation * Vector2.right, (direction * 0.5f) - (Vector2)uiTransform.localPosition)) < 0.2f)
 			{
@@ -172,14 +206,114 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		}
 	}
 
+	private IEnumerator UpdateOrbitDisplay()
+	{
+		while(true)
+		{
+			yield return waitForOrbitUpdateInterval;
+
+			currentOrbitMarkerTarget = targetSpacecraftTransform;
+
+			float startTime = Time.time;
+			float scaleFactor = (playerSpacecraftTransform.position - cameraTransform.position).magnitude * this.scaleFactor;
+			float orbitMarkerTimeStep = this.orbitMarkerTimeStep * scaleFactor;
+
+			UpdateOrbitMarkers(startTime, scaleFactor, orbitMarkerTimeStep,
+				playerSpacecraft, playerSpacecraftTransform, playerSpacecraftRigidbody, playerOrbitMarkers, playerOrbitMarkerColor);
+			if(targetSpacecraft != null)
+			{
+				UpdateOrbitMarkers(startTime, scaleFactor, orbitMarkerTimeStep,
+					targetSpacecraft, targetSpacecraftTransform, targetSpacecraftRigidbody, targetOrbitMarkers, targetOrbitMarkerColor);
+			}
+		}
+	}
+
+	private void ShiftOrbitMarkers(Transform parentTransform, List<Transform> orbitMarkers)
+	{
+		Vector3 orbitMarkerShift = parentTransform.position - orbitMarkers[0].position;
+		for(int i = 0; i < orbitMarkers.Count; ++i)
+		{
+			if(i > 0 && !orbitMarkers[i].gameObject.activeSelf)
+			{
+				break;
+			}
+			orbitMarkers[i].position += orbitMarkerShift;
+		}
+	}
+
+	private void UpdateOrbitMarkers(float startTime, float scaleFactor, float orbitMarkerTimeStep,
+		SpacecraftController orbiter, Transform orbiterTransform, Rigidbody2D orbiterRigidbody,
+		List<Transform> orbitMarkers, Color orbitMarkerColor)
+	{
+		double orbitalPeriod = orbiter.GetOrbitalPeriod();
+		if(!orbiter.CalculateOrbitalElements(gravityWellController.LocalToGlobalPosition(orbiterTransform.position), orbiterRigidbody.velocity, startTime))
+		{
+			foreach(Transform orbitMarker in orbitMarkers)
+			{
+				orbitMarker.gameObject.SetActive(false);
+			}
+
+			return;
+		}
+		int i = 0;
+		while(i * orbitMarkerTimeStep < orbitalPeriod)
+		{
+			Vector3 position = gravityWellController.GlobalToLocalPosition(orbiter.CalculateOnRailPosition(startTime + (i * orbitMarkerTimeStep)));
+
+			if(orbitMarkers.Count > i)
+			{
+				orbitMarkers[i].gameObject.SetActive(true);
+				orbitMarkers[i].position = position;
+			}
+			else
+			{
+				orbitMarkers.Add(GameObject.Instantiate<Transform>(orbitMarkerPrefab, position, Quaternion.identity));
+				orbitMarkers[i].GetComponent<MeshRenderer>().material.color = orbitMarkerColor;
+			}
+
+			// Break if position is not visible
+			// Break after Marker Creation to ensure that orbitMarkers.Count > i
+			Vector3 viewportPosition = camera.WorldToViewportPoint(position);
+			if(viewportPosition.x < 0.0f || viewportPosition.x > 1.0f
+				|| viewportPosition.y < 0.0f || viewportPosition.y > 1.0f)
+			{
+				break;
+			}
+
+			if(i % largeOrbitMarkerIntervall == 0)
+			{
+				orbitMarkers[i].localScale = largeOrbitMarkerScale * scaleFactor;
+			}
+			else
+			{
+				orbitMarkers[i].localScale = smallOrbitMarkerScale * scaleFactor;
+			}
+
+			++i;
+		}
+		while(i < orbitMarkers.Count)
+		{
+			orbitMarkers[i].gameObject.SetActive(false);
+			++i;
+		}
+
+		// First Orbit Marker is just a Reference Point for the Shift in Update(), so it shouldn't be displayed
+		if(orbitMarkers.Count > 0)
+		{
+			orbitMarkers[0].gameObject.SetActive(false);
+		}
+	}
+
 	public Vector3 GetFlightData()
 	{
 		return flightData;
 	}
 
-	public void SetTarget(Transform targetTransform, Rigidbody2D targetRigidbody)
+	public void SetTarget(SpacecraftController targetSpacecraft, Transform targetSpacecraftTransform, Rigidbody2D targetSpacecraftRigidbody)
 	{
-		this.targetTransform = targetTransform;
-		this.targetRigidbody = targetRigidbody;
+		this.targetSpacecraft = targetSpacecraft;
+		this.targetSpacecraftTransform = targetSpacecraftTransform;
+		this.targetSpacecraftRigidbody = targetSpacecraftRigidbody;
+		currentOrbitMarkerTarget = null;
 	}
 }

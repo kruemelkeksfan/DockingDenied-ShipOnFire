@@ -214,7 +214,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void ToggleStationMenu()
 	{
-		playerSpacecraftController.SetTarget(transform, rigidbody);
+		playerSpacecraftController.SetTarget(spacecraft, transform, rigidbody);
 		menuController.ToggleStationMenu(this, stationName);
 	}
 

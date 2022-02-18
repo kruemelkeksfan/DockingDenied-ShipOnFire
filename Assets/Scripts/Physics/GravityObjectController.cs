@@ -72,6 +72,110 @@ public class GravityObjectController : MonoBehaviour
 		onRails = false;
 	}
 
+	public bool CalculateOrbitalElements(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
+	{
+		double globalPositionMagnitude = globalPosition.Magnitude();
+		Vector2Double perpendicularPosition = Vector2Double.Perpendicular(globalPosition);
+		double startVelocitySqrMagnitude = startVelocity.SqrMagnitude();
+		this.startTime = startTime;
+
+		// Determine orbital Direction
+		clockwise = Vector2Double.Dot(startVelocity, perpendicularPosition) < 0.0;
+		double gravitationalParameter = gravityWellController.GetGravitationalParameter();
+		// https://en.wikipedia.org/wiki/Orbital_elements
+		specificOrbitalEnergy = (startVelocitySqrMagnitude * 0.5) - (gravitationalParameter / globalPositionMagnitude);
+		Vector2Double eccentricity = ((globalPosition * ((startVelocitySqrMagnitude / gravitationalParameter) - (1.0 / globalPositionMagnitude)))
+			- (startVelocity * (Vector2Double.Dot(globalPosition, startVelocity) / gravitationalParameter)));
+		eccentricityMagnitude = eccentricity.Magnitude();
+		// Check for valid Eccentricity
+		if(eccentricityMagnitude > 0.01 && eccentricityMagnitude < (1.0 - 0.01))
+		{
+			// https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes#Energy;_calculation_of_semi-major_axis_from_state_vectors
+			semiMajorAxis = -gravitationalParameter / (2.0 * specificOrbitalEnergy);
+			semiMinorAxis = Math.Sqrt(1.0 - eccentricityMagnitude * eccentricityMagnitude) * semiMajorAxis;
+			// phi is the Angle by which the Orbit is rotated around the Origin of the Coordinate System
+			// Vector2.SignedAngle() returns the Result in Degrees, must convert to Radians!
+			phi = (Math.PI * 2.0) - Vector2.SignedAngle(eccentricity, Vector2.right) * Mathf.Deg2Rad;
+			phiSin = Math.Sin(phi);
+			phiCos = Math.Cos(phi);
+
+			// https://en.wikipedia.org/wiki/True_anomaly#From_state_vectors
+			double trueAnomalyCos = Vector2Double.Dot(eccentricity, globalPosition) / (eccentricityMagnitude * globalPositionMagnitude);
+			// https://en.wikipedia.org/wiki/Eccentric_anomaly#From_the_true_anomaly
+			double eccentricAnomaly = Math.Acos((eccentricityMagnitude + trueAnomalyCos) / (1.0 + eccentricityMagnitude * trueAnomalyCos));
+			if(Vector2Double.Dot(eccentricity, perpendicularPosition) >= 0.0)
+			{
+				eccentricAnomaly = 2.0 * Math.PI - eccentricAnomaly;
+			}
+			eccentricAnomalySin = Math.Sin(eccentricAnomaly);
+			eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
+			// https://en.wikipedia.org/wiki/Mean_anomaly#Formulae
+			startMeanAnomaly = eccentricAnomaly - eccentricityMagnitude * eccentricAnomalySin;
+
+			// Calculate Center Point of the Ellipse
+			orbitCenter = -(new Vector2Double(
+				(semiMajorAxis * phiCos * eccentricAnomalyCos - semiMinorAxis * phiSin * eccentricAnomalySin),
+				(semiMajorAxis * phiSin * eccentricAnomalyCos + semiMinorAxis * phiCos * eccentricAnomalySin))
+				- globalPosition);
+		}
+		// Circular Orbit
+		else if(eccentricityMagnitude < (1.0 - 0.01 - double.Epsilon))
+		{
+			semiMajorAxis = globalPositionMagnitude;
+			semiMinorAxis = globalPositionMagnitude;
+			// https://en.wikipedia.org/wiki/True_anomaly#From_state_vectors
+			// Use Vector2.right as makeshift Eccentricity
+			Vector2Double makeshiftEccentricity = new Vector2Double(1.0, 0.0);
+			double trueAnomalyCos = Vector2Double.Dot(makeshiftEccentricity, globalPosition) / globalPositionMagnitude;
+			double eccentricAnomaly = Math.Acos(trueAnomalyCos);
+			if(Vector2Double.Dot(makeshiftEccentricity, perpendicularPosition) >= 0.0)
+			{
+				eccentricAnomaly = 2.0 * Math.PI - eccentricAnomaly;
+			}
+			eccentricAnomalySin = Math.Sin(eccentricAnomaly);
+			eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
+			startMeanAnomaly = eccentricAnomaly;
+
+			phi = 0.0f;
+			phiSin = 0.0f;
+			phiCos = 1.0f;
+
+			orbitCenter = Vector2Double.zero;
+		}
+		// Parabolic or hyperbolic Trajectory
+		// https://en.wikipedia.org/wiki/Parabolic_trajectory
+		// https://en.wikipedia.org/wiki/Hyperbolic_trajectory
+		else
+		{
+			/*
+			Debug.LogWarning("Parabolic or Hyperbolic Trajectory detected!");
+			Debug.Log("Position: " + globalPosition);
+			Debug.Log("Velocity: " + startVelocity);
+			Debug.Log("Eccentricity: " + eccentricity);
+			LogOrbitalParameters();
+			*/
+
+			return false;
+		}
+
+		// https://en.wikipedia.org/wiki/Orbital_period
+		orbitalPeriod = 2.0 * Math.PI * Math.Sqrt((semiMajorAxis * semiMajorAxis * semiMajorAxis) / gravitationalParameter);
+
+		if(orbitCenter.x < double.MinValue || orbitCenter.x > double.MaxValue
+				|| orbitCenter.y < double.MinValue || orbitCenter.y > double.MaxValue)
+		{
+			Debug.LogError("Faulty Orbital Parameters calculated!");
+			Debug.Log("Position: " + globalPosition);
+			Debug.Log("Velocity: " + startVelocity);
+			Debug.Log("Eccentricity: " + eccentricity);
+			LogOrbitalParameters();
+
+			return false;
+		}
+
+		return true;
+	}
+
 	public Vector2Double CalculateOnRailPosition(float time)
 	{
 		CalculateEccentricAnomaly(time);
@@ -117,101 +221,6 @@ public class GravityObjectController : MonoBehaviour
 		Debug.Log("sin(eccenctricAnomaly): " + eccentricAnomalySin);
 		Debug.Log("cos(phi): " + phiCos);
 		Debug.Log("cos(eccenctricAnomaly): " + eccentricAnomalyCos);
-	}
-
-	private bool CalculateOrbitalElements(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
-	{
-		double startPositionMagnitude = globalPosition.Magnitude();
-		Vector2Double perpendicularPosition = Vector2Double.Perpendicular(globalPosition);
-		double startVelocitySqrMagnitude = startVelocity.SqrMagnitude();
-		this.startTime = startTime;
-
-		// Determine orbital Direction
-		clockwise = Vector2Double.Dot(startVelocity, perpendicularPosition) < 0.0;
-		double gravitationalParameter = gravityWellController.GetGravitationalParameter();
-		// https://en.wikipedia.org/wiki/Orbital_elements
-		specificOrbitalEnergy = (startVelocitySqrMagnitude * 0.5) - (gravitationalParameter / startPositionMagnitude);
-		Vector2Double eccentricity = ((globalPosition * ((startVelocitySqrMagnitude / gravitationalParameter) - (1.0 / startPositionMagnitude)))
-			- (startVelocity * (Vector2Double.Dot(globalPosition, startVelocity) / gravitationalParameter)));
-		eccentricityMagnitude = eccentricity.Magnitude();
-		// https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes#Energy;_calculation_of_semi-major_axis_from_state_vectors
-		semiMajorAxis = -gravitationalParameter / (2.0 * specificOrbitalEnergy);
-		// https://en.wikipedia.org/wiki/Orbital_period
-		orbitalPeriod = 2.0 * Math.PI * Math.Sqrt((semiMajorAxis * semiMajorAxis * semiMajorAxis) / gravitationalParameter);
-		// Check for valid Eccentricity
-		if(eccentricityMagnitude > 0.02 && eccentricityMagnitude < (1.0 - 0.02))
-		{
-			semiMinorAxis = Math.Sqrt(1.0 - eccentricityMagnitude * eccentricityMagnitude) * semiMajorAxis;
-			// phi is the Angle by which the Orbit is rotated around the Origin of the Coordinate System
-			// Vector2.SignedAngle() returns the Result in Degrees, must convert to Radians!
-			phi = (Math.PI * 2.0) - Vector2.SignedAngle(eccentricity, Vector2.right) * Mathf.Deg2Rad;
-			phiSin = Math.Sin(phi);
-			phiCos = Math.Cos(phi);
-
-			// https://en.wikipedia.org/wiki/True_anomaly#From_state_vectors
-			double trueAnomalyCos = Vector2Double.Dot(eccentricity, globalPosition) / (eccentricityMagnitude * startPositionMagnitude);
-			// https://en.wikipedia.org/wiki/Eccentric_anomaly#From_the_true_anomaly
-			double eccentricAnomaly = Math.Acos((eccentricityMagnitude + trueAnomalyCos) / (1.0 + eccentricityMagnitude * trueAnomalyCos));
-			if(Vector2Double.Dot(eccentricity, perpendicularPosition) >= 0.0)
-			{
-				eccentricAnomaly = 2.0 * Math.PI - eccentricAnomaly;
-			}
-			eccentricAnomalySin = Math.Sin(eccentricAnomaly);
-			eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
-			// https://en.wikipedia.org/wiki/Mean_anomaly#Formulae
-			startMeanAnomaly = eccentricAnomaly - eccentricityMagnitude * eccentricAnomalySin;
-
-			// Calculate Center Point of the Ellipse
-			orbitCenter = -(new Vector2Double(
-				(semiMajorAxis * phiCos * eccentricAnomalyCos - semiMinorAxis * phiSin * eccentricAnomalySin),
-				(semiMajorAxis * phiSin * eccentricAnomalyCos + semiMinorAxis * phiCos * eccentricAnomalySin))
-				- globalPosition);
-		}
-		// Circular Orbit
-		else if(eccentricityMagnitude < (1.0 - 0.02 - double.Epsilon))
-		{
-			semiMinorAxis = semiMajorAxis;
-			// https://en.wikipedia.org/wiki/Orbital_period
-			// https://en.wikipedia.org/wiki/True_anomaly#From_state_vectors
-			// Use Vector2.right as makeshift Eccentricity
-			Vector2Double makeshiftEccentricity = new Vector2Double(1.0, 0.0);
-			double trueAnomalyCos = Vector2Double.Dot(makeshiftEccentricity, globalPosition) / startPositionMagnitude;
-			double eccentricAnomaly = Math.Acos(trueAnomalyCos);
-			if(Vector2Double.Dot(makeshiftEccentricity, perpendicularPosition) >= 0.0)
-			{
-				eccentricAnomaly = 2.0 * Math.PI - eccentricAnomaly;
-			}
-			eccentricAnomalySin = Math.Sin(eccentricAnomaly);
-			eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
-			startMeanAnomaly = eccentricAnomaly;
-		}
-		// Parabolic or hyperbolic Trajectory
-		// https://en.wikipedia.org/wiki/Parabolic_trajectory
-		// https://en.wikipedia.org/wiki/Hyperbolic_trajectory
-		else
-		{
-			Debug.LogWarning("Parabolic or Hyperbolic Trajectory detected!");
-			Debug.Log("Position: " + globalPosition);
-			Debug.Log("Velocity: " + startVelocity);
-			Debug.Log("Eccentricity: " + eccentricity);
-			LogOrbitalParameters();
-
-			return false;
-		}
-
-		if(orbitCenter.x < double.MinValue || orbitCenter.x > double.MaxValue
-				|| orbitCenter.y < double.MinValue || orbitCenter.y > double.MaxValue)
-		{
-			Debug.LogError("Faulty Orbital Parameters calculated!");
-			Debug.Log("Position: " + globalPosition);
-			Debug.Log("Velocity: " + startVelocity);
-			Debug.Log("Eccentricity: " + eccentricity);
-			LogOrbitalParameters();
-
-			return false;
-		}
-
-		return true;
 	}
 
 	private void CalculateEccentricAnomaly(float time)
@@ -288,6 +297,11 @@ public class GravityObjectController : MonoBehaviour
 	public Rigidbody2D GetRigidbody()
 	{
 		return rigidbody;
+	}
+
+	public double GetOrbitalPeriod()
+	{
+		return orbitalPeriod;
 	}
 
 	public void SetDecaying(bool decaying)

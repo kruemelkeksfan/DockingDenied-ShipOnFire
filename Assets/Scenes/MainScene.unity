@@ -7654,6 +7654,14 @@ MonoBehaviour:
     type: 3}
   targetNavVectorColor: {r: 1, g: 0.7529412, b: 0.2509804, a: 0.2509804}
   planetNavVectorColor: {r: 0, g: 1, b: 0, a: 0.2509804}
+  orbitMarkerPrefab: {fileID: 5224629465746526750, guid: 4e93e41fcb87b3845847f695070bbc4e,
+    type: 3}
+  targetOrbitMarkerColor: {r: 1, g: 0.75294125, b: 0.2509804, a: 0.627451}
+  playerOrbitMarkerColor: {r: 0, g: 1, b: 0, a: 0.627451}
+  largeOrbitMarkerScale: {x: 3, y: 3, z: 3}
+  orbitMarkerTimeStep: 0.01
+  largeOrbitMarkerIntervall: 5
+  orbitUpdateIntervall: 0.2
 --- !u!4 &1360578271 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
@@ -8396,7 +8404,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &1557856644
 MonoBehaviour:
   m_ObjectHideFlags: 0

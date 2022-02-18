@@ -166,7 +166,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void ToggleQuestVesselMenu()
 	{
-		playerSpacecraftController.SetTarget(transform, rigidbody);
+		playerSpacecraftController.SetTarget(spacecraft, transform, rigidbody);
 		menuController.ToggleQuestVesselMenu(this, vesselName, progress, hint, interactionLabel, (quest.progress < 1.0f && interactable && playerDocked) ? interaction : null);
 	}
 
