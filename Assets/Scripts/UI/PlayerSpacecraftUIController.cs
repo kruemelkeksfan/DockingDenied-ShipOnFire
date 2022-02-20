@@ -24,7 +24,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	[SerializeField] private Vector3 largeOrbitMarkerScale = Vector3.one;
 	[SerializeField] private float orbitMarkerTimeStep = 0.01f;
 	[SerializeField] private int largeOrbitMarkerIntervall = 5;
-	[SerializeField] private float orbitUpdateIntervall = 2.0f;
+	[SerializeField] private float orbitUpdateIntervall = 0.2f;
 	private ToggleController toggleController = null;
 	private GravityWellController gravityWellController = null;
 	private SpacecraftController playerSpacecraft = null;
@@ -246,7 +246,9 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		List<Transform> orbitMarkers, Color orbitMarkerColor)
 	{
 		double orbitalPeriod = orbiter.GetOrbitalPeriod();
-		if(!orbiter.CalculateOrbitalElements(gravityWellController.LocalToGlobalPosition(orbiterTransform.position), orbiterRigidbody.velocity, startTime))
+		// Check if Orbiter is onRails, because CalculateOrbitalElements() is unnecessary in this Case and rigidbody.velocity would be invalid
+		if(!orbiter.IsOnRails() &&
+			!orbiter.CalculateOrbitalElements(gravityWellController.LocalToGlobalPosition(orbiterTransform.position), orbiterRigidbody.velocity, startTime))
 		{
 			foreach(Transform orbitMarker in orbitMarkers)
 			{
@@ -271,15 +273,6 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 				orbitMarkers[i].GetComponent<MeshRenderer>().material.color = orbitMarkerColor;
 			}
 
-			// Break if position is not visible
-			// Break after Marker Creation to ensure that orbitMarkers.Count > i
-			Vector3 viewportPosition = camera.WorldToViewportPoint(position);
-			if(viewportPosition.x < 0.0f || viewportPosition.x > 1.0f
-				|| viewportPosition.y < 0.0f || viewportPosition.y > 1.0f)
-			{
-				break;
-			}
-
 			if(i % largeOrbitMarkerIntervall == 0)
 			{
 				orbitMarkers[i].localScale = largeOrbitMarkerScale * scaleFactor;
@@ -290,6 +283,15 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 			}
 
 			++i;
+
+			// Break if position is not visible
+			// Break after Marker Creation to ensure that orbitMarkers.Count > i
+			Vector3 viewportPosition = camera.WorldToViewportPoint(position);
+			if(viewportPosition.x < 0.0f || viewportPosition.x > 1.0f
+				|| viewportPosition.y < 0.0f || viewportPosition.y > 1.0f)
+			{
+				break;
+			}
 		}
 		while(i < orbitMarkers.Count)
 		{
