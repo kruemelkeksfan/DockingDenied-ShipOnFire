@@ -143,6 +143,7 @@ Multiplayer
 	see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for delegates
 	when receiving index and parameters over network, start delegate
 Building System 2.0
+	Construction via Contructors should cost Energy and possibly Time
 	Enable spawning Blueprints over existing Ships when external Constructor is used and has enough Capacity to store all Deconstruction Materials
 	Spawn Starter Ship instead of blank Command Module
 	Multiple Ships
