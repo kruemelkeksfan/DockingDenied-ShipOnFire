@@ -129,19 +129,18 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Clear();
 				textBuilder.Append("Altitude - ");
 				textBuilder.Append((int)(flightData.x / 1000.0f));
-				textBuilder.Append(" km / Target Speed - ");
-				if(flightData.y >= 0.0f)
+				textBuilder.Append(" km / Speed - ");
+				textBuilder.Append((flightData.y / 1000.0f).ToString("F4"));
+				textBuilder.Append(" km/s / Target Speed Difference - ");
+				if(flightData.z >= 0.0f)
 				{
-					textBuilder.Append((flightData.y / 1000.0f).ToString("F4"));
+					textBuilder.Append((flightData.z / 1000.0f).ToString("F4"));
 					textBuilder.Append(" km/s");
 				}
 				else
 				{
 					textBuilder.Append("No Target");
 				}
-				textBuilder.Append(" / Orbital Speed - ");
-				textBuilder.Append((flightData.z / 1000.0f).ToString("F4"));
-				textBuilder.Append(" km/s");
 				if(expiryTime > 0.0f)
 				{
 					if(Time.realtimeSinceStartup >= expiryTime)

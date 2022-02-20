@@ -41,7 +41,7 @@ public class DockingPort : HotkeyModule
 			HotkeyDown();
 		}
 
-		ToggleController.GetInstance()?.RemoveToggleObject("PortNameplates", portNameField.gameObject);
+		ToggleController.GetInstance()?.RemoveToggleObject(ToggleController.GroupNames.PortNameplates, portNameField.gameObject);
 
 		base.OnDestroy();
 	}
@@ -50,7 +50,7 @@ public class DockingPort : HotkeyModule
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
 		spacecraftTransform = spacecraft.GetTransform();
-		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
+		ToggleController.GetInstance().AddToggleObject(ToggleController.GroupNames.PortNameplates, portNameField.gameObject);
 		portNameField.text = GetActionName();
 		AddDockingListener(spacecraft);
 	}

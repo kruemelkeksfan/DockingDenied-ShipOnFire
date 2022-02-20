@@ -81,7 +81,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 			GameObject.Instantiate<Module>(commandModulePrefab, transform).Build(Vector2Int.zero);
 		}
 
-		ToggleController.GetInstance().AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+		ToggleController.GetInstance().AddToggleObject(ToggleController.GroupNames.COMIndicators, centerOfMassIndicator.gameObject);
 		gravityWellController.AddGravityObject(this);
 	}
 
@@ -91,7 +91,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		{
 			gravityWellController?.RemoveGravityObject(rigidbody);
 		}
-		ToggleController.GetInstance()?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+		ToggleController.GetInstance()?.RemoveToggleObject(ToggleController.GroupNames.COMIndicators, centerOfMassIndicator.gameObject);
 	}
 
 	private void Update()

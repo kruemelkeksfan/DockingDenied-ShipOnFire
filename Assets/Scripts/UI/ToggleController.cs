@@ -5,25 +5,41 @@ using UnityEngine.UI;
 
 public class ToggleController : MonoBehaviour
 {
+	public enum GroupNames
+	{
+		SaveBlueprint,
+		SpacecraftMarkers,
+		OverlayOptions,
+		InverseOverlayOptions,
+		BuildAreaIndicators,
+		COMIndicators,
+		PortNameplates,
+		VelocityVectors,
+		OrbitalVelocityVector,
+		TargetNavVector,
+		PlanetNavVector,
+		OrbitMarkers
+	}
+
 	[Serializable]
 	private struct InitToggleObject
 	{
-		public string groupName;
+		public GroupNames groupName;
 		public GameObject toggleObject;
 	}
 
 	[Serializable]
 	private struct InitToggleText
 	{
-		public string groupName;
+		public GroupNames groupName;
 		public Text text;
 	}
 
 	private class ToggleGroup
 	{
-		public HashSet<GameObject> toggleObjects;
-		public Text text;
-		public bool active;
+		public HashSet<GameObject> toggleObjects = null;
+		public Text text = null;
+		public bool active = false;
 
 		public ToggleGroup(Text text)
 		{
@@ -35,8 +51,7 @@ public class ToggleController : MonoBehaviour
 		public ToggleGroup(GameObject toggleObject)
 		{
 			toggleObjects = new HashSet<GameObject>();
-			text = null;
-			active = text != null && text.text.Contains("Hide");
+			active = text != null ? text.text.Contains("Hide") : toggleObject.activeSelf;
 
 			toggleObjects.Add(toggleObject);
 		}
@@ -51,7 +66,7 @@ public class ToggleController : MonoBehaviour
 
 	[SerializeField] private InitToggleObject[] initToggleObjects = { };
 	[SerializeField] private InitToggleText[] initToggleTexts = { };
-	private Dictionary<string, ToggleGroup> toggleGroups = null;
+	private Dictionary<GroupNames, ToggleGroup> toggleGroups = null;
 
 	public static ToggleController GetInstance()
 	{
@@ -60,7 +75,7 @@ public class ToggleController : MonoBehaviour
 
 	private void Awake()
 	{
-		toggleGroups = new Dictionary<string, ToggleGroup>();
+		toggleGroups = new Dictionary<GroupNames, ToggleGroup>();
 
 		foreach(InitToggleText initToggleText in initToggleTexts)
 		{
@@ -75,7 +90,7 @@ public class ToggleController : MonoBehaviour
 		instance = this;
 	}
 
-	public void Toggle(string groupName)
+	public void Toggle(GroupNames groupName)
 	{
 		toggleGroups[groupName].Toggle();
 
@@ -97,7 +112,12 @@ public class ToggleController : MonoBehaviour
 		}
 	}
 
-	public void AddToggleObject(string groupName, GameObject toggleObject)
+	public void Toggle(string groupName)
+	{
+		Toggle((GroupNames)Enum.Parse(typeof(GroupNames), groupName, true));
+	}
+
+	public void AddToggleObject(GroupNames groupName, GameObject toggleObject)
 	{
 		if(!toggleGroups.ContainsKey(groupName))
 		{
@@ -109,12 +129,12 @@ public class ToggleController : MonoBehaviour
 		}
 	}
 
-	public void RemoveToggleObject(string groupName, GameObject toggleObject)
+	public void RemoveToggleObject(GroupNames groupName, GameObject toggleObject)
 	{
 		toggleGroups[groupName].toggleObjects.Remove(toggleObject);
 	}
 
-	public bool IsGroupToggled(string groupName)
+	public bool IsGroupToggled(GroupNames groupName)
 	{
 		return toggleGroups[groupName].active;
 	}

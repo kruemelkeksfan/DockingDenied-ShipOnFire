@@ -33,12 +33,12 @@ public class Constructor : Module
 		spaceStationController = GetComponentInParent<SpaceStationController>();
 
 		SpacecraftManager.GetInstance().AddConstructor(this);
-		ToggleController.GetInstance().AddToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
+		ToggleController.GetInstance().AddToggleObject(ToggleController.GroupNames.BuildAreaIndicators, constructionAreaIndicator.gameObject);
 	}
 
 	public override void Deconstruct()
 	{
-		ToggleController.GetInstance().RemoveToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
+		ToggleController.GetInstance().RemoveToggleObject(ToggleController.GroupNames.BuildAreaIndicators, constructionAreaIndicator.gameObject);
 		SpacecraftManager.GetInstance().AddConstructor(this);
 
 		base.Deconstruct();

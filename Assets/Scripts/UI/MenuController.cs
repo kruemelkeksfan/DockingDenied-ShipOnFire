@@ -33,6 +33,7 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private BuildingMenu buildingMenu = null;
 	[SerializeField] private InventoryScreenController inventoryMenu = null;
 	[SerializeField] private Transform mapMarkerParent = null;
+	[SerializeField] private Transform orbitMarkerParent = null;
 	// TODO: Somehow control Flight Control bool with all of this
 	private QuestManager questManager = null;
 	private InfoController infoController = null;
@@ -440,6 +441,11 @@ public class MenuController : MonoBehaviour, IListener
 		infoController.SetFlightControls(flightControls);
 	}
 
+	public void ResetTarget()
+	{
+		localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>().SetTarget(null, null, null);
+	}
+
 	private IEnumerator UpdateNextUpdateField(float lastStationUpdate, float stationUpdateInterval)
 	{
 		int remainingTime = 0;
@@ -459,6 +465,11 @@ public class MenuController : MonoBehaviour, IListener
 	public Transform GetMapMarkerParent()
 	{
 		return mapMarkerParent;
+	}
+
+	public Transform GetOrbitMarkerParent()
+	{
+		return orbitMarkerParent;
 	}
 
 	public bool StationIsQuesting(SpaceStationController requester)
