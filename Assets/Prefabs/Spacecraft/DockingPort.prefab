@@ -5012,7 +5012,7 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6556864519538207991}
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 5, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
@@ -5195,10 +5195,8 @@ MonoBehaviour:
   actionNameField: {fileID: 7320006615892210955}
   hotkeySelection: {fileID: 9193948741579083494}
   dockingLocation: {fileID: 618445566396342334}
-  dockingSpeed: 20
-  dockingRotationSpeed: 4
-  dockingPositionThreshold: 0.2
-  dockingRotationThreshold: 0.2
+  dockingPositionThreshold: 1
+  dockingRotationThreshold: 5
   portNameField: {fileID: 8706953334418805248}
 --- !u!1001 &76089906107145030
 PrefabInstance:
