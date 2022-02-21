@@ -147,7 +147,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			playerDocked = false;
 		}
 
-		if(!port.IsActive())
+		// Check if Port and gameObject are still active, to avoid starting Coroutines when getting undocked due to Vessel Destruction
+		if(!port.IsActive() && port.gameObject.activeSelf && gameObject.activeSelf)
 		{
 			quest.progress = 0.0002f;
 			StartCoroutine(ReactivateDockingPort(port));
