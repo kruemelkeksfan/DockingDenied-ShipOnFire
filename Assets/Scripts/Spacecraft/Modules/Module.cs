@@ -25,8 +25,6 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected virtual void Awake()
 	{
 		transform = gameObject.GetComponent<Transform>();
-
-		TryCalculateMass();
 	}
 
 	protected virtual void Start()
@@ -43,21 +41,21 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	{
 		spacecraft = gameObject.GetComponentInParent<SpacecraftController>();
 
-		if(mass <= 0.0002f + float.Epsilon)
-		{
-			TryCalculateMass();
-		}
-
 		this.position = position;
 		transform.localPosition = BuildingMenu.GetInstance().GridToLocalPosition(position);
 		UpdateReservedPositionBuffer(position, transform.localRotation);
-		spacecraft.UpdateModuleMass(transform.localPosition, mass);
 		constructed = true;
 
 		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
 		{
 			spacecraft.AddModule(bufferedReservedPosition, this);
 		}
+
+		if(mass <= 0.0002f + float.Epsilon)
+		{
+			TryCalculateMass();
+		}
+		spacecraft.UpdateMass();
 
 		if(listenUpdates)
 		{
@@ -71,12 +69,12 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public virtual void Deconstruct()
 	{
-		spacecraft.UpdateModuleMass(transform.localPosition, -mass);
-
 		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
 		{
 			spacecraft.RemoveModule(bufferedReservedPosition);
 		}
+
+		spacecraft.UpdateMass();
 
 		GameObject.Destroy(gameObject);
 
@@ -189,6 +187,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public float GetMass()
 	{
+		if(mass <= 0.0002f + float.Epsilon)
+		{
+			TryCalculateMass();
+		}
+
 		return mass;
 	}
 }

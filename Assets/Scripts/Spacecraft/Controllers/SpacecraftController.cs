@@ -22,6 +22,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 
 	[SerializeField] private Module commandModulePrefab = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
+	[SerializeField] private Transform foreignCenterOfMassIndicator = null;
 	[Tooltip("Minimum Fraction of Force which must be exerted by a Thruster in a Direction to add it to the corresponding Direction Thruster Group")]
 	[SerializeField] private float directionalForceThreshold = 0.2f;
 	[Tooltip("Rotations with less than this minAngularVelocity will be stopped after a short Time")]
@@ -33,8 +34,8 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
 	private BuildingMenu buildingMenu = null;
 	private InventoryController inventoryController = null;
-	private Vector2 internalCenterOfMass = Vector2.zero;
-	private float foreignMass = 0.0f;
+	private float inertiaFactor = 1.0f;
+	private Vector2 foreignCenterOfMass = Vector2.zero;
 	private HashSet<Thruster>[] thrusters = null;
 	private HashSet<Thruster> inactiveThrusters = null;
 	private bool calculateCollider = false;
@@ -75,13 +76,21 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		halfGridSize = buildingMenu.GetGridSize() * 0.5f;
 		spacecraftCollider = GetComponent<PolygonCollider2D>();
 
+		float moduleWidth = buildingMenu.GetGridSize();
+		inertiaFactor = (1.0f / 6.0f) * (moduleWidth * moduleWidth);
+
 		// If no Blueprint was loaded during Awake()
 		if(modules.Count <= 0)
 		{
 			GameObject.Instantiate<Module>(commandModulePrefab, transform).Build(Vector2Int.zero);
 		}
 
-		ToggleController.GetInstance().AddToggleObject(ToggleController.GroupNames.COMIndicators, centerOfMassIndicator.gameObject);
+		ToggleController toggleController = ToggleController.GetInstance();
+		toggleController.AddToggleObject(ToggleController.GroupNames.COMIndicators, centerOfMassIndicator.gameObject);
+		toggleController.AddToggleObject(ToggleController.GroupNames.COMIndicators, foreignCenterOfMassIndicator.gameObject);
+		centerOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.COMIndicators));
+		foreignCenterOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.COMIndicators));
+
 		gravityWellController.AddGravityObject(this);
 	}
 
@@ -91,7 +100,10 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		{
 			gravityWellController?.RemoveGravityObject(rigidbody);
 		}
-		ToggleController.GetInstance()?.RemoveToggleObject(ToggleController.GroupNames.COMIndicators, centerOfMassIndicator.gameObject);
+
+		ToggleController toggleController = ToggleController.GetInstance();
+		toggleController?.RemoveToggleObject(ToggleController.GroupNames.COMIndicators, centerOfMassIndicator.gameObject);
+		toggleController?.RemoveToggleObject(ToggleController.GroupNames.COMIndicators, foreignCenterOfMassIndicator.gameObject);
 	}
 
 	private void Update()
@@ -130,8 +142,8 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 			dockedSpacecraft.Add(otherSpacecraft, otherSpacecraft.transform);
 			otherSpacecraft.dockedSpacecraft.Add(this, transform);
 
-			otherSpacecraft.UpdateForeignMass(transform, internalCenterOfMass, rigidbody.mass);
-			UpdateForeignMass(otherSpacecraft.transform, otherSpacecraft.internalCenterOfMass, otherSpacecraft.rigidbody.mass);
+			// UpdateForeignMass() automatically updates the own and all docked Spacecraft
+			UpdateForeignMass();
 		}
 	}
 
@@ -142,8 +154,8 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		{
 			otherSpacecraft.dockedSpacecraft.Remove(this);
 
-			otherSpacecraft.UpdateForeignMass(transform, internalCenterOfMass, -rigidbody.mass);
-			UpdateForeignMass(otherSpacecraft.transform, otherSpacecraft.internalCenterOfMass, -otherSpacecraft.rigidbody.mass);
+			otherSpacecraft.UpdateForeignMass();
+			UpdateForeignMass();
 		}
 	}
 
@@ -168,7 +180,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 			}
 		}
 
-		// TODO: Do we need inactiveThrusters? Or can simply all Thruster be set to 0 Throttle in the Beginning instead of at the End?
+		// inactiveThrusters is needed, because Thruster Particle System stops when throttle is set to 0
 		inactiveThrusters.Clear();
 		inactiveThrusters.UnionWith(thrusters[(int)ThrusterGroup.all]);
 
@@ -205,58 +217,100 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		}
 	}
 
-	// TODO: Floating Point Errors will sum up in this Method, should regularily (e.g. every 100 Calls && dockedSpacecraft.Count <= 0) reset/recalculate all Values
-	// TODO: Unity.Rigidbody Max Mass is 1000000, so assure that this is not exceeded
-	public void UpdateModuleMass(Vector2 position = new Vector2(), float massDifference = 0.0f)
+	// TODO: Unity.Rigidbody Max Mass is 1000000, so assure that this is not exceeded (e.g. let Spacestations deny docking/undock after surpassing a Threshold to force the Player to dump Goods/deconstruct Modules)
+	public void UpdateMass()
 	{
-		if(massDifference != 0.0f)
-		{
-			if(rigidbody.mass < 0.0002f)                                                                                            // Set Rigidbody Mass when updating for the first Time
-			{
-				rigidbody.centerOfMass = position;
-				internalCenterOfMass = position;
-				rigidbody.mass = massDifference;
-			}
-			else
-			{
-				rigidbody.mass += massDifference;
-				rigidbody.centerOfMass += (position - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass + foreignMass));
-				internalCenterOfMass += (position - internalCenterOfMass) * (massDifference / rigidbody.mass);
-			}
+		// Calculate inefficiently by looping through all Modules, because we need to loop through all Modules for Inertia Calculation anyways
 
-			foreach(SpacecraftController spacecraft in dockedSpacecraft.Keys)
+		// Calculate Center of Mass
+		Vector2 centerOfMass = Vector2.zero;
+		float totalMass = 0.0f;
+		foreach(KeyValuePair<Vector2Int, Module> moduleData in modules)
+		{
+			if(moduleData.Key == moduleData.Value.GetPosition())
 			{
-				spacecraft.UpdateForeignMass(transform, position, massDifference);
+				float moduleMass = moduleData.Value.GetMass();
+
+				centerOfMass += (Vector2)moduleData.Value.GetTransform().localPosition * moduleMass;
+				totalMass += moduleMass;
 			}
 		}
 
-		thrusters[(int)ThrusterGroup.turnLeft].Clear();
-		thrusters[(int)ThrusterGroup.turnRight].Clear();
-		foreach(Thruster thruster in thrusters[(int)ThrusterGroup.all])
+		if(totalMass > float.Epsilon)
 		{
-			CalculateThrusterTurningGroup(thruster);
+			// Finish Center of Mass Calculation
+			centerOfMass /= totalMass;
+
+			// Calculate Moment of Inertia
+			float inertia = 0.0f;
+			foreach(KeyValuePair<Vector2Int, Module> moduleData in modules)
+			{
+				if(moduleData.Key == moduleData.Value.GetPosition())
+				{
+					inertia += (inertiaFactor + ((Vector2)moduleData.Value.GetTransform().localPosition - centerOfMass).sqrMagnitude) * moduleData.Value.GetMass();
+				}
+			}
+
+			// Apply Values
+			rigidbody.centerOfMass = centerOfMass;
+			rigidbody.mass = totalMass;
+
+			centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
+			rigidbody.inertia = inertia;
 		}
-
-		centerOfMassIndicator.localPosition = rigidbody.centerOfMass;
-	}
-
-	// TODO: Enable Stacking (recursive Calls for other Spacecraft which are docked to the foreign Spacecraft)
-	// TODO: Have 2 CoM-Indicators on Player Spacecraft, 1 for local CoM and 1 for docked CoM
-	public void UpdateForeignMass(Transform otherTransform, Vector2 position, float massDifference)
-	{
-		foreignMass += massDifference;
-
-		if(dockedSpacecraft.Count > 0)
-		{
-			rigidbody.centerOfMass += ((Vector2)transform.InverseTransformPoint(otherTransform.TransformPoint(position)) - rigidbody.centerOfMass) * (massDifference / (rigidbody.mass + foreignMass));
-		}
-		// Docking Ports are usually not perfectly aligned while Docking, therefore a random Error creeps into the Calculation, the following resets this Error
 		else
 		{
-			rigidbody.centerOfMass = internalCenterOfMass;
+			// Use Makeshift Values for empty Spacecraft (happens for Example when loading new Blueprint)
+			rigidbody.centerOfMass = Vector2.zero;
+			rigidbody.mass = 1.0f;
+			rigidbody.inertia = 1.0f;
 		}
 
-		UpdateModuleMass();
+		// Update Center of Mass of docked Spacecraft
+		UpdateForeignMass();
+
+		// Recalculate Thruster Groups
+		CalculateThrusterTurningGroups();
+	}
+
+	public void UpdateForeignMass()
+	{
+		// Short Circuit Check, all Code below could handle an empty dockedSpacecraft-Dictionary, but we can save Performance by skipping to the relevant Part
+		if(dockedSpacecraft.Count > 0)
+		{
+			// GetRecursivelyDockedSpacecraft() includes this Spacecraft
+			HashSet<SpacecraftController> recursivelyDockedSpacecraft = GetDockedSpacecraftRecursively();
+			Vector2 centerOfMass = Vector2.zero;
+			float totalMass = 0.0f;
+			foreach(SpacecraftController dockedSpacecraft in recursivelyDockedSpacecraft)
+			{
+				float spacecraftMass = dockedSpacecraft.rigidbody.mass;
+
+				// Convert other Spacecrafts Center of Mass to World Coordinates and then to this Spacecrafts local Coordinates
+				centerOfMass += (Vector2)transform.InverseTransformPoint(dockedSpacecraft.transform.TransformPoint(dockedSpacecraft.rigidbody.centerOfMass)) * spacecraftMass;
+				totalMass += spacecraftMass;
+			}
+			centerOfMass /= totalMass;
+
+			foreach(SpacecraftController dockedSpacecraft in recursivelyDockedSpacecraft)
+			{
+				Vector2 otherCenterOfMass = centerOfMass;
+				if(dockedSpacecraft != this)
+				{
+					otherCenterOfMass = dockedSpacecraft.transform.InverseTransformPoint(transform.TransformPoint(centerOfMass));
+				}
+
+				dockedSpacecraft.foreignCenterOfMass = otherCenterOfMass;
+				dockedSpacecraft.foreignCenterOfMassIndicator.localPosition = otherCenterOfMass;
+				dockedSpacecraft.CalculateThrusterTurningGroups();
+			}
+		}
+		else
+		{
+			foreignCenterOfMass = rigidbody.centerOfMass;
+			foreignCenterOfMassIndicator.localPosition = foreignCenterOfMass;
+			CalculateThrusterTurningGroups();
+		}
 	}
 
 	public bool PositionsAvailable(Vector2Int[] positions, bool HasAttachableReservePositions, bool HasOverlappingReservePositions, bool ignoreCommandModule = false, bool ignoreAttachmentPoints = false)
@@ -392,6 +446,16 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 				&& (!modules.ContainsKey(borderingPosition) || (borderingPosition != modules[borderingPosition].GetPosition() && modules[borderingPosition].HasOverlappingReservePositions()));
 	}
 
+	private void CalculateThrusterTurningGroups()
+	{
+		thrusters[(int)ThrusterGroup.turnLeft].Clear();
+		thrusters[(int)ThrusterGroup.turnRight].Clear();
+		foreach(Thruster thruster in thrusters[(int)ThrusterGroup.all])
+		{
+			CalculateThrusterTurningGroup(thruster);
+		}
+	}
+
 	private void CalculateThrusterTurningGroup(Thruster thruster)
 	{
 		// Add rotational Thrust Group
@@ -399,7 +463,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		// M - Torque
 		// r - Lever
 		// F - Thrust
-		Vector2 lever = (Vector2)thruster.transform.localPosition - rigidbody.centerOfMass;
+		Vector2 lever = (Vector2)thruster.transform.localPosition - foreignCenterOfMass;
 		Vector2 thrust = thruster.GetThrustVector();
 		float torque = Vector3.Cross(lever, thrust).z;
 		// To find the Fraction of Thrust used for Rotation, Project thrust on lever, normalize by dividing by thrust.magnitude and subtract the Result from 100%
@@ -433,7 +497,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 			}
 		}
 		while(Time.time - startTime < rotationStopTime);
-		
+
 		rigidbody.angularVelocity = 0.0f;
 		stoppingRotation = false;
 	}
@@ -484,6 +548,25 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 	public int GetDockedSpacecraftCount()
 	{
 		return dockedSpacecraft.Count;
+	}
+
+	public HashSet<SpacecraftController> GetDockedSpacecraftRecursively(HashSet<SpacecraftController> recursivelyDockedSpacecraft = null)
+	{
+		if(recursivelyDockedSpacecraft == null)
+		{
+			recursivelyDockedSpacecraft = new HashSet<SpacecraftController>();
+			recursivelyDockedSpacecraft.Add(this);
+		}
+		foreach(SpacecraftController dockedSpacecraft in dockedSpacecraft.Keys)
+		{
+			if(!recursivelyDockedSpacecraft.Contains(dockedSpacecraft))
+			{
+				recursivelyDockedSpacecraft.Add(dockedSpacecraft);
+				dockedSpacecraft.GetDockedSpacecraftRecursively(recursivelyDockedSpacecraft);
+			}
+		}
+
+		return recursivelyDockedSpacecraft;
 	}
 
 	public InventoryController GetInventoryController()
