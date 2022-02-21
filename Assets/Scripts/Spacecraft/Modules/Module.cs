@@ -25,7 +25,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected virtual void Awake()
 	{
 		transform = gameObject.GetComponent<Transform>();
-		bufferedReservedPositions = new Vector2Int[reservedPositions.Length];
+
+		TryCalculateMass();
 	}
 
 	protected virtual void Start()
@@ -42,15 +43,9 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	{
 		spacecraft = gameObject.GetComponentInParent<SpacecraftController>();
 
-		GoodManager goodManager = GoodManager.GetInstance();
-		mass = 0.0f;
-		foreach(GoodManager.Load cost in buildingCosts)
+		if(mass <= 0.0002f + float.Epsilon)
 		{
-			mass += goodManager.GetGood(cost.goodName).mass * cost.amount;
-		}
-		if(mass <= 0.0f)
-		{
-			mass = 0.0002f;
+			TryCalculateMass();
 		}
 
 		this.position = position;
@@ -116,10 +111,28 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	}
 
+	private void TryCalculateMass()
+	{
+		GoodManager goodManager = GoodManager.GetInstance();
+		if(goodManager != null)
+		{
+			mass = 0.0f;
+			foreach(GoodManager.Load cost in buildingCosts)
+			{
+				mass += goodManager.GetGood(cost.goodName).mass * cost.amount;
+			}
+			if(mass <= 0.0f)
+			{
+				mass = 0.0002f;
+			}
+		}
+	}
+
 	private void UpdateReservedPositionBuffer(Vector2Int position, Quaternion localRotation)
 	{
 		if(!constructed)
 		{
+			bufferedReservedPositions = new Vector2Int[reservedPositions.Length];
 			for(int i = 0; i < bufferedReservedPositions.Length; ++i)
 			{
 				bufferedReservedPositions[i] = Vector2Int.RoundToInt(position + (Vector2)(localRotation * (Vector2)reservedPositions[i]));
@@ -172,5 +185,10 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public GoodManager.Load[] GetBuildingCosts()
 	{
 		return buildingCosts;
+	}
+
+	public float GetMass()
+	{
+		return mass;
 	}
 }

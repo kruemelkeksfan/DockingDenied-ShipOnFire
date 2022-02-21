@@ -29,7 +29,9 @@ public class InfoController : MonoBehaviour, IListener
 	private Queue<Message> messages = null;
 	private float lastDequeue = 0.0f;
 	private Dictionary<string, uint> buildingCosts = null;
-	private InventoryController inventoryController = null;
+	private float moduleMass = 0.0f;
+	private Rigidbody2D playerSpacecraftRigidbody = null;
+	private InventoryController playerSpacecraftInventoryController = null;
 	private PlayerSpacecraftUIController playerSpacecraftUIController = null;
 	private StringBuilder textBuilder = null;
 	private bool updateResourceDisplay = true;
@@ -64,9 +66,12 @@ public class InfoController : MonoBehaviour, IListener
 		if(updateResourceDisplay)
 		{
 			textBuilder.Clear();
-			textBuilder.Append(inventoryController.GetMoney());
-			textBuilder.Append("$ / Energy - ");
-			textBuilder.Append(inventoryController.GetEnergyKWH(true));
+			textBuilder.Append("Money - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetMoney());
+			textBuilder.Append("$ / Mass - ");
+			textBuilder.Append(Mathf.RoundToInt(playerSpacecraftRigidbody.mass));
+			textBuilder.Append(" t / Energy - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetEnergyKWH(true));
 			resourceDisplay.text = textBuilder.ToString();
 			/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
 		+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/
@@ -78,7 +83,7 @@ public class InfoController : MonoBehaviour, IListener
 		{
 			textBuilder.Clear();
 			textBuilder.Append("Steel - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Steel"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Steel"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
@@ -86,7 +91,7 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Append(")");
 			}
 			textBuilder.Append(" / Aluminium - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Aluminium"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Aluminium"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
@@ -94,7 +99,7 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Append(")");
 			}
 			textBuilder.Append(" / Copper - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Copper"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Copper"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
@@ -102,7 +107,7 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Append(")");
 			}
 			textBuilder.Append(" / Gold - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Gold"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Gold"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
@@ -110,12 +115,18 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Append(")");
 			}
 			textBuilder.Append(" / Silicon - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Silicon"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Silicon"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
 				textBuilder.Append(buildingCosts.ContainsKey("Silicon") ? buildingCosts["Silicon"] : 0);
 				textBuilder.Append(")");
+			}
+			if(buildingCosts != null)
+			{
+				textBuilder.Append(" / Mass - ");
+				textBuilder.Append(Mathf.RoundToInt(moduleMass));
+				textBuilder.Append(" t");
 			}
 			secondaryDisplay.text = textBuilder.ToString();
 
@@ -189,8 +200,9 @@ public class InfoController : MonoBehaviour, IListener
 
 	public void Notify()
 	{
-		inventoryController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
-		playerSpacecraftUIController = inventoryController.GetComponent<PlayerSpacecraftUIController>();
+		playerSpacecraftRigidbody = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetComponent<Rigidbody2D>();
+		playerSpacecraftInventoryController = playerSpacecraftRigidbody.GetComponent<InventoryController>();
+		playerSpacecraftUIController = playerSpacecraftRigidbody.GetComponent<PlayerSpacecraftUIController>();
 	}
 
 	public void UpdateControlHint(Dictionary<string, string[]> keyBindings)
@@ -254,20 +266,37 @@ public class InfoController : MonoBehaviour, IListener
 		this.showBuildingResourceDisplay = showBuildingResourceDisplay;
 	}
 
-	public void SetBuildingCosts(GoodManager.Load[] buildingCosts)
+	public void SetBuildingCosts(Module module)
 	{
-		if(buildingCosts != null)
+		if(module != null)
 		{
-			this.buildingCosts = new Dictionary<string, uint>(buildingCosts.Length);
-			foreach(GoodManager.Load cost in buildingCosts)
+			GoodManager.Load[] buildingCostArray = module.GetBuildingCosts();
+			this.buildingCosts = new Dictionary<string, uint>(buildingCostArray.Length);
+			foreach(GoodManager.Load cost in buildingCostArray)
 			{
 				this.buildingCosts.Add(cost.goodName, cost.amount);
 			}
+
+			this.moduleMass = module.GetMass();
 		}
 		else
 		{
 			this.buildingCosts = null;
+			this.moduleMass = 0.0f;
 		}
+
+		UpdateBuildingResourceDisplay();
+	}
+
+	public void SetBuildingCosts(GoodManager.Load[] buildingCostArray, float moduleMass)
+	{
+		this.buildingCosts = new Dictionary<string, uint>(buildingCostArray.Length);
+		foreach(GoodManager.Load cost in buildingCostArray)
+		{
+			this.buildingCosts.Add(cost.goodName, cost.amount);
+		}
+
+		this.moduleMass = moduleMass;
 
 		UpdateBuildingResourceDisplay();
 	}

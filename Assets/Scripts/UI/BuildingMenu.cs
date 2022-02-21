@@ -51,8 +51,9 @@ public class BuildingMenu : MonoBehaviour, IListener
 	[SerializeField] private string blueprintFolder = "Blueprints";
 	[SerializeField] private TextAsset starterShip = null;
 	[SerializeField] private Text cheaterModeText = null;
-	private MenuController menuController = null;
+	private GoodManager goodManager = null;
 	private SpacecraftManager spacecraftManager = null;
+	private MenuController menuController = null;
 	private InfoController infoController = null;
 	private float inverseBuildingGridSize = 1.0f;
 	private Vector2 buildingGridSizeVector = Vector2.one;
@@ -99,7 +100,8 @@ public class BuildingMenu : MonoBehaviour, IListener
 	private void Start()
 	{
 		Transform transform = GetComponent<Transform>();
-		for(int i = 1; i < modulePrefabs.Length; ++i)                                                                   // Skip Command Module
+		// Skip Command Module
+		for(int i = 1; i < modulePrefabs.Length; ++i)
 		{
 			Button moduleButton = GameObject.Instantiate<Button>(moduleButtonPrefab, transform);
 			RectTransform moduleButtonRectTransform = moduleButton.GetComponent<RectTransform>();
@@ -109,10 +111,12 @@ public class BuildingMenu : MonoBehaviour, IListener
 			int localI = i;
 			moduleButton.onClick.AddListener(delegate
 				{
-					SelectModule(localI);                                                                               // Seems to pass-by-reference
+					// Seems to pass-by-reference
+					SelectModule(localI);
 				});
 		}
 
+		goodManager = GoodManager.GetInstance();
 		menuController = MenuController.GetInstance();
 		infoController = InfoController.GetInstance();
 		camera = Camera.main;
@@ -121,7 +125,8 @@ public class BuildingMenu : MonoBehaviour, IListener
 		spacecraftManager.AddSpacecraftChangeListener(this);
 		Notify();
 
-		reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, localPlayerMainSpacecraftTransform));       // Add one Reserve Zone for Erase Highlighting
+		// Add one Reserve Zone for Erase Highlighting
+		reservedZoneRenderers.Add(GameObject.Instantiate<MeshRenderer>(reservedZonePrefab, localPlayerMainSpacecraftTransform));
 		reservedZoneTransforms.Add(reservedZoneRenderers[0].GetComponent<Transform>());
 		reservedZoneTransforms[0].gameObject.SetActive(false);
 
@@ -276,7 +281,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 		{
 			erase = false;
 			SpawnModule(moduleIndex);
-			infoController.SetBuildingCosts(currentModule.module.GetBuildingCosts());
+			infoController.SetBuildingCosts(currentModule.module);
 			infoController.AddMessage(currentModule.module.GetDescription());
 		}
 		else
@@ -364,43 +369,36 @@ public class BuildingMenu : MonoBehaviour, IListener
 
 	public void SelectBlueprint(string blueprintPath)
 	{
-		menuController.CloseModuleMenu();
-		DeselectModule();
-
 		selectedBlueprintData = SpacecraftBlueprintController.LoadBlueprintModules(blueprintPath);
-		selectedBlueprintCosts = SpacecraftBlueprintController.CalculateBlueprintCosts(selectedBlueprintData);
-		infoController.SetBuildingCosts(selectedBlueprintCosts);
-		blueprintLoadPanel.SetActive(true);
-
-		List<Vector2Int> reservedZoneList = new List<Vector2Int>(64);
-		foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
-		{
-			// TODO: Do this more elegantly but in a Way that still works in Standalone Player, e.g. buffer Data permanently in Start() instead of Instantiating for each Construction
-			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type]);
-			reservedZoneList.AddRange(module.GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
-			GameObject.Destroy(module.gameObject);
-		}
-		reservedZones = reservedZoneList.ToArray();
+		SelectBlueprint();
 	}
 
-	// TODO: Fix Code Duplication
 	public void SelectBlueprint(TextAsset blueprint)
+	{
+		selectedBlueprintData = SpacecraftBlueprintController.LoadBlueprintModules(blueprint);
+		SelectBlueprint();
+	}
+
+	private void SelectBlueprint()
 	{
 		menuController.CloseModuleMenu();
 		DeselectModule();
 
-		selectedBlueprintData = SpacecraftBlueprintController.LoadBlueprintModules(blueprint);
 		selectedBlueprintCosts = SpacecraftBlueprintController.CalculateBlueprintCosts(selectedBlueprintData);
-		infoController.SetBuildingCosts(selectedBlueprintCosts);
+		float moduleMass = 0.0f;
+		foreach(GoodManager.Load cost in selectedBlueprintCosts)
+		{
+			moduleMass += goodManager.GetGood(cost.goodName).mass * cost.amount;
+		}
+		infoController.SetBuildingCosts(selectedBlueprintCosts, moduleMass);
 		blueprintLoadPanel.SetActive(true);
 
 		List<Vector2Int> reservedZoneList = new List<Vector2Int>(64);
 		foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 		{
-			// TODO: Do this more elegantly but in a Way that still works in Standalone Player, e.g. buffer Data permanently in Start() instead of Instantiating for each Construction
-			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type]);
-			reservedZoneList.AddRange(module.GetReservedPositions(moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
-			GameObject.Destroy(module.gameObject);
+			reservedZoneList.AddRange(
+				modulePrefabDictionary[moduleData.type].GetReservedPositions(
+				moduleData.position, Quaternion.Euler(0.0f, 0.0f, moduleData.rotation)));
 		}
 		reservedZones = reservedZoneList.ToArray();
 	}

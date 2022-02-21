@@ -84,6 +84,7 @@ public class SpacecraftBlueprintController
 		Dictionary<string, uint> costDictionary = new Dictionary<string, uint>();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)
 		{
+			// TODO: After implementing that Blueprints can replace constructed Ships, stop ignoring CM and instead refund old CM (like all other old Modules), this would also provide a correct Blueprint Mass to the UI in BuildingMenu.SelectBlueprint()
 			if(moduleData.type != "Command Module")
 			{
 				foreach(GoodManager.Load cost in modulePrefabDictionary[moduleData.type].GetBuildingCosts())
