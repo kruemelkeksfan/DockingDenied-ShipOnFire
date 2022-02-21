@@ -119,7 +119,7 @@ public class GravityObjectController : MonoBehaviour
 				- globalPosition);
 		}
 		// Circular Orbit
-		else if(eccentricityMagnitude < (1.0 - 0.01 - double.Epsilon))
+		else if(eccentricityMagnitude < (1.0 - 0.01 - MathUtil.EPSILON))
 		{
 			semiMajorAxis = globalPositionMagnitude;
 			semiMinorAxis = globalPositionMagnitude;

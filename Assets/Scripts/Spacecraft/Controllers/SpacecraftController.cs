@@ -236,7 +236,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 			}
 		}
 
-		if(totalMass > float.Epsilon)
+		if(totalMass > MathUtil.EPSILON)
 		{
 			// Finish Center of Mass Calculation
 			centerOfMass /= totalMass;

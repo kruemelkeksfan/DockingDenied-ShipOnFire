@@ -15,7 +15,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
-	protected float mass = 0.0002f;
+	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
 	protected new Transform transform = null;
@@ -51,7 +51,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			spacecraft.AddModule(bufferedReservedPosition, this);
 		}
 
-		if(mass <= 0.0002f + float.Epsilon)
+		if(mass <= MathUtil.EPSILON * 2.0f)
 		{
 			TryCalculateMass();
 		}
@@ -187,7 +187,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public float GetMass()
 	{
-		if(mass <= 0.0002f + float.Epsilon)
+		if(mass <= MathUtil.EPSILON * 2.0f)
 		{
 			TryCalculateMass();
 		}

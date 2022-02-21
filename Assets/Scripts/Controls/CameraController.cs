@@ -127,7 +127,7 @@ public class CameraController : MonoBehaviour, IListener
 		// Camera too close/below the Physics Plane?
 		if(transform.position.z > maxZHeight)
 		{
-			transform.position = new Vector3(transform.position.x, transform.position.y, maxZHeight - float.Epsilon);
+			transform.position = new Vector3(transform.position.x, transform.position.y, maxZHeight - MathUtil.EPSILON);
 			localPosition = Quaternion.Inverse(transform.rotation) * (transform.position - spacecraftTransform.position);
 		}
 		// Camera too far away from the Action?
@@ -136,9 +136,9 @@ public class CameraController : MonoBehaviour, IListener
 			|| Mathf.Abs(transform.position.z) > maxDistance)
 		{
 			transform.position = new Vector3(
-				Mathf.Clamp(transform.position.x, -maxDistance + float.Epsilon, maxDistance - float.Epsilon),
-				Mathf.Clamp(transform.position.y, -maxDistance + float.Epsilon, maxDistance - float.Epsilon),
-				Mathf.Clamp(transform.position.z, -maxDistance + float.Epsilon, maxDistance - float.Epsilon));
+				Mathf.Clamp(transform.position.x, -maxDistance + MathUtil.EPSILON, maxDistance - MathUtil.EPSILON),
+				Mathf.Clamp(transform.position.y, -maxDistance + MathUtil.EPSILON, maxDistance - MathUtil.EPSILON),
+				Mathf.Clamp(transform.position.z, -maxDistance + MathUtil.EPSILON, maxDistance - MathUtil.EPSILON));
 			localPosition = Quaternion.Inverse(transform.rotation) * (transform.position - spacecraftTransform.position);
 		}
 		// Camera inside the Planet?
