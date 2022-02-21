@@ -212,7 +212,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	// TODO: Switch to LineRenderer? What was the Problem with LineRenderer?
 	private void UpdateVelocityVector(RectTransform vector, Vector2 velocity, float velocityMagnitude, float scaleFactor)
 	{
-		Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, velocity);
+		Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, Vector2.SignedAngle(uiTransform.up, velocity));
 
 		vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocityMagnitude * vectorLengthFactor * scaleFactor);
 		vector.localRotation = rotation;
@@ -222,7 +222,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	private void UpdateNavVector(RectTransform vector, Vector2 targetPosition, float scaleFactor)
 	{
 		Vector2 direction = uiTransform.InverseTransformPoint(targetPosition);
-		Quaternion rotation = Quaternion.FromToRotation(uiTransform.up, targetPosition - (Vector2)playerSpacecraftTransform.position);
+		Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, Vector2.SignedAngle(uiTransform.up, targetPosition - (Vector2)playerSpacecraftTransform.position));
 
 		vector.sizeDelta = new Vector2(navVectorWidth * scaleFactor, direction.magnitude);
 		vector.localRotation = rotation;
