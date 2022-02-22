@@ -247,6 +247,9 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 			{
 				if(moduleData.Key == moduleData.Value.GetPosition())
 				{
+					// Approximate Modules as Cubes and use Steiner's Theorem to calculate their Moment of Inertia around the Ships Center of Mass
+					// https://en.wikipedia.org/wiki/List_of_moments_of_inertia
+					// https://en.wikipedia.org/wiki/Parallel_axis_theorem
 					inertia += (inertiaFactor + ((Vector2)moduleData.Value.GetTransform().localPosition - centerOfMass).sqrMagnitude) * moduleData.Value.GetMass();
 				}
 			}
