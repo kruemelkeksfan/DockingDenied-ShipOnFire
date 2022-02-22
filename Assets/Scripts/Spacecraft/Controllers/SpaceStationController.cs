@@ -386,42 +386,45 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			for(int i = 0; i < goodNames.Count; ++i)
 			{
 				RectTransform tradingEntryRectTransform = GameObject.Instantiate<RectTransform>(tradingEntryPrefab);
+				GoodManager.Good good = goodManager.GetGood(goodNames[i]);
 
 				tradingEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodNames[i];
 				tradingEntryRectTransform.GetChild(1).GetComponent<Text>().text = tradingInventory[goodNames[i]].playerAmount.ToString();
 				tradingEntryRectTransform.GetChild(2).GetComponent<Text>().text = tradingInventory[goodNames[i]].stationAmount.ToString();
 				tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = CalculateGoodPrice(goodNames[i], tradingInventory[goodNames[i]].stationAmount, -1) + "$";
 				tradingEntryRectTransform.GetChild(4).GetComponent<Text>().text = CalculateGoodPrice(goodNames[i], tradingInventory[goodNames[i]].stationAmount, 1) + "$";
-				tradingEntryRectTransform.GetChild(5).GetComponent<Text>().text = goodManager.GetGood(goodNames[i]).decription;
+				tradingEntryRectTransform.GetChild(5).GetComponent<Text>().text = good.volume + "/" + localPlayerMainInventory.GetFreeCapacity(good) + " m3";
+				tradingEntryRectTransform.GetChild(6).GetComponent<Text>().text = good.mass + " t";
+				tradingEntryRectTransform.GetChild(7).GetComponent<Text>().text = good.description;
 
 				if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))
 				{
-					tradingEntryRectTransform.GetChild(6).gameObject.SetActive(true);
-					tradingEntryRectTransform.GetChild(7).gameObject.SetActive(true);
 					tradingEntryRectTransform.GetChild(8).gameObject.SetActive(true);
+					tradingEntryRectTransform.GetChild(9).gameObject.SetActive(true);
+					tradingEntryRectTransform.GetChild(10).gameObject.SetActive(true);
 
 					string localGoodName = goodNames[i];
-					InputField localAmountField = tradingEntryRectTransform.GetChild(6).GetComponent<InputField>();
+					InputField localAmountField = tradingEntryRectTransform.GetChild(8).GetComponent<InputField>();
 					InventoryController localPlayerInventory = localPlayerMainInventory;
 					InventoryController localStationInventory = inventoryController;
 					localAmountField.onEndEdit.AddListener(delegate
 					{
 						UpdateTrading();
 					});
-					tradingEntryRectTransform.GetChild(7).GetComponent<Button>().onClick.AddListener(delegate
+					tradingEntryRectTransform.GetChild(9).GetComponent<Button>().onClick.AddListener(delegate
 					{
 						Trade(localGoodName, 0, localPlayerInventory, localStationInventory, tradingInventory[localGoodName].stationAmount, localAmountField);
 					});
-					tradingEntryRectTransform.GetChild(8).GetComponent<Button>().onClick.AddListener(delegate
+					tradingEntryRectTransform.GetChild(10).GetComponent<Button>().onClick.AddListener(delegate
 					{
 						Trade(localGoodName, 0, localStationInventory, localPlayerInventory, tradingInventory[localGoodName].stationAmount, localAmountField);
 					});
 				}
 				else
 				{
-					tradingEntryRectTransform.GetChild(6).gameObject.SetActive(false);
-					tradingEntryRectTransform.GetChild(7).gameObject.SetActive(false);
 					tradingEntryRectTransform.GetChild(8).gameObject.SetActive(false);
+					tradingEntryRectTransform.GetChild(9).gameObject.SetActive(false);
+					tradingEntryRectTransform.GetChild(10).gameObject.SetActive(false);
 				}
 
 				tradingEntries[i] = tradingEntryRectTransform;

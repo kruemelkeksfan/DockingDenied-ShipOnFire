@@ -35,6 +35,7 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private Transform mapMarkerParent = null;
 	[SerializeField] private Transform orbitMarkerParent = null;
 	// TODO: Somehow control Flight Control bool with all of this
+	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private InfoController infoController = null;
 	private HotkeyModule activeModule = null;
@@ -67,6 +68,7 @@ public class MenuController : MonoBehaviour, IListener
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 
+		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		infoController = InfoController.GetInstance();
 	}
@@ -320,7 +322,7 @@ public class MenuController : MonoBehaviour, IListener
 			for(int i = 1; i < tradingContentPane.childCount; ++i)
 			{
 				Transform child = tradingContentPane.GetChild(i);
-				amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(6).GetComponent<InputField>().text;
+				amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(8).GetComponent<InputField>().text;
 				GameObject.Destroy(child.gameObject);
 			}
 
@@ -331,13 +333,18 @@ public class MenuController : MonoBehaviour, IListener
 				string goodName = tradingEntry.GetChild(0).GetComponent<Text>().text;
 				if(amountSettings.ContainsKey(goodName))
 				{
-					tradingEntry.GetChild(3).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), -Mathf.Abs(int.Parse(amountSettings[goodName]))) + "$";
-					tradingEntry.GetChild(4).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), Mathf.Abs(int.Parse(amountSettings[goodName]))) + "$";
-					tradingEntry.GetChild(6).GetComponent<InputField>().text = amountSettings[goodName];
+					GoodManager.Good good = goodManager.GetGood(goodName);
+					int amount = Mathf.Abs(int.Parse(amountSettings[goodName]));
+
+					tradingEntry.GetChild(3).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), -amount) + "$";
+					tradingEntry.GetChild(4).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), amount) + "$";
+					tradingEntry.GetChild(5).GetComponent<Text>().text = (good.volume * amount) + "/" + localPlayerMainInventory.GetFreeCapacity(good) + " m3";
+					tradingEntry.GetChild(6).GetComponent<Text>().text = (good.mass * amount) + " t";
+					tradingEntry.GetChild(8).GetComponent<InputField>().text = amountSettings[goodName];
 				}
 				else
 				{
-					tradingEntry.GetChild(6).GetComponent<InputField>().text = "1";
+					tradingEntry.GetChild(8).GetComponent<InputField>().text = "1";
 				}
 			}
 
@@ -358,9 +365,9 @@ public class MenuController : MonoBehaviour, IListener
 
 	public void CloseStationMenu()
 	{
-		stationMainMenu.SetActive(false);
-		stationQuestMenu.SetActive(false);
-		stationTradingMenu.SetActive(false);
+		stationMainMenu?.SetActive(false);
+		stationQuestMenu?.SetActive(false);
+		stationTradingMenu?.SetActive(false);
 		activeStation = null;
 		UpdateFlightControls();
 	}

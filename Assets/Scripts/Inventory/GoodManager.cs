@@ -12,7 +12,7 @@ public class GoodManager : MonoBehaviour
     public struct Good
 	{
 		public string goodName;
-		[TextArea(3, 5)] public string decription;
+		[TextArea(3, 5)] public string description;
 		[Tooltip("State of Matter of this Good.")]
 		public State state;
 		[Tooltip("Mass in Tons per Unit, 1 Unit is 1m^3 for Goods and 1 Piece for Items.")]
