@@ -39,7 +39,7 @@ public class CameraController : MonoBehaviour, IListener
 
 		planetSurfaceAltitude = gravityWellController.GetSurfaceAltitude();
 		// Square to avoid Sqrt later
-		sqrPlanetSurfaceAltitude =  planetSurfaceAltitude * planetSurfaceAltitude;
+		sqrPlanetSurfaceAltitude = planetSurfaceAltitude * planetSurfaceAltitude;
 	}
 
 	private void Update()
@@ -60,19 +60,19 @@ public class CameraController : MonoBehaviour, IListener
 			Vector3 direction = Vector3.zero;
 			if(Input.GetAxis("Vertical") > 0.0f)
 			{
-				direction += transform.up;
+				direction += Vector3.up;
 			}
 			if(Input.GetAxis("Horizontal") < 0.0f)
 			{
-				direction -= transform.right;
+				direction -= Vector3.right;
 			}
 			if(Input.GetAxis("Vertical") < 0.0f)
 			{
-				direction -= transform.up;
+				direction -= Vector3.up;
 			}
 			if(Input.GetAxis("Horizontal") > 0.0f)
 			{
-				direction += transform.right;
+				direction += Vector3.right;
 			}
 
 			localPosition += direction * movementSpeed * -localPosition.z;
@@ -105,9 +105,9 @@ public class CameraController : MonoBehaviour, IListener
 		}
 
 		// Set Camera Position and Rotation
-		transform.localPosition = localPosition;
 		if(fixedCamera)
 		{
+			transform.localPosition = localPosition;
 			transform.rotation = spacecraftTransform.rotation;
 
 			transform.RotateAround(spacecraftTransform.position, spacecraftTransform.right, localRotation.x);
@@ -116,6 +116,7 @@ public class CameraController : MonoBehaviour, IListener
 		}
 		else
 		{
+			transform.position = spacecraftTransform.position + localPosition;
 			transform.rotation = Quaternion.identity;
 
 			transform.RotateAround(spacecraftTransform.position, Vector3.right, localRotation.x);
@@ -142,11 +143,11 @@ public class CameraController : MonoBehaviour, IListener
 			localPosition = Quaternion.Inverse(transform.rotation) * (transform.position - spacecraftTransform.position);
 		}
 		// Camera inside the Planet?
-		Vector3 globalPosition = (Vector3) gravityWellController.LocalToGlobalPosition(transform.position) + new Vector3(0.0f, 0.0f, transform.position.z);
+		Vector3 globalPosition = (Vector3)gravityWellController.LocalToGlobalPosition(transform.position) + new Vector3(0.0f, 0.0f, transform.position.z);
 		if(globalPosition.sqrMagnitude <= sqrPlanetSurfaceAltitude)
 		{
 			globalPosition = globalPosition.normalized * planetSurfaceAltitude;
-			transform.position = (Vector3) gravityWellController.GlobalToLocalPosition(globalPosition) + new Vector3(0.0f, 0.0f, globalPosition.z);
+			transform.position = (Vector3)gravityWellController.GlobalToLocalPosition(globalPosition) + new Vector3(0.0f, 0.0f, globalPosition.z);
 			localPosition = Quaternion.Inverse(transform.rotation) * (transform.position - spacecraftTransform.position);
 		}
 	}
