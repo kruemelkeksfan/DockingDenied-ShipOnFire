@@ -12,7 +12,9 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[SerializeField] private float minMapMarkerDisplayDistance = 1.0f;
 	[SerializeField] private RectTransform vectorPrefab = null;
-	[SerializeField] private float vectorLengthFactor = 20.0f;
+	[SerializeField] private float vectorLengthFactor = 0.04f;
+	[SerializeField] private float constantVectorLengthFactor = 20.0f;
+	[SerializeField] private Color velocityDifferenceVectorColor = Color.cyan;
 	[SerializeField] private Color playerVelocityVectorColor = Color.blue;
 	[SerializeField] private Color targetVelocityVectorColor = Color.yellow;
 	[SerializeField] private Color orbitalVelocityVectorColor = Color.green;
@@ -37,6 +39,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
 	private RectTransform mapMarker = null;
+	private RectTransform velocityDifferenceVector = null;
 	private RectTransform playerVelocityVector = null;
 	private RectTransform targetVelocityVector = null;
 	private RectTransform orbitalVelocityVector = null;
@@ -45,8 +48,6 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	private float scaleFactor = 1.0f;
 	private float velocityVectorWidth = 1.0f;
 	private float navVectorWidth = 1.0f;
-	private float surfaceAltitude = 0.0f;
-	private Vector3 flightData = Vector3.zero;
 	private Transform orbitMarkerParent = null;
 	private Vector3 smallOrbitMarkerScale = Vector3.one;
 	private Transform currentOrbitMarkerTarget = null;
@@ -68,7 +69,8 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		orbitMarkerParent = MenuController.GetInstance().GetOrbitMarkerParent();
 
 		mapMarker = GameObject.Instantiate<RectTransform>(mapMarkerPrefab, uiTransform.position, uiTransform.rotation, uiTransform);
-		minMapMarkerDisplayDistance *= minMapMarkerDisplayDistance;                                                                         // Square to avoid Sqrt later on
+		// Square to avoid Sqrt later on
+		minMapMarkerDisplayDistance *= minMapMarkerDisplayDistance;
 
 		// Instantiate in reverse Order to render the more important Vectors on top
 		planetNavVector = GameObject.Instantiate<RectTransform>(navVectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
@@ -87,11 +89,13 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		playerVelocityVector = GameObject.Instantiate<RectTransform>(vectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
 		playerVelocityVector.GetComponent<Image>().color = playerVelocityVectorColor;
 		playerVelocityVector.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityVectors));
+		velocityDifferenceVector = GameObject.Instantiate<RectTransform>(vectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
+		velocityDifferenceVector.GetComponent<Image>().color = velocityDifferenceVectorColor;
+		velocityDifferenceVector.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityDifferenceVector));
 
 		scaleFactor = Mathf.Abs(1.0f / cameraTransform.position.z);
 		velocityVectorWidth = targetVelocityVector.sizeDelta.x;
 		navVectorWidth = planetNavVector.sizeDelta.x;
-		surfaceAltitude = gravityWellController.GetSurfaceAltitude();
 
 		playerOrbitMarkers = new List<Transform>();
 		targetOrbitMarkers = new List<Transform>();
@@ -101,6 +105,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		orbitMarker.gameObject.SetActive(false);
 		playerOrbitMarkers.Add(orbitMarker);
 
+		toggleController.AddToggleObject(ToggleController.GroupNames.VelocityDifferenceVector, velocityDifferenceVector.gameObject);
 		toggleController.AddToggleObject(ToggleController.GroupNames.VelocityVectors, playerVelocityVector.gameObject);
 		toggleController.AddToggleObject(ToggleController.GroupNames.VelocityVectors, targetVelocityVector.gameObject);
 		toggleController.AddToggleObject(ToggleController.GroupNames.OrbitalVelocityVector, orbitalVelocityVector.gameObject);
@@ -118,6 +123,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 		if(toggleController != null)
 		{
+			toggleController.RemoveToggleObject(ToggleController.GroupNames.VelocityDifferenceVector, velocityDifferenceVector.gameObject);
 			toggleController.RemoveToggleObject(ToggleController.GroupNames.VelocityVectors, targetVelocityVector.gameObject);
 			toggleController.RemoveToggleObject(ToggleController.GroupNames.VelocityVectors, orbitalVelocityVector.gameObject);
 			toggleController.RemoveToggleObject(ToggleController.GroupNames.TargetNavVector, targetNavVector.gameObject);
@@ -160,13 +166,22 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 			mapMarker.gameObject.SetActive(false);
 		}
 
-		flightData = new Vector3((float)gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position).Magnitude() - surfaceAltitude,
-			playerSpacecraftRigidbody.velocity.magnitude,
-			(targetSpacecraftRigidbody != null ? (playerSpacecraftRigidbody.velocity - targetSpacecraftRigidbody.velocity).magnitude : -1.0f));
+		if(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityDifferenceVector))
+		{
+			if(targetSpacecraftRigidbody != null)
+			{
+				Vector2 velocityDifference = playerSpacecraftRigidbody.velocity - targetSpacecraftRigidbody.velocity;
+				UpdateVelocityVector(velocityDifferenceVector, velocityDifference, velocityDifference.magnitude, scaleFactor, true);
+			}
+			else
+			{
+				velocityDifferenceVector.sizeDelta = new Vector2(0.0f, 0.0f);
+			}
+		}
 
 		if(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityVectors))
 		{
-			UpdateVelocityVector(playerVelocityVector, playerSpacecraftRigidbody.velocity, flightData.y, scaleFactor);
+			UpdateVelocityVector(playerVelocityVector, playerSpacecraftRigidbody.velocity, playerSpacecraftRigidbody.velocity.magnitude, scaleFactor);
 			if(targetSpacecraftRigidbody != null)
 			{
 				UpdateVelocityVector(targetVelocityVector, targetSpacecraftRigidbody.velocity, targetSpacecraftRigidbody.velocity.magnitude, scaleFactor);
@@ -210,11 +225,18 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	}
 
 	// TODO: Switch to LineRenderer? What was the Problem with LineRenderer?
-	private void UpdateVelocityVector(RectTransform vector, Vector2 velocity, float velocityMagnitude, float scaleFactor)
+	private void UpdateVelocityVector(RectTransform vector, Vector2 velocity, float velocityMagnitude, float scaleFactor, bool constantLength = false)
 	{
 		Quaternion rotation = Quaternion.Euler(0.0f, 0.0f, Vector2.SignedAngle(uiTransform.up, velocity));
 
-		vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocityMagnitude * vectorLengthFactor * scaleFactor);
+		if(constantLength)
+		{
+			vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocityMagnitude * constantVectorLengthFactor);
+		}
+		else
+		{
+			vector.sizeDelta = new Vector2(velocityVectorWidth * scaleFactor, velocityMagnitude * vectorLengthFactor * scaleFactor);
+		}
 		vector.localRotation = rotation;
 	}
 
@@ -338,11 +360,6 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		{
 			orbitMarkers[0].gameObject.SetActive(false);
 		}
-	}
-
-	public Vector3 GetFlightData()
-	{
-		return flightData;
 	}
 
 	public void SetTarget(SpacecraftController targetSpacecraft, Transform targetSpacecraftTransform, Rigidbody2D targetSpacecraftRigidbody)

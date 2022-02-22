@@ -26,13 +26,15 @@ public class InfoController : MonoBehaviour, IListener
 	[SerializeField] private Text throttleDisplay = null;
 	[SerializeField] private Text autoThrottleDisplay = null;
 	[SerializeField] private GameObject keyBindingDisplay = null;
+	private GravityWellController gravityWellController = null;
 	private Queue<Message> messages = null;
 	private float lastDequeue = 0.0f;
 	private Dictionary<string, uint> buildingCosts = null;
 	private float moduleMass = 0.0f;
+	private SpacecraftController playerSpacecraft = null;
+	private Transform playerSpacecraftTransform = null;
 	private Rigidbody2D playerSpacecraftRigidbody = null;
 	private InventoryController playerSpacecraftInventoryController = null;
-	private PlayerSpacecraftUIController playerSpacecraftUIController = null;
 	private StringBuilder textBuilder = null;
 	private bool updateResourceDisplay = true;
 	private bool updateBuildingResourceDisplay = true;
@@ -57,6 +59,8 @@ public class InfoController : MonoBehaviour, IListener
 
 	private void Start()
 	{
+		gravityWellController = GravityWellController.GetInstance();
+
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 	}
@@ -136,22 +140,22 @@ public class InfoController : MonoBehaviour, IListener
 		{
 			if(flightControls)
 			{
-				Vector3 flightData = playerSpacecraftUIController.GetFlightData();
+				playerSpacecraft.CalculateOrbitalElements(
+					gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position),
+					playerSpacecraftRigidbody.velocity,
+					Time.time);
+
 				textBuilder.Clear();
 				textBuilder.Append("Altitude - ");
-				textBuilder.Append((int)(flightData.x / 1000.0f));
+				textBuilder.Append((int)(gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position).Magnitude() / 1000.0));
 				textBuilder.Append(" km / Speed - ");
-				textBuilder.Append((flightData.y / 1000.0f).ToString("F4"));
-				textBuilder.Append(" km/s / Target Speed Difference - ");
-				if(flightData.z >= 0.0f)
-				{
-					textBuilder.Append((flightData.z / 1000.0f).ToString("F4"));
-					textBuilder.Append(" km/s");
-				}
-				else
-				{
-					textBuilder.Append("No Target");
-				}
+				textBuilder.Append((playerSpacecraftRigidbody.velocity.magnitude / 1000.0f).ToString("F4"));
+				textBuilder.Append(" km/s / Periapsis - ");
+				textBuilder.Append((int)(playerSpacecraft.CalculatePeriapsisAltitude() / 1000.0));
+				textBuilder.Append(" km / Apoapsis - ");
+				textBuilder.Append((int)(playerSpacecraft.CalculateApoapsisAltitude() / 1000.0));
+				textBuilder.Append(" km");
+
 				if(expiryTime > 0.0f)
 				{
 					if(Time.realtimeSinceStartup >= expiryTime)
@@ -200,9 +204,10 @@ public class InfoController : MonoBehaviour, IListener
 
 	public void Notify()
 	{
-		playerSpacecraftRigidbody = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetComponent<Rigidbody2D>();
-		playerSpacecraftInventoryController = playerSpacecraftRigidbody.GetComponent<InventoryController>();
-		playerSpacecraftUIController = playerSpacecraftRigidbody.GetComponent<PlayerSpacecraftUIController>();
+		playerSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
+		playerSpacecraftTransform = playerSpacecraft.GetTransform();
+		playerSpacecraftRigidbody = playerSpacecraft.GetRigidbody();
+		playerSpacecraftInventoryController = playerSpacecraft.GetInventoryController();
 	}
 
 	public void UpdateControlHint(Dictionary<string, string[]> keyBindings)

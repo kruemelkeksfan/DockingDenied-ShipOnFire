@@ -18,7 +18,8 @@ public class ToggleController : MonoBehaviour
 		OrbitalVelocityVector,
 		TargetNavVector,
 		PlanetNavVector,
-		OrbitMarkers
+		OrbitMarkers,
+		VelocityDifferenceVector
 	}
 
 	[Serializable]

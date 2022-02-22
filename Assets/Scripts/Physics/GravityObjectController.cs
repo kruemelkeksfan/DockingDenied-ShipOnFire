@@ -26,6 +26,10 @@ public class GravityObjectController : MonoBehaviour
 	private double eccentricAnomalyCos = 1.0;
 	private bool onRails = false;
 	private bool decaying = false;
+	private Vector2Double lastGlobalPosition = Vector2Double.zero;
+	private Vector2Double lastStartVelocity = Vector2Double.zero;
+	private float lastStartTime = 0.0f;
+	private bool lastOrbitalElementResult = false;
 
 	protected virtual void Awake()
 	{
@@ -74,6 +78,14 @@ public class GravityObjectController : MonoBehaviour
 
 	public bool CalculateOrbitalElements(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
 	{
+		if(globalPosition == lastGlobalPosition && startVelocity == lastStartVelocity && Mathf.Approximately(startTime, lastStartTime))
+		{
+			return lastOrbitalElementResult;
+		}
+		lastGlobalPosition = globalPosition;
+		lastStartVelocity = startVelocity;
+		lastStartTime = startTime;
+
 		double globalPositionMagnitude = globalPosition.Magnitude();
 		Vector2Double perpendicularPosition = Vector2Double.Perpendicular(globalPosition);
 		double startVelocitySqrMagnitude = startVelocity.SqrMagnitude();
@@ -155,6 +167,7 @@ public class GravityObjectController : MonoBehaviour
 			LogOrbitalParameters();
 			*/
 
+			lastOrbitalElementResult = false;
 			return false;
 		}
 
@@ -170,9 +183,11 @@ public class GravityObjectController : MonoBehaviour
 			Debug.Log("Eccentricity: " + eccentricity);
 			LogOrbitalParameters();
 
+			lastOrbitalElementResult = false;
 			return false;
 		}
 
+		lastOrbitalElementResult = true;
 		return true;
 	}
 
@@ -205,6 +220,18 @@ public class GravityObjectController : MonoBehaviour
 		return new Vector2Double(
 			(-semiMajorAxis * phiCos * eccentricAnomalySin * derivedEccentricAnomaly - semiMinorAxis * phiSin * eccentricAnomalyCos * derivedEccentricAnomaly),
 			(-semiMajorAxis * phiSin * eccentricAnomalySin * derivedEccentricAnomaly + semiMinorAxis * phiCos * eccentricAnomalyCos * derivedEccentricAnomaly));
+	}
+
+	public double CalculatePeriapsisAltitude()
+	{
+		// Orbit Center represents Focus Point/Planet Center and is always collinear with semiMajorAxis
+		return semiMajorAxis - orbitCenter.Magnitude();
+	}
+
+	public double CalculateApoapsisAltitude()
+	{
+		// Orbit Center represents Focus Point/Planet Center and is always collinear with semiMajorAxis
+		return semiMajorAxis + orbitCenter.Magnitude();
 	}
 
 	private void LogOrbitalParameters()
