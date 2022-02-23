@@ -124,7 +124,7 @@ public class DockingPort : HotkeyModule
 					float dRotation = Mathf.DeltaAngle(otherPort.dockingLocation.rotation.eulerAngles.z, (dockingLocation.rotation.eulerAngles.z + 180.0f));
 					Vector2 dPosition = (Vector2)(otherPort.dockingLocation.position - dockingLocation.position);
 
-					if(dRotation < 20.0f && dPosition.magnitude < 2.0f)
+					if(dRotation < dockingRotationThreshold && dPosition.sqrMagnitude < dockingPositionThreshold)
 					{
 						// Use rigidbody.position/rigidbody.rotation instead of transform.position/transform.rotation, because else the Physics System is not flushed and will fuck up the Joint
 						rigidbody.rotation += otherPort.dockingLocation.rotation.eulerAngles.z - (dockingLocation.rotation.eulerAngles.z + 180.0f);

@@ -5711,7 +5711,7 @@ MonoBehaviour:
   zoomSpeed: 4
   maxViewAngle: 70
   maxZHeight: -40
-  maxDistance: 4000000
+  maxDistance: 6000000
 --- !u!224 &969658260 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 6966161580598859357, guid: 3c54a1c0705ac644daf98e79cf8bcbd2,
@@ -14109,6 +14109,10 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 505599339, guid: 6f59274365b6eb449a06ee16f4007538, type: 3}
+      propertyPath: tooHighWarningAltitude
+      value: 3000000
+      objectReference: {fileID: 0}
     - target: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
       propertyPath: m_Name

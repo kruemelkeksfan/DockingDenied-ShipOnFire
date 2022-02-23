@@ -193,45 +193,59 @@ public class GravityObjectController : MonoBehaviour
 
 	public Vector2Double CalculateOnRailPosition(float time)
 	{
-		CalculateEccentricAnomaly(time);
+		if(lastOrbitalElementResult)
+		{
+			CalculateEccentricAnomaly(time);
 
-		// Position Calculation
-		// Using transform.position instead of rigidbody.centerOfMass, because the Difference is negligible
-		// Plug in all Parameters in Parameter-Form of Ellipse-Equation
-		// https://de.wikipedia.org/wiki/Ellipse#Ellipsengleichung_(Parameterform)
-		return orbitCenter + new Vector2Double(
-			(semiMajorAxis * phiCos * eccentricAnomalyCos - semiMinorAxis * phiSin * eccentricAnomalySin),
-			(semiMajorAxis * phiSin * eccentricAnomalyCos + semiMinorAxis * phiCos * eccentricAnomalySin));
+			// Position Calculation
+			// Using transform.position instead of rigidbody.centerOfMass, because the Difference is negligible
+			// Plug in all Parameters in Parameter-Form of Ellipse-Equation
+			// https://de.wikipedia.org/wiki/Ellipse#Ellipsengleichung_(Parameterform)
+			return orbitCenter + new Vector2Double(
+				(semiMajorAxis * phiCos * eccentricAnomalyCos - semiMinorAxis * phiSin * eccentricAnomalySin),
+				(semiMajorAxis * phiSin * eccentricAnomalyCos + semiMinorAxis * phiCos * eccentricAnomalySin));
+		}
+		else
+		{
+			return Vector2Double.zero;
+		}
 	}
 
 	public Vector2Double CalculateVelocity(float time)
 	{
-		CalculateEccentricAnomaly(time);
+		if(lastOrbitalElementResult)
+		{
+			CalculateEccentricAnomaly(time);
 
-		// M = ((2 * pi) / T) * (t - t0)
-		// M' = (2 * pi) / T
-		// M = E - e * sin(E)
-		// M' = (E - e * sin(E))'
-		// M' = E' - e * cos(E) * E'
-		// M' = E'(1 - e * cos(E))
-		// E' = M' / (1 - e * cos(E))
-		// E' = (2 * pi) / (T - T * e * cos(E))
-		double derivedEccentricAnomaly = (2.0 * Math.PI) / (orbitalPeriod - orbitalPeriod * eccentricityMagnitude * eccentricAnomalyCos);
-		return new Vector2Double(
-			(-semiMajorAxis * phiCos * eccentricAnomalySin * derivedEccentricAnomaly - semiMinorAxis * phiSin * eccentricAnomalyCos * derivedEccentricAnomaly),
-			(-semiMajorAxis * phiSin * eccentricAnomalySin * derivedEccentricAnomaly + semiMinorAxis * phiCos * eccentricAnomalyCos * derivedEccentricAnomaly));
+			// M = ((2 * pi) / T) * (t - t0)
+			// M' = (2 * pi) / T
+			// M = E - e * sin(E)
+			// M' = (E - e * sin(E))'
+			// M' = E' - e * cos(E) * E'
+			// M' = E'(1 - e * cos(E))
+			// E' = M' / (1 - e * cos(E))
+			// E' = (2 * pi) / (T - T * e * cos(E))
+			double derivedEccentricAnomaly = (2.0 * Math.PI) / (orbitalPeriod - orbitalPeriod * eccentricityMagnitude * eccentricAnomalyCos);
+			return new Vector2Double(
+				(-semiMajorAxis * phiCos * eccentricAnomalySin * derivedEccentricAnomaly - semiMinorAxis * phiSin * eccentricAnomalyCos * derivedEccentricAnomaly),
+				(-semiMajorAxis * phiSin * eccentricAnomalySin * derivedEccentricAnomaly + semiMinorAxis * phiCos * eccentricAnomalyCos * derivedEccentricAnomaly));
+		}
+		else
+		{
+			return Vector2Double.zero;
+		}
 	}
 
 	public double CalculatePeriapsisAltitude()
 	{
 		// Orbit Center represents Focus Point/Planet Center and is always collinear with semiMajorAxis
-		return semiMajorAxis - orbitCenter.Magnitude();
+		return lastOrbitalElementResult ? (semiMajorAxis - orbitCenter.Magnitude()) : 0;
 	}
 
 	public double CalculateApoapsisAltitude()
 	{
 		// Orbit Center represents Focus Point/Planet Center and is always collinear with semiMajorAxis
-		return semiMajorAxis + orbitCenter.Magnitude();
+		return lastOrbitalElementResult ? (semiMajorAxis + orbitCenter.Magnitude()) : 0;
 	}
 
 	private void LogOrbitalParameters()

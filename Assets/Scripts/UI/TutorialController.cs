@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 public class TutorialController : MonoBehaviour
 {
-	private delegate bool CancelCondition();
-
 	private static WaitForSecondsRealtime waitForTutorialUpdateInterval = null;
 	private static WaitForSecondsRealtime waitForQuadTutorialUpdateInterval = null;
 	private static bool skipped = false;
@@ -48,6 +46,10 @@ public class TutorialController : MonoBehaviour
 		if(!skipped)
 		{
 			StartCoroutine(UpdateTutorial());
+		}
+		else
+		{
+			SkipTutorial();
 		}
 	}
 

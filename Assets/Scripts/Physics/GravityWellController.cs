@@ -17,7 +17,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	[SerializeField] private float positionCheckInterval = 5.0f;
 	[Tooltip("Sea level Height above the Planet Center")]
 	[SerializeField] private float surfaceAltitude = 250000.0f;
-	[SerializeField] private float pullUpWarningAltitude = 370000.0f;
+	[SerializeField] private float tooHighWarningAltitude = 4000000.0f;
 	[Tooltip("Height at which Asteroids should start burning up")]
 	[SerializeField] private float atmosphereEntryAltitude = 320000.0f;
 	[Tooltip("Height at which Asteroids should be completely destroyed")]
@@ -41,11 +41,12 @@ public class GravityWellController : MonoBehaviour, IListener
 	private Transform planetTransform = null;
 	private SpawnController spawnController = null;
 	private InfoController infoController = null;
+	private SpacecraftController localPlayerMainSpacecraft = null;
 	private GameObject localPlayerMainObject = null;
 	private Transform localPlayerMainTransform = null;
+	private Rigidbody2D localPlayerMainRigidbody = null;
 	private double gravitationalParameter = 0.0f;
 	private Dictionary<Rigidbody2D, GravityObjectController> gravityObjects = null;
-	private float halfMaxAltitude = 0.0f;
 	private Vector2Double localOrigin = Vector2Double.zero;
 	private bool originShifted = false;
 
@@ -67,8 +68,7 @@ public class GravityWellController : MonoBehaviour, IListener
 			gravityObjects = new Dictionary<Rigidbody2D, GravityObjectController>();
 
 			// Square Height Constraints to avoid Sqrt later on
-			halfMaxAltitude = (maximumAltitude * 0.5f) * (maximumAltitude * 0.5f);
-			pullUpWarningAltitude *= pullUpWarningAltitude;
+			tooHighWarningAltitude *= tooHighWarningAltitude;
 			atmosphereEntryAltitude *= atmosphereEntryAltitude;
 			destructionAltitude *= destructionAltitude;
 			maximumAltitude *= maximumAltitude;
@@ -177,9 +177,10 @@ public class GravityWellController : MonoBehaviour, IListener
 
 	public void Notify()
 	{
-		SpacecraftController localPlayerMainSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
+		localPlayerMainSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
 		localPlayerMainObject = localPlayerMainSpacecraft.gameObject;
 		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
+		localPlayerMainRigidbody = localPlayerMainSpacecraft.GetRigidbody();
 	}
 
 	private IEnumerator CheckGravityObjectPositions()
@@ -199,6 +200,28 @@ public class GravityWellController : MonoBehaviour, IListener
 				localOrigin += (Vector2Double)originShift;
 				planetTransform.position = -localOrigin;
 				originShifted = true;
+			}
+
+			// Check Player Orbit
+			if(infoController.GetMessageCount() < 1)
+			{
+				Vector2Double playerPosition = LocalToGlobalPosition(localPlayerMainTransform.position);
+				double sqrPlayerAltitude = playerPosition.SqrMagnitude();
+				localPlayerMainSpacecraft.CalculateOrbitalElements(playerPosition, localPlayerMainRigidbody.velocity, Time.time);
+				double periapsis = localPlayerMainSpacecraft.CalculatePeriapsisAltitude();
+				double apoapsis = localPlayerMainSpacecraft.CalculateApoapsisAltitude();
+				if(periapsis * periapsis <= atmosphereEntryAltitude && sqrPlayerAltitude > atmosphereEntryAltitude)
+				{
+					infoController.AddMessage("Periapsis too low, increase Speed!");
+				}
+				if(apoapsis * apoapsis >= maximumAltitude)
+				{
+					infoController.AddMessage("Apoapsis too high, reduce Speed!");
+				}
+				if(sqrPlayerAltitude >= tooHighWarningAltitude)
+				{
+					infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
+				}
 			}
 
 			deorbitObjects.Clear();
@@ -223,40 +246,9 @@ public class GravityWellController : MonoBehaviour, IListener
 				double sqrOrbitalAltitude = LocalToGlobalPosition(objectRecord.transform.position).SqrMagnitude();
 				if(((asteroid != null && !asteroid.IsTouched()
 					&& (sqrOrbitalAltitude < asteroid.GetAltitudeConstraint().min || sqrOrbitalAltitude > asteroid.GetAltitudeConstraint().max))
-					|| sqrOrbitalAltitude < atmosphereEntryAltitude || sqrOrbitalAltitude > maximumAltitude
-					|| (gravityObject.gameObject == localPlayerMainObject
-					&& (sqrOrbitalAltitude < pullUpWarningAltitude || sqrOrbitalAltitude > halfMaxAltitude)))
+					|| sqrOrbitalAltitude < atmosphereEntryAltitude || sqrOrbitalAltitude > maximumAltitude)
 					&& !objectRecord.IsDecaying())
 				{
-					if(gravityObject.gameObject == localPlayerMainObject)
-					{
-						// TODO: Check Periapsis instead of current Height
-						if(sqrOrbitalAltitude < pullUpWarningAltitude && sqrOrbitalAltitude >= atmosphereEntryAltitude)
-						{
-							if(infoController.GetMessageCount() <= 0)
-							{
-								infoController.AddMessage("Altitude critical, pull up!");
-							}
-							continue;
-						}
-						else if(sqrOrbitalAltitude > maximumAltitude)
-						{
-							if(infoController.GetMessageCount() <= 0)
-							{
-								infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
-							}
-							continue;
-						}
-						else if(sqrOrbitalAltitude > halfMaxAltitude)
-						{
-							if(infoController.GetMessageCount() <= 0)
-							{
-								infoController.AddMessage("Signal is getting weaker...");
-							}
-							continue;
-						}
-					}
-
 					if(sqrOrbitalAltitude < atmosphereEntryAltitude)
 					{
 						deorbitObjects.Add(gravityObject);
