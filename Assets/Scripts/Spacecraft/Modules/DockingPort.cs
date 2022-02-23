@@ -5,8 +5,6 @@ using UnityEngine.UI;
 
 public class DockingPort : HotkeyModule
 {
-	private static readonly WaitForFixedUpdate WAIT_FOR_FIXED_UPDATE = new WaitForFixedUpdate();
-
 	[SerializeField] private Transform dockingLocation = null;
 	[SerializeField] private float dockingPositionThreshold = 1.0f;
 	[SerializeField] private float dockingRotationThreshold = 10.0f;
