@@ -26,6 +26,7 @@ public class InfoController : MonoBehaviour, IListener
 	[SerializeField] private Text throttleDisplay = null;
 	[SerializeField] private Text autoThrottleDisplay = null;
 	[SerializeField] private GameObject keyBindingDisplay = null;
+	[SerializeField] private Text showFlightInfoButtonText = null;
 	private GravityWellController gravityWellController = null;
 	private Queue<Message> messages = null;
 	private float lastDequeue = 0.0f;
@@ -39,6 +40,7 @@ public class InfoController : MonoBehaviour, IListener
 	private bool updateResourceDisplay = true;
 	private bool updateBuildingResourceDisplay = true;
 	private bool showBuildingResourceDisplay = false;
+	private bool showFlightInfo = false;
 	private float expiryTime = -1.0f;
 	private bool flightControls = true;
 
@@ -140,38 +142,45 @@ public class InfoController : MonoBehaviour, IListener
 		{
 			if(flightControls)
 			{
-				playerSpacecraft.CalculateOrbitalElements(
-					gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position),
-					playerSpacecraftRigidbody.velocity,
-					Time.time);
-				int periapsis = (int)(playerSpacecraft.CalculatePeriapsisAltitude() / 1000.0);
-				int apoapsis = (int)(playerSpacecraft.CalculateApoapsisAltitude() / 1000.0);
-
-				textBuilder.Clear();
-				textBuilder.Append("Altitude - ");
-				textBuilder.Append((int)(gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position).Magnitude() / 1000.0));
-				textBuilder.Append(" km / Speed - ");
-				textBuilder.Append((playerSpacecraftRigidbody.velocity.magnitude / 1000.0f).ToString("F4"));
-				textBuilder.Append(" km/s / Periapsis - ");
-				textBuilder.Append(periapsis > 0 ? periapsis.ToString() : "?");
-				textBuilder.Append(" km / Apoapsis - ");
-				textBuilder.Append(apoapsis > 0 ? apoapsis.ToString() : "?");
-				textBuilder.Append(" km");
-
-				if(expiryTime > 0.0f)
+				if(showFlightInfo)
 				{
-					if(Time.realtimeSinceStartup >= expiryTime)
+					playerSpacecraft.CalculateOrbitalElements(
+						gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position),
+						playerSpacecraftRigidbody.velocity,
+						Time.time);
+					int periapsis = (int)(playerSpacecraft.CalculatePeriapsisAltitude() / 1000.0);
+					int apoapsis = (int)(playerSpacecraft.CalculateApoapsisAltitude() / 1000.0);
+
+					textBuilder.Clear();
+					textBuilder.Append("Altitude - ");
+					textBuilder.Append((int)(gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position).Magnitude() / 1000.0));
+					textBuilder.Append(" km / Speed - ");
+					textBuilder.Append((playerSpacecraftRigidbody.velocity.magnitude / 1000.0f).ToString("F4"));
+					textBuilder.Append(" km/s / Periapsis - ");
+					textBuilder.Append(periapsis > 0 ? periapsis.ToString() : "?");
+					textBuilder.Append(" km / Apoapsis - ");
+					textBuilder.Append(apoapsis > 0 ? apoapsis.ToString() : "?");
+					textBuilder.Append(" km");
+
+					if(expiryTime > 0.0f)
 					{
-						expiryTime = -1.0f;
+						if(Time.realtimeSinceStartup >= expiryTime)
+						{
+							expiryTime = -1.0f;
+						}
+						else
+						{
+							textBuilder.Append(" / Docking Permission - ");
+							textBuilder.Append((int)(expiryTime - Time.realtimeSinceStartup));
+							textBuilder.Append(" Seconds");
+						}
 					}
-					else
-					{
-						textBuilder.Append(" / Docking Permission - ");
-						textBuilder.Append((int)(expiryTime - Time.realtimeSinceStartup));
-						textBuilder.Append(" Seconds");
-					}
+					secondaryDisplay.text = textBuilder.ToString();
 				}
-				secondaryDisplay.text = textBuilder.ToString();
+				else
+				{
+					secondaryDisplay.text = string.Empty;
+				}
 			}
 			else
 			{
@@ -250,7 +259,21 @@ public class InfoController : MonoBehaviour, IListener
 	public void UpdateThrottleDisplay(float throttle, bool autoThrottle)
 	{
 		throttleDisplay.text = "Throttle - " + ((int)(throttle * 100.0f)) + "%";
-		autoThrottleDisplay.text = "AutoThrottle - " + (autoThrottle ? "on" : "off");
+		autoThrottleDisplay.text = "Hold Throttle - " + (autoThrottle ? "on" : "off");
+	}
+
+	public void ToggleFlightInfo()
+	{
+		showFlightInfo = !showFlightInfo;
+
+		if(showFlightInfo)
+		{
+			showFlightInfoButtonText.text = showFlightInfoButtonText.text.Replace("Show", "Hide");
+		}
+		else
+		{
+			showFlightInfoButtonText.text = showFlightInfoButtonText.text.Replace("Hide", "Show");
+		}
 	}
 
 	public void AddMessage(string message)
