@@ -1737,7 +1737,7 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 799999.9
+      value: 699999.9
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
@@ -2037,14 +2037,14 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 22da0b090b4515244947d69beeaf0991, type: 3}
   - {fileID: 4900000, guid: 1cb6168fdf04b304db7516b14720cc14, type: 3}
   stationPositions:
-  - {x: 800000, y: 0}
-  - {x: 0, y: -800000}
-  - {x: -800000, y: 0}
-  - {x: 0, y: 800000}
-  - {x: 800000, y: 800000}
-  - {x: 800000, y: -800000}
-  - {x: -800000, y: -800000}
-  - {x: -800000, y: 800000}
+  - {x: 700000, y: 0}
+  - {x: 0, y: -700000}
+  - {x: -700000, y: 0}
+  - {x: 0, y: 700000}
+  - {x: 700000, y: 700000}
+  - {x: 700000, y: -700000}
+  - {x: -700000, y: -700000}
+  - {x: -700000, y: 700000}
 --- !u!4 &437986066
 Transform:
   m_ObjectHideFlags: 0
@@ -2214,8 +2214,8 @@ MonoBehaviour:
   maxAsteroids: 1000
   spawnInterval: 1
   asteroidBeltHeights:
-  - min: 650000
-    max: 651000
+  - min: 640000
+    max: 642000
 --- !u!4 &449989463
 Transform:
   m_ObjectHideFlags: 0
@@ -14326,10 +14326,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 505599339, guid: 6f59274365b6eb449a06ee16f4007538, type: 3}
-      propertyPath: tooHighWarningAltitude
-      value: 3000000
-      objectReference: {fileID: 0}
     - target: {fileID: 6429761348735872128, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
       propertyPath: m_Name

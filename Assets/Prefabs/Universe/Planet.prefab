@@ -125,18 +125,16 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   mass: 6.2e+21
   positionCheckInterval: 2
-  surfaceAltitude: 500000
-  pullUpWarningAltitude: 650100
-  atmosphereEntryAltitude: 650000
+  surfaceAltitude: 550000
+  tooHighWarningAltitude: 3000000
+  atmosphereEntryAltitude: 620000
   destructionAltitude: 590000
   maximumAltitude: 4000000
-  atmosphericDensity: 100
-  scaleAltitude: 8000
+  atmosphericDensity: 0.001
+  scaleAltitude: 10000
   plasmaParticleSystemPrefab: {fileID: 2736846745620259419, guid: 11b17e94e5d60294898ba61c533a9b55,
     type: 3}
-  plasmaMinDrag: 400
+  plasmaMinDrag: 80
   maxOriginDistance: 10000
-  maxIterations: 200
-  minPrecision: 0.0001
   unrailDistance: 10000
   onrailDistance: 12000

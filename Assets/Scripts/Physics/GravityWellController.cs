@@ -16,18 +16,18 @@ public class GravityWellController : MonoBehaviour, IListener
 	[Tooltip("Determines how often the Heights of all Gravity Objects Orbits are checked in Ingame Seconds")]
 	[SerializeField] private float positionCheckInterval = 5.0f;
 	[Tooltip("Sea level Height above the Planet Center")]
-	[SerializeField] private float surfaceAltitude = 250000.0f;
-	[SerializeField] private float tooHighWarningAltitude = 4000000.0f;
+	[SerializeField] private float surfaceAltitude = 500000.0f;
+	[SerializeField] private float tooHighWarningAltitude = 3000000.0f;
 	[Tooltip("Height at which Asteroids should start burning up")]
-	[SerializeField] private float atmosphereEntryAltitude = 320000.0f;
+	[SerializeField] private float atmosphereEntryAltitude = 650000.0f;
 	[Tooltip("Height at which Asteroids should be completely destroyed")]
-	[SerializeField] private float destructionAltitude = 280000.0f;
+	[SerializeField] private float destructionAltitude = 590000.0f;
 	[Tooltip("Maximum Height for all Orbiters, regardless whether they were touched or not, unrailed Objects outside this Range will start decaying")]
-	[SerializeField] private float maximumAltitude = 5000000.0f;
-	[Tooltip("Atmospheric Density for Drag Calculation at Sea Level of the Planet")]
-	[SerializeField] private float atmosphericDensity = 0.2f;
+	[SerializeField] private float maximumAltitude = 4000000.0f;
+	[Tooltip("Atmospheric Density for Drag Calculation at Sea Level of the Planet in t/m^3")]
+	[SerializeField] private float atmosphericDensity = 0.0012f;
 	[Tooltip("Scale Height is the Height above Sea Level at which Air Pressure is 1/e of the Air Pressure on the Surface")]
-	[SerializeField] private float scaleAltitude = 10000.0f;
+	[SerializeField] private float scaleAltitude = 8500.0f;
 	[Tooltip("A Particle System to visualize Re-Entry Heat and Plasma")]
 	[SerializeField] private ParticleSystem plasmaParticleSystemPrefab = null;
 	[Tooltip("Minimum Drag for Plasma Particles to be created")]
@@ -328,12 +328,13 @@ public class GravityWellController : MonoBehaviour, IListener
 				}
 
 				// TODO: Apply Heat Damage to Modules and Asteroids based on Drag
-				// Drag based on an Approximation of atmospheric Density
+				// Drag based on an Approximation of atmospheric Density (not Pressure!)
+				// https://en.wikipedia.org/wiki/Barometric_formula#Density_equations
 				// https://en.wikipedia.org/wiki/Scale_height#Scale_height_used_in_a_simple_atmospheric_pressure_model
-				float airPressure = atmosphericDensity * Mathf.Exp(-(Mathf.Sqrt(sqrOrbitalAltitude) - surfaceAltitude) / scaleAltitude);
+				float currentDensity = atmosphericDensity * Mathf.Exp(-(Mathf.Sqrt(sqrOrbitalAltitude) - surfaceAltitude) / scaleAltitude);
 				// https://en.wikipedia.org/wiki/Drag_(physics)#The_drag_equation
 				// Drag Coefficient for a Cube is roughly 1.0, if we ignore that Drag Coefficient is dependent on the Reynolds Number
-				float drag = (0.5f * airPressure * gravityObject.velocity.sqrMagnitude * shipRadius * shipRadius) / 1000.0f;                    // Convert kg*m/s^2 to t*m/s^2
+				float drag = (0.5f * currentDensity * gravityObject.velocity.sqrMagnitude * shipRadius * bounds.extents.z);
 				gravityObject.AddForce(-gravityObject.velocity.normalized * (drag * Time.deltaTime), ForceMode2D.Impulse);
 
 				// Don't rotate ParticleSystem with Ship, so Particle Velocity can be given in global Coordinates
