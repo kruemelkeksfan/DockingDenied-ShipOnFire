@@ -126,7 +126,8 @@ MonoBehaviour:
   mass: 6.2e+21
   positionCheckInterval: 2
   surfaceAltitude: 550000
-  tooHighWarningAltitude: 3000000
+  tooHighWarningAltitude: 2000000
+  tooLowWarningAltitude: 640000
   atmosphereEntryAltitude: 620000
   destructionAltitude: 590000
   maximumAltitude: 4000000

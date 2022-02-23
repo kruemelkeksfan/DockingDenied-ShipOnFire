@@ -157,10 +157,24 @@ public class InfoController : MonoBehaviour, IListener
 					textBuilder.Append(" km / Speed - ");
 					textBuilder.Append((playerSpacecraftRigidbody.velocity.magnitude / 1000.0f).ToString("F4"));
 					textBuilder.Append(" km/s / Periapsis - ");
-					textBuilder.Append(periapsis > 0 ? periapsis.ToString() : "?");
-					textBuilder.Append(" km / Apoapsis - ");
-					textBuilder.Append(apoapsis > 0 ? apoapsis.ToString() : "?");
-					textBuilder.Append(" km");
+					if(periapsis > 0)
+					{
+						textBuilder.Append(periapsis.ToString());
+						textBuilder.Append(" km / Apoapsis - ");
+					}
+					else
+					{
+						textBuilder.Append("¯\\_(ツ)_/¯ / Apoapsis - ");
+					}					
+					if(apoapsis > 0)
+					{
+						textBuilder.Append(apoapsis.ToString());
+						textBuilder.Append(" km");
+					}
+					else
+					{
+						textBuilder.Append("¯\\_(ツ)_/¯");
+					}
 
 					if(expiryTime > 0.0f)
 					{

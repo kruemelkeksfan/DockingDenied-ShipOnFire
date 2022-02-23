@@ -18,6 +18,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	[Tooltip("Sea level Height above the Planet Center")]
 	[SerializeField] private float surfaceAltitude = 500000.0f;
 	[SerializeField] private float tooHighWarningAltitude = 3000000.0f;
+	[SerializeField] private float tooLowWarningAltitude = 650000.0f;
 	[Tooltip("Height at which Asteroids should start burning up")]
 	[SerializeField] private float atmosphereEntryAltitude = 650000.0f;
 	[Tooltip("Height at which Asteroids should be completely destroyed")]
@@ -69,6 +70,7 @@ public class GravityWellController : MonoBehaviour, IListener
 
 			// Square Height Constraints to avoid Sqrt later on
 			tooHighWarningAltitude *= tooHighWarningAltitude;
+			tooLowWarningAltitude *= tooLowWarningAltitude;
 			atmosphereEntryAltitude *= atmosphereEntryAltitude;
 			destructionAltitude *= destructionAltitude;
 			maximumAltitude *= maximumAltitude;
@@ -264,15 +266,11 @@ public class GravityWellController : MonoBehaviour, IListener
 				localPlayerMainSpacecraft.CalculateOrbitalElements(playerPosition, localPlayerMainRigidbody.velocity, Time.time);
 				double periapsis = localPlayerMainSpacecraft.CalculatePeriapsisAltitude();
 				double apoapsis = localPlayerMainSpacecraft.CalculateApoapsisAltitude();
-				if(periapsis * periapsis <= atmosphereEntryAltitude && sqrPlayerAltitude > atmosphereEntryAltitude)
+				if(periapsis * periapsis <= atmosphereEntryAltitude && sqrPlayerAltitude <= tooLowWarningAltitude && sqrPlayerAltitude > atmosphereEntryAltitude)
 				{
-					infoController.AddMessage("Periapsis too low, increase Speed!");
+					infoController.AddMessage("Dangerously low, increase Speed!");
 				}
-				if(apoapsis * apoapsis >= maximumAltitude)
-				{
-					infoController.AddMessage("Apoapsis too high, reduce Speed!");
-				}
-				if(sqrPlayerAltitude >= tooHighWarningAltitude)
+				if((apoapsis == 0 || apoapsis * apoapsis >= maximumAltitude) && sqrPlayerAltitude >= tooHighWarningAltitude)
 				{
 					infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
 				}
