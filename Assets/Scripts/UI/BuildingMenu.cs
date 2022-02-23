@@ -364,7 +364,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 
 		SpacecraftBlueprintController.SaveBlueprint(blueprintFolder, name, localPlayerMainSpacecraft.GetModules());
 		RefreshBlueprintList();
-		ToggleController.GetInstance().Toggle(ToggleController.GroupNames.SaveBlueprint);
+		ToggleController.GetInstance().Toggle("SaveBlueprint");
 	}
 
 	public void SelectBlueprint(string blueprintPath)

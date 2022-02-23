@@ -10004,34 +10004,34 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   initToggleObjects:
-  - groupName: 0
+  - groupName: SaveBlueprint
     toggleObject: {fileID: 971735205}
-  - groupName: 1
+  - groupName: SpacecraftMarkers
     toggleObject: {fileID: 926470442}
-  - groupName: 2
+  - groupName: OverlayOptions
     toggleObject: {fileID: 95326580}
-  - groupName: 11
+  - groupName: OrbitMarkers
     toggleObject: {fileID: 817186072}
   initToggleTexts:
-  - groupName: 1
+  - groupName: SpacecraftMarkers
     text: {fileID: 1930214034}
-  - groupName: 6
+  - groupName: PortNameplates
     text: {fileID: 1571141922}
-  - groupName: 4
+  - groupName: BuildAreaIndicators
     text: {fileID: 1466514765}
-  - groupName: 5
+  - groupName: COMIndicators
     text: {fileID: 1745880928}
-  - groupName: 7
+  - groupName: VelocityVectors
     text: {fileID: 439902182}
-  - groupName: 12
+  - groupName: VelocityDifferenceVector
     text: {fileID: 423221763}
-  - groupName: 8
+  - groupName: OrbitalVelocityVector
     text: {fileID: 808772793}
-  - groupName: 11
+  - groupName: OrbitMarkers
     text: {fileID: 736246270}
-  - groupName: 9
+  - groupName: TargetNavVector
     text: {fileID: 1821346603}
-  - groupName: 10
+  - groupName: PlanetNavVector
     text: {fileID: 657424372}
 --- !u!4 &1461398741
 Transform:

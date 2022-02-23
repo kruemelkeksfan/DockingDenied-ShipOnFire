@@ -75,23 +75,23 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		// Instantiate in reverse Order to render the more important Vectors on top
 		planetNavVector = GameObject.Instantiate<RectTransform>(navVectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
 		planetNavVector.GetComponent<Image>().color = planetNavVectorColor;
-		planetNavVector.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.PlanetNavVector));
+		planetNavVector.gameObject.SetActive(toggleController.IsGroupToggled("PlanetNavVector"));
 		targetNavVector = GameObject.Instantiate<RectTransform>(navVectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
 		targetNavVector.GetComponent<Image>().color = targetNavVectorColor;
-		targetNavVector.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.TargetNavVector));
+		targetNavVector.gameObject.SetActive(toggleController.IsGroupToggled("TargetNavVector"));
 
 		orbitalVelocityVector = GameObject.Instantiate<RectTransform>(vectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
 		orbitalVelocityVector.GetComponent<Image>().color = orbitalVelocityVectorColor;
-		orbitalVelocityVector.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.OrbitalVelocityVector));
+		orbitalVelocityVector.gameObject.SetActive(toggleController.IsGroupToggled("OrbitalVelocityVector"));
 		targetVelocityVector = GameObject.Instantiate<RectTransform>(vectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
 		targetVelocityVector.GetComponent<Image>().color = targetVelocityVectorColor;
-		targetVelocityVector.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityVectors));
+		targetVelocityVector.gameObject.SetActive(toggleController.IsGroupToggled("VelocityVectors"));
 		playerVelocityVector = GameObject.Instantiate<RectTransform>(vectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
 		playerVelocityVector.GetComponent<Image>().color = playerVelocityVectorColor;
-		playerVelocityVector.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityVectors));
+		playerVelocityVector.gameObject.SetActive(toggleController.IsGroupToggled("VelocityVectors"));
 		velocityDifferenceVector = GameObject.Instantiate<RectTransform>(vectorPrefab, uiTransform.position, Quaternion.identity, uiTransform);
 		velocityDifferenceVector.GetComponent<Image>().color = velocityDifferenceVectorColor;
-		velocityDifferenceVector.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityDifferenceVector));
+		velocityDifferenceVector.gameObject.SetActive(toggleController.IsGroupToggled("VelocityDifferenceVector"));
 
 		scaleFactor = Mathf.Abs(1.0f / cameraTransform.position.z);
 		velocityVectorWidth = targetVelocityVector.sizeDelta.x;
@@ -105,12 +105,12 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		orbitMarker.gameObject.SetActive(false);
 		playerOrbitMarkers.Add(orbitMarker);
 
-		toggleController.AddToggleObject(ToggleController.GroupNames.VelocityDifferenceVector, velocityDifferenceVector.gameObject);
-		toggleController.AddToggleObject(ToggleController.GroupNames.VelocityVectors, playerVelocityVector.gameObject);
-		toggleController.AddToggleObject(ToggleController.GroupNames.VelocityVectors, targetVelocityVector.gameObject);
-		toggleController.AddToggleObject(ToggleController.GroupNames.OrbitalVelocityVector, orbitalVelocityVector.gameObject);
-		toggleController.AddToggleObject(ToggleController.GroupNames.TargetNavVector, targetNavVector.gameObject);
-		toggleController.AddToggleObject(ToggleController.GroupNames.PlanetNavVector, planetNavVector.gameObject);
+		toggleController.AddToggleObject("VelocityDifferenceVector", velocityDifferenceVector.gameObject);
+		toggleController.AddToggleObject("VelocityVectors", playerVelocityVector.gameObject);
+		toggleController.AddToggleObject("VelocityVectors", targetVelocityVector.gameObject);
+		toggleController.AddToggleObject("OrbitalVelocityVector", orbitalVelocityVector.gameObject);
+		toggleController.AddToggleObject("TargetNavVector", targetNavVector.gameObject);
+		toggleController.AddToggleObject("PlanetNavVector", planetNavVector.gameObject);
 
 		StartCoroutine(UpdateOrbitDisplay());
 
@@ -123,11 +123,11 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 		if(toggleController != null)
 		{
-			toggleController.RemoveToggleObject(ToggleController.GroupNames.VelocityDifferenceVector, velocityDifferenceVector.gameObject);
-			toggleController.RemoveToggleObject(ToggleController.GroupNames.VelocityVectors, targetVelocityVector.gameObject);
-			toggleController.RemoveToggleObject(ToggleController.GroupNames.VelocityVectors, orbitalVelocityVector.gameObject);
-			toggleController.RemoveToggleObject(ToggleController.GroupNames.TargetNavVector, targetNavVector.gameObject);
-			toggleController.RemoveToggleObject(ToggleController.GroupNames.PlanetNavVector, planetNavVector.gameObject);
+			toggleController.RemoveToggleObject("VelocityDifferenceVector", velocityDifferenceVector.gameObject);
+			toggleController.RemoveToggleObject("VelocityVectors", targetVelocityVector.gameObject);
+			toggleController.RemoveToggleObject("VelocityVectors", orbitalVelocityVector.gameObject);
+			toggleController.RemoveToggleObject("TargetNavVector", targetNavVector.gameObject);
+			toggleController.RemoveToggleObject("PlanetNavVector", planetNavVector.gameObject);
 		}
 
 		if(targetVelocityVector != null)
@@ -166,7 +166,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 			mapMarker.gameObject.SetActive(false);
 		}
 
-		if(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityDifferenceVector))
+		if(toggleController.IsGroupToggled("VelocityDifferenceVector"))
 		{
 			if(targetSpacecraftRigidbody != null)
 			{
@@ -179,7 +179,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 			}
 		}
 
-		if(toggleController.IsGroupToggled(ToggleController.GroupNames.VelocityVectors))
+		if(toggleController.IsGroupToggled("VelocityVectors"))
 		{
 			UpdateVelocityVector(playerVelocityVector, playerSpacecraftRigidbody.velocity, playerSpacecraftRigidbody.velocity.magnitude, scaleFactor);
 			if(targetSpacecraftRigidbody != null)
@@ -191,13 +191,13 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 				targetVelocityVector.sizeDelta = new Vector2(0.0f, 0.0f);
 			}
 		}
-		if(toggleController.IsGroupToggled(ToggleController.GroupNames.OrbitalVelocityVector))
+		if(toggleController.IsGroupToggled("OrbitalVelocityVector"))
 		{
 			Vector2Double optimalOrbitalVelocity = gravityWellController.CalculateOptimalOrbitalVelocity(playerSpacecraftRigidbody);
 			UpdateVelocityVector(orbitalVelocityVector, optimalOrbitalVelocity, (float)optimalOrbitalVelocity.Magnitude(), scaleFactor);
 		}
 
-		if(toggleController.IsGroupToggled(ToggleController.GroupNames.OrbitMarkers))
+		if(toggleController.IsGroupToggled("OrbitMarkers"))
 		{
 			// Awkward Replacement for parenting the Markers, since parenting leads to Rotation Issues
 			ShiftOrbitMarkers(playerSpacecraftTransform, playerOrbitMarkers);
@@ -207,7 +207,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 			}
 		}
 
-		if(toggleController.IsGroupToggled(ToggleController.GroupNames.TargetNavVector))
+		if(toggleController.IsGroupToggled("TargetNavVector"))
 		{
 			if(targetSpacecraftTransform != null)
 			{
@@ -218,7 +218,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 				targetNavVector.sizeDelta = new Vector2(0.0f, 0.0f);
 			}
 		}
-		if(toggleController.IsGroupToggled(ToggleController.GroupNames.PlanetNavVector))
+		if(toggleController.IsGroupToggled("PlanetNavVector"))
 		{
 			UpdateNavVector(planetNavVector, -gravityWellController.GetLocalOrigin(), scaleFactor);
 		}
@@ -267,7 +267,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 			currentOrbitMarkerTarget = targetSpacecraftTransform;
 
-			if(toggleController.IsGroupToggled(ToggleController.GroupNames.OrbitMarkers))
+			if(toggleController.IsGroupToggled("OrbitMarkers"))
 			{
 				float startTime = Time.time;
 				float scaleFactor = (playerSpacecraftTransform.position - cameraTransform.position).magnitude * this.scaleFactor;

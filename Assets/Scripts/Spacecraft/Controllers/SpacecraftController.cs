@@ -86,10 +86,10 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		}
 
 		ToggleController toggleController = ToggleController.GetInstance();
-		toggleController.AddToggleObject(ToggleController.GroupNames.COMIndicators, centerOfMassIndicator.gameObject);
-		toggleController.AddToggleObject(ToggleController.GroupNames.COMIndicators, foreignCenterOfMassIndicator.gameObject);
-		centerOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.COMIndicators));
-		foreignCenterOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled(ToggleController.GroupNames.COMIndicators));
+		toggleController.AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+		toggleController.AddToggleObject("COMIndicators", foreignCenterOfMassIndicator.gameObject);
+		centerOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled("COMIndicators"));
+		foreignCenterOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled("COMIndicators"));
 
 		gravityWellController.AddGravityObject(this);
 	}
@@ -102,8 +102,8 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		}
 
 		ToggleController toggleController = ToggleController.GetInstance();
-		toggleController?.RemoveToggleObject(ToggleController.GroupNames.COMIndicators, centerOfMassIndicator.gameObject);
-		toggleController?.RemoveToggleObject(ToggleController.GroupNames.COMIndicators, foreignCenterOfMassIndicator.gameObject);
+		toggleController?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
+		toggleController?.RemoveToggleObject("COMIndicators", foreignCenterOfMassIndicator.gameObject);
 	}
 
 	private void Update()

@@ -5,34 +5,17 @@ using UnityEngine.UI;
 
 public class ToggleController : MonoBehaviour
 {
-	public enum GroupNames
-	{
-		SaveBlueprint,
-		SpacecraftMarkers,
-		OverlayOptions,
-		InverseOverlayOptions,
-		BuildAreaIndicators,
-		COMIndicators,
-		PortNameplates,
-		VelocityVectors,
-		OrbitalVelocityVector,
-		TargetNavVector,
-		PlanetNavVector,
-		OrbitMarkers,
-		VelocityDifferenceVector
-	}
-
 	[Serializable]
 	private struct InitToggleObject
 	{
-		public GroupNames groupName;
+		public string groupName;
 		public GameObject toggleObject;
 	}
 
 	[Serializable]
 	private struct InitToggleText
 	{
-		public GroupNames groupName;
+		public string groupName;
 		public Text text;
 	}
 
@@ -67,7 +50,7 @@ public class ToggleController : MonoBehaviour
 
 	[SerializeField] private InitToggleObject[] initToggleObjects = { };
 	[SerializeField] private InitToggleText[] initToggleTexts = { };
-	private Dictionary<GroupNames, ToggleGroup> toggleGroups = null;
+	private Dictionary<string, ToggleGroup> toggleGroups = null;
 
 	public static ToggleController GetInstance()
 	{
@@ -76,7 +59,7 @@ public class ToggleController : MonoBehaviour
 
 	private void Awake()
 	{
-		toggleGroups = new Dictionary<GroupNames, ToggleGroup>();
+		toggleGroups = new Dictionary<string, ToggleGroup>();
 
 		foreach(InitToggleText initToggleText in initToggleTexts)
 		{
@@ -91,7 +74,7 @@ public class ToggleController : MonoBehaviour
 		instance = this;
 	}
 
-	public void Toggle(GroupNames groupName)
+	public void Toggle(string groupName)
 	{
 		toggleGroups[groupName].Toggle();
 
@@ -113,12 +96,7 @@ public class ToggleController : MonoBehaviour
 		}
 	}
 
-	public void Toggle(string groupName)
-	{
-		Toggle((GroupNames)Enum.Parse(typeof(GroupNames), groupName, true));
-	}
-
-	public void AddToggleObject(GroupNames groupName, GameObject toggleObject)
+	public void AddToggleObject(string groupName, GameObject toggleObject)
 	{
 		if(!toggleGroups.ContainsKey(groupName))
 		{
@@ -130,12 +108,12 @@ public class ToggleController : MonoBehaviour
 		}
 	}
 
-	public void RemoveToggleObject(GroupNames groupName, GameObject toggleObject)
+	public void RemoveToggleObject(string groupName, GameObject toggleObject)
 	{
 		toggleGroups[groupName].toggleObjects.Remove(toggleObject);
 	}
 
-	public bool IsGroupToggled(GroupNames groupName)
+	public bool IsGroupToggled(string groupName)
 	{
 		return toggleGroups[groupName].active;
 	}
