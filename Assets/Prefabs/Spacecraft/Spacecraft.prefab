@@ -132,7 +132,7 @@ MonoBehaviour:
     type: 3}
   centerOfMassIndicator: {fileID: 5754137890348040591}
   foreignCenterOfMassIndicator: {fileID: 2110363015921668132}
-  directionalForceThreshold: 0.2
+  directionalForceThreshold: 0.1
   minAngularVelocity: 1
   rotationStopTime: 2
 --- !u!114 &6188606278163628312
