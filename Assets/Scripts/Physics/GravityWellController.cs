@@ -202,28 +202,6 @@ public class GravityWellController : MonoBehaviour, IListener
 				originShifted = true;
 			}
 
-			// Check Player Orbit
-			if(infoController.GetMessageCount() < 1)
-			{
-				Vector2Double playerPosition = LocalToGlobalPosition(localPlayerMainTransform.position);
-				double sqrPlayerAltitude = playerPosition.SqrMagnitude();
-				localPlayerMainSpacecraft.CalculateOrbitalElements(playerPosition, localPlayerMainRigidbody.velocity, Time.time);
-				double periapsis = localPlayerMainSpacecraft.CalculatePeriapsisAltitude();
-				double apoapsis = localPlayerMainSpacecraft.CalculateApoapsisAltitude();
-				if(periapsis * periapsis <= atmosphereEntryAltitude && sqrPlayerAltitude > atmosphereEntryAltitude)
-				{
-					infoController.AddMessage("Periapsis too low, increase Speed!");
-				}
-				if(apoapsis * apoapsis >= maximumAltitude)
-				{
-					infoController.AddMessage("Apoapsis too high, reduce Speed!");
-				}
-				if(sqrPlayerAltitude >= tooHighWarningAltitude)
-				{
-					infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
-				}
-			}
-
 			deorbitObjects.Clear();
 			despawnObjects.Clear();
 			foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
@@ -276,6 +254,28 @@ public class GravityWellController : MonoBehaviour, IListener
 				yield return waitForFixedUpdate;
 
 				originShifted = false;
+			}
+
+			// Check Player Orbit
+			if(infoController.GetMessageCount() < 1)
+			{
+				Vector2Double playerPosition = LocalToGlobalPosition(localPlayerMainTransform.position);
+				double sqrPlayerAltitude = playerPosition.SqrMagnitude();
+				localPlayerMainSpacecraft.CalculateOrbitalElements(playerPosition, localPlayerMainRigidbody.velocity, Time.time);
+				double periapsis = localPlayerMainSpacecraft.CalculatePeriapsisAltitude();
+				double apoapsis = localPlayerMainSpacecraft.CalculateApoapsisAltitude();
+				if(periapsis * periapsis <= atmosphereEntryAltitude && sqrPlayerAltitude > atmosphereEntryAltitude)
+				{
+					infoController.AddMessage("Periapsis too low, increase Speed!");
+				}
+				if(apoapsis * apoapsis >= maximumAltitude)
+				{
+					infoController.AddMessage("Apoapsis too high, reduce Speed!");
+				}
+				if(sqrPlayerAltitude >= tooHighWarningAltitude)
+				{
+					infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
+				}
 			}
 		}
 	}
