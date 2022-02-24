@@ -39,17 +39,20 @@ public class GravityWellController : MonoBehaviour, IListener
 	[SerializeField] private float unrailDistance = 10000.0f;
 	[Tooltip("Distance to the Player at which un-railed Objects are on-railed again")]
 	[SerializeField] private float onrailDistance = 12000.0f;
-	private Transform planetTransform = null;
+	private TimeController timeController = null;
 	private SpawnController spawnController = null;
 	private InfoController infoController = null;
+	private Transform planetTransform = null;
 	private SpacecraftController localPlayerMainSpacecraft = null;
 	private GameObject localPlayerMainObject = null;
 	private Transform localPlayerMainTransform = null;
 	private Rigidbody2D localPlayerMainRigidbody = null;
 	private double gravitationalParameter = 0.0f;
+	// TODO: Replace by HashSet, rigidbody is available through GravityObjectController anyways
 	private Dictionary<Rigidbody2D, GravityObjectController> gravityObjects = null;
 	private Vector2Double localOrigin = Vector2Double.zero;
 	private bool originShifted = false;
+	private List<GravityObjectController> nearbyGravityObjects = null;
 
 	public static GravityWellController GetInstance()
 	{
@@ -67,6 +70,7 @@ public class GravityWellController : MonoBehaviour, IListener
 
 			gravitationalParameter = GRAVITY_CONSTANT * mass;
 			gravityObjects = new Dictionary<Rigidbody2D, GravityObjectController>();
+			nearbyGravityObjects = new List<GravityObjectController>();
 
 			// Square Height Constraints to avoid Sqrt later on
 			tooHighWarningAltitude *= tooHighWarningAltitude;
@@ -91,6 +95,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	{
 		StartCoroutine(CheckGravityObjectPositions());
 
+		timeController = TimeController.GetInstance();
 		spawnController = SpawnController.GetInstance();
 		infoController = InfoController.GetInstance();
 
@@ -102,6 +107,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	{
 		Vector2 playerPosition = localPlayerMainTransform.position;
 		float time = Time.time;
+		nearbyGravityObjects.Clear();
 		// Avoid Dictionary.Get() for Performance Reasons
 		foreach(KeyValuePair<Rigidbody2D, GravityObjectController> gravityObject in gravityObjects)
 		{
@@ -122,13 +128,35 @@ public class GravityWellController : MonoBehaviour, IListener
 			if(gravityObjectValue.IsOnRails())
 			{
 				// TODO: Set a max Velocity Difference as [SerializeField], calculate next Check Time from max Velocity, Distance to closest Player and unrailDistance and skip Position Calculations until next Check Time
-				if((spacecraft != null && spacecraft.IsThrusting()) || ((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude <= unrailDistance)
+				float sqrDistance = ((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude;
+				if((spacecraft != null && spacecraft.IsThrusting())
+					|| (!timeController.IsScaled() && sqrDistance <= unrailDistance))
 				{
+					if(timeController.IsScaled())
+					{
+						infoController.AddMessage("Somebody fired Thrusters");
+					}
+
 					gravityObjectValue.UnRail();
 					gravityObjectValue.ToggleRenderer(true);
 				}
 				else
 				{
+					if(timeController.IsScaled())
+					{
+						// Renderer Management when Time is sped up
+						if(sqrDistance <= unrailDistance)
+						{
+							nearbyGravityObjects.Add(gravityObjectValue);
+
+							gravityObjectValue.ToggleRenderer(true);
+						}
+						else
+						{
+							gravityObjectValue.ToggleRenderer(false);
+						}
+					}
+
 					// Analytical Gravity Solution
 					Vector2Double position = GlobalToLocalPosition(gravityObjectValue.CalculateOnRailPosition(time));
 					gravityObjectTransform.position = new Vector3((float)position.x, (float)position.y, gravityObjectPosition.z);
@@ -171,10 +199,26 @@ public class GravityWellController : MonoBehaviour, IListener
 					}
 				}
 			}
-
-			// Reset objectRecord.thrusting after Read, because it is difficult to reset in Spacecraft
-			spacecraft?.SetThrusting(false);
 		}
+
+		// Check for probable Collisions during Time Speedup
+		// Elaborate nested Loop which checks every Pair exactly once (hopefully, I'm very tired right now tbh)
+		for(int i = 0; i < nearbyGravityObjects.Count - 1; ++i)
+		{
+			for(int j = i + 1; j < nearbyGravityObjects.Count; ++j)
+			{
+				float sqrDistance = (nearbyGravityObjects[i].GetTransform().position - nearbyGravityObjects[j].GetTransform().position).sqrMagnitude;
+				if(sqrDistance < nearbyGravityObjects[i].GetSqrColliderRadius() + nearbyGravityObjects[j].GetSqrColliderRadius())
+				{
+					infoController.AddMessage("Some Objects are getting dangerously close to each other");
+					timeController.SetTimeScale(0);
+
+					// goto because I might add Stuff below those Loops later, so I don't want to use return
+					goto end;
+				}
+			}
+		}
+		end:;
 	}
 
 	public void Notify()
@@ -183,6 +227,50 @@ public class GravityWellController : MonoBehaviour, IListener
 		localPlayerMainObject = localPlayerMainSpacecraft.gameObject;
 		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
 		localPlayerMainRigidbody = localPlayerMainSpacecraft.GetRigidbody();
+	}
+
+	public bool OnRailAll()
+	{
+		List<GravityObjectController> onRailedObjects = new List<GravityObjectController>();
+		foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
+		{
+			GravityObjectController objectRecord = gravityObjects[gravityObject];
+
+			if(objectRecord.IsOnRails())
+			{
+				continue;
+			}
+
+			SpacecraftController spacecraft = objectRecord as SpacecraftController;
+			if(objectRecord.IsDecaying() || (spacecraft != null && spacecraft.IsThrusting())
+				|| !objectRecord.OnRail(
+				LocalToGlobalPosition(objectRecord.GetTransform().position),
+				objectRecord.GetRigidbody().velocity,
+				Time.time))
+			{
+				// Error Messages
+				if(objectRecord.IsDecaying())
+				{
+					infoController.AddMessage("An Object is currently burning in the Atmosphere");
+				}
+				else if(spacecraft != null && spacecraft.IsThrusting())
+				{
+					infoController.AddMessage("Somebody is firing Thrusters");
+				}
+
+				// Rollback
+				foreach(GravityObjectController onRailedObject in onRailedObjects)
+				{
+					onRailedObject.UnRail();
+				}
+
+				return false;
+			}
+
+			onRailedObjects.Add(objectRecord);
+		}
+
+		return true;
 	}
 
 	private IEnumerator CheckGravityObjectPositions()
@@ -210,16 +298,16 @@ public class GravityWellController : MonoBehaviour, IListener
 			{
 				GravityObjectController objectRecord = gravityObjects[gravityObject];
 
-				if(objectRecord.IsOnRails())
-				{
-					// Objects on-Rails are not Origin-shifted and have reasonably stable Orbits
-					continue;
-				}
-
 				// Origin Shift
 				if(originShifted)
 				{
 					objectRecord.transform.position -= (Vector3)originShift;
+				}
+
+				if(objectRecord.IsOnRails())
+				{
+					// Objects on-Rails have reasonably stable Orbits
+					continue;
 				}
 
 				AsteroidController asteroid = objectRecord as AsteroidController;
@@ -414,11 +502,6 @@ public class GravityWellController : MonoBehaviour, IListener
 		}
 	}
 
-	public void DrawOrbit(Rigidbody2D orbiter)
-	{
-		// TODO: Implement!
-	}
-
 	public void AddGravityObject(GravityObjectController gravityObject, MinMax? asteroidBeltHeight = null)
 	{
 		AsteroidController asteroid;
@@ -437,6 +520,11 @@ public class GravityWellController : MonoBehaviour, IListener
 		gravityObjects.Remove(gravityObject);
 	}
 
+	public bool IsOriginShifted()
+	{
+		return originShifted;
+	}
+
 	public double GetGravitationalParameter()
 	{
 		return gravitationalParameter;
@@ -452,6 +540,11 @@ public class GravityWellController : MonoBehaviour, IListener
 		return localOrigin;
 	}
 
+	public float GetSqrUnrailDistance()
+	{
+		return unrailDistance;
+	}
+
 	public Vector2Double LocalToGlobalPosition(Vector2Double localPosition)
 	{
 		// Perform Calculation with Vector2Double for Precision
@@ -462,10 +555,5 @@ public class GravityWellController : MonoBehaviour, IListener
 	{
 		// Perform Calculation with Vector2Double for Precision
 		return globalPosition - localOrigin;
-	}
-
-	public bool IsOriginShifted()
-	{
-		return originShifted;
 	}
 }

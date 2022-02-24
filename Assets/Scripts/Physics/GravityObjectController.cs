@@ -7,6 +7,9 @@ public class GravityObjectController : MonoBehaviour
 	[SerializeField] private int maxIterations = 200;
 	[Tooltip("Target Precision for eccentricAnomaly Calculation")]
 	[SerializeField] private double minPrecision = 0.0001;
+	[Tooltip("Safety Factor for Collisions during Time Speedup")]
+	[SerializeField] private float collisionSafetyFactor = 2.0f;
+	private TimeController timeController = null;
 	protected GravityWellController gravityWellController = null;
 	protected new Transform transform = null;
 	protected new Rigidbody2D rigidbody = null;
@@ -30,6 +33,7 @@ public class GravityObjectController : MonoBehaviour
 	private Vector2Double lastStartVelocity = Vector2Double.zero;
 	private float lastStartTime = 0.0f;
 	private bool lastOrbitalElementResult = false;
+	private float sqrColliderRadius = 0.0f;
 
 	protected virtual void Awake()
 	{
@@ -39,15 +43,23 @@ public class GravityObjectController : MonoBehaviour
 
 	protected virtual void Start()
 	{
+		timeController = TimeController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 	}
 
 	public bool OnRail(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
 	{
-		if(CalculateOrbitalElements(globalPosition, startVelocity, startTime))
+		if(!decaying && CalculateOrbitalElements(globalPosition, startVelocity, startTime))
 		{
 			rigidbody.simulated = false;
 			onRails = true;
+
+			Vector2 extents = gameObject.GetComponent<Collider2D>().bounds.extents;
+			sqrColliderRadius = Mathf.Max(extents.x, extents.y) * collisionSafetyFactor;
+			sqrColliderRadius *= sqrColliderRadius;
+
+			// Set Velocity to zero to avoid Trouble with Physics
+			rigidbody.velocity = Vector2.zero;
 
 			return true;
 		}
@@ -62,6 +74,14 @@ public class GravityObjectController : MonoBehaviour
 
 	public void UnRail(float time = -1.0f)
 	{
+		// TODO: Check if materializing inside another Object and if necessary resolve
+
+		if(timeController.IsScaled())
+		{
+			InfoController.GetInstance().AddMessage("An Object needs to be simulated, stopping Time Speedup");
+			timeController.SetTimeScale(0);
+		}
+		
 		if(onRails)
 		{
 			if(time < 0.0f)
@@ -78,7 +98,7 @@ public class GravityObjectController : MonoBehaviour
 
 	public bool CalculateOrbitalElements(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
 	{
-		if(globalPosition == lastGlobalPosition && startVelocity == lastStartVelocity && Mathf.Approximately(startTime, lastStartTime))
+		if(onRails || (globalPosition == lastGlobalPosition && startVelocity == lastStartVelocity && Mathf.Approximately(startTime, lastStartTime)))
 		{
 			return lastOrbitalElementResult;
 		}
@@ -343,6 +363,11 @@ public class GravityObjectController : MonoBehaviour
 	public double GetOrbitalPeriod()
 	{
 		return orbitalPeriod;
+	}
+
+	public float GetSqrColliderRadius()
+	{
+		return sqrColliderRadius;
 	}
 
 	public void SetDecaying(bool decaying)

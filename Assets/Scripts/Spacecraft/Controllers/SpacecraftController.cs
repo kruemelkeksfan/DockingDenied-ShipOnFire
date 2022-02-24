@@ -44,6 +44,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 	private Dictionary<SpacecraftController, Transform> dockedSpacecraft = null;
 	private bool thrusting = false;
 	private bool stoppingRotation = false;
+	private bool rendererActive = true;
 
 	protected override void Awake()
 	{
@@ -173,11 +174,10 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		if(!Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(vertical, 0.0f))
 		{
 			thrusting = true;
-			// This Loop interferes with resetting objectRecord.thrusting here (Race Condition), so instead reset it in GravityWellController
-			foreach(SpacecraftController spacecraft in dockedSpacecraft.Keys)
-			{
-				spacecraft.thrusting = true;
-			}
+		}
+		else
+		{
+			thrusting = false;
 		}
 
 		// inactiveThrusters is needed, because Thruster Particle System stops when throttle is set to 0
@@ -507,9 +507,14 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 
 	public override void ToggleRenderer(bool activateRenderer)
 	{
-		foreach(MeshRenderer renderer in gameObject.GetComponentsInChildren<MeshRenderer>())
+		if(activateRenderer != rendererActive)
 		{
-			renderer.enabled = activateRenderer;
+			foreach(MeshRenderer renderer in gameObject.GetComponentsInChildren<MeshRenderer>())
+			{
+				renderer.enabled = activateRenderer;
+			}
+
+			rendererActive = activateRenderer;
 		}
 	}
 
@@ -528,7 +533,23 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 
 	public bool IsThrusting()
 	{
-		return thrusting;
+		// Return true, if this Spacecraft is thrusting...
+		if(thrusting)
+		{
+			return true;
+		}
+
+		// ...or if any connected Spacecraft is thrusting...
+		foreach(SpacecraftController spacecraft in dockedSpacecraft.Keys)
+		{
+			if(spacecraft.thrusting)
+			{
+				return true;
+			}
+		}
+
+		// ...if nobody is thrusting, return false
+		return false;
 	}
 
 	public Module GetModule(Vector2Int position)

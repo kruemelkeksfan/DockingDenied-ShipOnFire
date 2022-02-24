@@ -34,7 +34,7 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private InventoryScreenController inventoryMenu = null;
 	[SerializeField] private Transform mapMarkerParent = null;
 	[SerializeField] private Transform orbitMarkerParent = null;
-	// TODO: Somehow control Flight Control bool with all of this
+	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private InfoController infoController = null;
@@ -68,6 +68,7 @@ public class MenuController : MonoBehaviour, IListener
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 
+		timeController = TimeController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		infoController = InfoController.GetInstance();
@@ -121,11 +122,13 @@ public class MenuController : MonoBehaviour, IListener
 			else
 			{
 				mainMenu.SetActive(!mainMenu.activeSelf);
+				timeController.TogglePause(mainMenu.activeSelf);
 			}
 		}
 		else
 		{
 			mainMenu.SetActive(!mainMenu.activeSelf);
+			timeController.TogglePause(mainMenu.activeSelf);
 		}
 
 		UpdateFlightControls();
@@ -444,6 +447,7 @@ public class MenuController : MonoBehaviour, IListener
 	public void UpdateFlightControls()
 	{
 		bool flightControls = activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !inventoryMenu.gameObject.activeSelf && !mainMenu.activeSelf;
+		// TODO: Make a flightControl-Getter instead of pushing it from here
 		localPlayerMainInputController.SetFlightControls(flightControls);
 		infoController.SetFlightControls(flightControls);
 	}
