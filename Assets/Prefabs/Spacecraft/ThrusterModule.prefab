@@ -4880,7 +4880,7 @@ MonoBehaviour:
     amount: 1
   description: An Ion Thruster which uses up to 160kW to generate Thrust.
   capacitor:
-    capacity: 320
+    capacity: 80
     charge: 0
   energyConsumption: 160
   thrust: 5000
