@@ -687,6 +687,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		return inventoryController;
 	}
 
+	public string GetStationName()
+	{
+		return stationName;
+	}
+
 	public void SetStationName(string stationName)
 	{
 		menuController = MenuController.GetInstance();

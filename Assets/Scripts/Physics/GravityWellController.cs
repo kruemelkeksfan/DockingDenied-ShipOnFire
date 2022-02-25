@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 
 public class GravityWellController : MonoBehaviour, IListener
@@ -121,6 +122,19 @@ public class GravityWellController : MonoBehaviour, IListener
 			{
 				spacecraft = gravityObjectValue as SpacecraftController;
 			}
+			float sqrDistance = ((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude;
+
+			// Manage Renderers and keep up-to-date List about nearby Objects
+			if(sqrDistance <= unrailDistance)
+			{
+				nearbyGravityObjects.Add(gravityObjectValue);
+
+				gravityObjectValue.ToggleRenderer(true);
+			}
+			else
+			{
+				gravityObjectValue.ToggleRenderer(false);
+			}
 
 			// Check onRails first, because we can simulate Gravity after unRailing, but we can not solve analytically after onRailing,
 			// because rigidbody.position is updated after FixedUpdate() and we therefore have to use an obsolete Position for onRailing anyways
@@ -128,7 +142,6 @@ public class GravityWellController : MonoBehaviour, IListener
 			if(gravityObjectValue.IsOnRails())
 			{
 				// TODO: Set a max Velocity Difference as [SerializeField], calculate next Check Time from max Velocity, Distance to closest Player and unrailDistance and skip Position Calculations until next Check Time
-				float sqrDistance = ((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude;
 				if((spacecraft != null && spacecraft.IsThrusting())
 					|| (!timeController.IsScaled() && sqrDistance <= unrailDistance))
 				{
@@ -138,28 +151,14 @@ public class GravityWellController : MonoBehaviour, IListener
 					}
 
 					gravityObjectValue.UnRail();
-					gravityObjectValue.ToggleRenderer(true);
 				}
 				else
 				{
-					if(timeController.IsScaled())
-					{
-						// Renderer Management when Time is sped up
-						if(sqrDistance <= unrailDistance)
-						{
-							nearbyGravityObjects.Add(gravityObjectValue);
-
-							gravityObjectValue.ToggleRenderer(true);
-						}
-						else
-						{
-							gravityObjectValue.ToggleRenderer(false);
-						}
-					}
-
 					// Analytical Gravity Solution
 					Vector2Double position = GlobalToLocalPosition(gravityObjectValue.CalculateOnRailPosition(time));
 					gravityObjectTransform.position = new Vector3((float)position.x, (float)position.y, gravityObjectPosition.z);
+
+					gravityObjectTransform.Rotate(0.0f, 0.0f, gravityObject.Key.angularVelocity * Time.fixedDeltaTime);
 				}
 			}
 
@@ -169,10 +168,9 @@ public class GravityWellController : MonoBehaviour, IListener
 				// Don't on-Rail thrusting or dying Objects to avoid interfering with Unity Physics or Destruction Coroutines
 				// Use Time from last Frame, since this Frames rigidbody.velocity and Forces have not been applied by the Physics Engine yet
 				if((spacecraft == null || !spacecraft.IsThrusting()) && !gravityObjectValue.IsDecaying()
-					&& ((Vector2)gravityObjectPosition - playerPosition).sqrMagnitude >= onrailDistance
-					&& gravityObjectValue.OnRail(LocalToGlobalPosition(gravityObjectPosition), gravityObject.Key.velocity, Time.time - Time.fixedDeltaTime))
+					&& sqrDistance >= onrailDistance)
 				{
-					gravityObjectValue.ToggleRenderer(false);
+					gravityObjectValue.OnRail(LocalToGlobalPosition(gravityObjectPosition), gravityObject.Key.velocity, Time.time - Time.fixedDeltaTime);
 				}
 				else
 				{
@@ -202,23 +200,10 @@ public class GravityWellController : MonoBehaviour, IListener
 		}
 
 		// Check for probable Collisions during Time Speedup
-		// Elaborate nested Loop which checks every Pair exactly once (hopefully, I'm very tired right now tbh)
-		for(int i = 0; i < nearbyGravityObjects.Count - 1; ++i)
+		if(timeController.IsScaled() && AreCollisionsNearby())
 		{
-			for(int j = i + 1; j < nearbyGravityObjects.Count; ++j)
-			{
-				float sqrDistance = (nearbyGravityObjects[i].GetTransform().position - nearbyGravityObjects[j].GetTransform().position).sqrMagnitude;
-				if(sqrDistance < nearbyGravityObjects[i].GetSqrColliderRadius() + nearbyGravityObjects[j].GetSqrColliderRadius())
-				{
-					infoController.AddMessage("Some Objects are getting dangerously close to each other");
-					timeController.SetTimeScale(0);
-
-					// goto because I might add Stuff below those Loops later, so I don't want to use return
-					goto end;
-				}
-			}
+			timeController.SetTimeScale(0);
 		}
-		end:;
 	}
 
 	public void Notify()
@@ -500,6 +485,87 @@ public class GravityWellController : MonoBehaviour, IListener
 		{
 			return -orbitalVelocity;
 		}
+	}
+
+	public bool AreCollisionsNearby()
+	{
+		// Don't rely on Physics Engine, because Physics are disabled for many Objects
+		// Elaborate nested Loop which checks every Pair exactly once (hopefully, I'm very tired right now tbh)
+		for(int i = 0; i < nearbyGravityObjects.Count - 1; ++i)
+		{
+			for(int j = i + 1; j < nearbyGravityObjects.Count; ++j)
+			{
+				float sqrDistance = (nearbyGravityObjects[i].GetTransform().position - nearbyGravityObjects[j].GetTransform().position).sqrMagnitude;
+				if(sqrDistance < nearbyGravityObjects[i].GetSqrColliderRadius() + nearbyGravityObjects[j].GetSqrColliderRadius())
+				{
+					StringBuilder collisionMessage = new StringBuilder();
+
+					SpaceStationController spaceStation = null;
+					QuestVesselController questVessel = null;
+					SpacecraftController spacecraft = null;
+					if(nearbyGravityObjects[i] is AsteroidController)
+					{
+						collisionMessage.Append("An Asteroid");
+					}
+					else if((questVessel = nearbyGravityObjects[i].GetComponentInParent<QuestVesselController>()) != null)
+					{
+						collisionMessage.Append(questVessel.GetQuest().vesselType.ToString());
+						collisionMessage.Append(" Vessel");
+					}
+					else if((spaceStation = nearbyGravityObjects[i].GetComponentInParent<SpaceStationController>()) != null)
+					{
+						collisionMessage.Append(spaceStation.GetStationName());
+					}
+					else if((spacecraft = nearbyGravityObjects[i] as SpacecraftController) != null)
+					{
+						if(spacecraft == localPlayerMainSpacecraft)
+						{
+							collisionMessage.Append("Your Spacecraft");
+						}
+						else
+						{
+							collisionMessage.Append("A Spacecraft");
+						}
+					}
+
+					collisionMessage.Append(" is dangerously close to ");
+
+					spaceStation = null;
+					questVessel = null;
+					spacecraft = null;
+					if(nearbyGravityObjects[j] is AsteroidController)
+					{
+						collisionMessage.Append("an Asteroid");
+					}
+					else if((questVessel = nearbyGravityObjects[j].GetComponentInParent<QuestVesselController>()) != null)
+					{
+						collisionMessage.Append(questVessel.GetQuest().vesselType.ToString());
+						collisionMessage.Append(" Vessel");
+					}
+					else if((spaceStation = nearbyGravityObjects[j].GetComponentInParent<SpaceStationController>()) != null)
+					{
+						collisionMessage.Append(spaceStation.GetStationName());
+					}
+					else if((spacecraft = nearbyGravityObjects[j] as SpacecraftController) != null)
+					{
+						if(spacecraft == localPlayerMainSpacecraft)
+						{
+							collisionMessage.Append("your Spacecraft");
+						}
+						else
+						{
+							collisionMessage.Append("a Spacecraft");
+						}
+					}
+
+					infoController.AddMessage(collisionMessage.ToString());
+
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	public void AddGravityObject(GravityObjectController gravityObject, MinMax? asteroidBeltHeight = null)

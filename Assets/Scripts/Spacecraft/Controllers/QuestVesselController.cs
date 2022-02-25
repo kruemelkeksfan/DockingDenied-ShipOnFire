@@ -182,6 +182,21 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		menuController.UpdateQuestVesselMenu(this, vesselName, progress, hint, interactionLabel, (quest.progress < 1.0f && interactable && playerDocked) ? interaction : null);
 	}
 
+	public IEnumerator ReactivateDockingPort(DockingPort port)
+	{
+		yield return waitForDockingPortReactivationDelay;
+
+		if(!port.IsActive())
+		{
+			port.HotkeyDown();
+		}
+	}
+
+	public QuestManager.Quest GetQuest()
+	{
+		return quest;
+	}
+
 	public void SetQuest(QuestManager.Quest quest)
 	{
 		this.quest = quest;
@@ -280,15 +295,5 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		}
 
 		UpdateQuestVesselMenu();
-	}
-
-	public IEnumerator ReactivateDockingPort(DockingPort port)
-	{
-		yield return waitForDockingPortReactivationDelay;
-
-		if(!port.IsActive())
-		{
-			port.HotkeyDown();
-		}
 	}
 }

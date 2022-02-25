@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class TimeController : MonoBehaviour, IListener
+public class TimeController : MonoBehaviour
 {
 	private static TimeController instance = null;
 
@@ -11,9 +11,6 @@ public class TimeController : MonoBehaviour, IListener
 	private GravityWellController gravityWellController = null;
 	private float startFixedDeltaTime = 1.0f;
 	private int currentTimeScaleIndex = 0;
-	private Transform localPlayerMainTransform = null;
-	private float unrailDistance = 0.0f;
-	private int collisionLayerMask = 0;
 
 	public static TimeController GetInstance()
 	{
@@ -31,24 +28,13 @@ public class TimeController : MonoBehaviour, IListener
 	{
 		infoController = InfoController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
-
-		unrailDistance = Mathf.Sqrt(gravityWellController.GetSqrUnrailDistance());
-		collisionLayerMask = LayerMask.GetMask("Spacecraft", "Asteroids");
-
-		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
-		Notify();
-	}
-
-	public void Notify()
-	{
-		localPlayerMainTransform = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetTransform();
 	}
 
 	public void SetTimeScale(int timeScaleIndex)
 	{
 		if(currentTimeScaleIndex == 0 && timeScaleIndex != 0)
 		{
-			if(!CheckCollisions() || !gravityWellController.OnRailAll())
+			if(gravityWellController.AreCollisionsNearby() || !gravityWellController.OnRailAll())
 			{
 				infoController.AddMessage("Can not speed up Time");
 				return;
@@ -77,23 +63,5 @@ public class TimeController : MonoBehaviour, IListener
 	public bool IsScaled()
 	{
 		return currentTimeScaleIndex != 0;
-	}
-
-	private bool CheckCollisions()
-	{
-		foreach(Collider2D collider in Physics2D.OverlapCircleAll(localPlayerMainTransform.position, unrailDistance, collisionLayerMask))
-		{
-			if(!collider.isTrigger)
-			{
-				float radius = collider.gameObject.GetComponent<GravityObjectController>().GetSqrColliderRadius();
-				if(Physics2D.OverlapCircleAll(collider.bounds.center, radius, collisionLayerMask).Length > 1)
-				{
-					infoController.AddMessage("Some nearby Objects are dangerously close to each other");
-					return false;
-				}
-			}
-		}
-
-		return true;
 	}
 }
