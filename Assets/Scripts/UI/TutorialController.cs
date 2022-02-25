@@ -18,7 +18,6 @@ public class TutorialController : MonoBehaviour
 	[SerializeField] private Button buildAreaButton = null;
 	[SerializeField] private Transform blueprintScrollPane = null;
 	[SerializeField] private Button velocityButton = null;
-	[SerializeField] private Button navLineButton = null;
 	[SerializeField] private Color highlightColor = Color.red;
 	[SerializeField] private GameObject nextButton = null;
 	[SerializeField] private GameObject skipButton = null;
@@ -182,16 +181,6 @@ public class TutorialController : MonoBehaviour
 		while(!next);
 		next = false;
 		UnHighlightButton(velocityButton);
-
-		HighlightButton(navLineButton);
-		tutorialMessageField.text = "Navigation Lines function similarily\nThe green Line points towards the Planet\nThe orange Line points towards the last clicked Station or Quest Vessel";
-		do
-		{
-			yield return waitForTutorialUpdateInterval;
-		}
-		while(!next);
-		next = false;
-		UnHighlightButton(navLineButton);
 
 		tutorialMessageField.text = "Quests usually reward you with Money and Materials which you can use for Trade or to expand your Spacecraft";
 		do
