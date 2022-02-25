@@ -502,7 +502,8 @@ public class GravityWellController : MonoBehaviour, IListener
 
 					SpaceStationController spaceStation = null;
 					QuestVesselController questVessel = null;
-					SpacecraftController spacecraft = null;
+					SpacecraftController firstSpacecraft = nearbyGravityObjects[i] as SpacecraftController;
+
 					if(nearbyGravityObjects[i] is AsteroidController)
 					{
 						collisionMessage.Append("An Asteroid");
@@ -516,9 +517,9 @@ public class GravityWellController : MonoBehaviour, IListener
 					{
 						collisionMessage.Append(spaceStation.GetStationName());
 					}
-					else if((spacecraft = nearbyGravityObjects[i] as SpacecraftController) != null)
+					else if(firstSpacecraft != null)
 					{
-						if(spacecraft == localPlayerMainSpacecraft)
+						if(firstSpacecraft == localPlayerMainSpacecraft)
 						{
 							collisionMessage.Append("Your Spacecraft");
 						}
@@ -532,7 +533,15 @@ public class GravityWellController : MonoBehaviour, IListener
 
 					spaceStation = null;
 					questVessel = null;
-					spacecraft = null;
+					SpacecraftController secondSpacecraft = nearbyGravityObjects[j] as SpacecraftController;
+
+					if(firstSpacecraft.GetDockedSpacecraftRecursively().Contains(secondSpacecraft))
+					{
+						// Why that? Because each Spacecrafts Position would be determined individually and they would therefore not stay aligned at their Docking Ports
+						// TODO: Determine "Main" Docking Object (preferably the heaviest one) and disable Orbit Calculations and Rotation Updates for the Rest and isntead update them by aligning them correctly with the Main Object every Frame
+						infoController.AddMessage("Time Speedup while being docked is not supported");
+					}
+
 					if(nearbyGravityObjects[j] is AsteroidController)
 					{
 						collisionMessage.Append("an Asteroid");
@@ -546,9 +555,9 @@ public class GravityWellController : MonoBehaviour, IListener
 					{
 						collisionMessage.Append(spaceStation.GetStationName());
 					}
-					else if((spacecraft = nearbyGravityObjects[j] as SpacecraftController) != null)
+					else if(secondSpacecraft != null)
 					{
-						if(spacecraft == localPlayerMainSpacecraft)
+						if(secondSpacecraft == localPlayerMainSpacecraft)
 						{
 							collisionMessage.Append("your Spacecraft");
 						}
