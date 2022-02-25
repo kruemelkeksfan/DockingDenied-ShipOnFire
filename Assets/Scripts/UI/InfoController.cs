@@ -148,6 +148,7 @@ public class InfoController : MonoBehaviour, IListener
 						gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position),
 						playerSpacecraftRigidbody.velocity,
 						Time.time);
+					float playerVelocity = playerSpacecraft.IsOnRails() ? (float)playerSpacecraft.CalculateVelocity(Time.time).Magnitude() : playerSpacecraftRigidbody.velocity.magnitude;
 					int periapsis = (int)(playerSpacecraft.CalculatePeriapsisAltitude() / 1000.0);
 					int apoapsis = (int)(playerSpacecraft.CalculateApoapsisAltitude() / 1000.0);
 
@@ -155,7 +156,7 @@ public class InfoController : MonoBehaviour, IListener
 					textBuilder.Append("Alt - ");
 					textBuilder.Append((int)(gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position).Magnitude() / 1000.0));
 					textBuilder.Append(" km / Speed - ");
-					textBuilder.Append((playerSpacecraftRigidbody.velocity.magnitude / 1000.0f).ToString("F4"));
+					textBuilder.Append((playerVelocity / 1000.0f).ToString("F4"));
 					textBuilder.Append(" km/s / Peri - ");
 					if(periapsis > 0)
 					{

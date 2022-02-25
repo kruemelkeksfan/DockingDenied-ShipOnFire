@@ -197,17 +197,22 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		bool velocityDifferenceActive = toggleController.IsGroupToggled("VelocityDifferenceVector");
 		bool velocityActive = toggleController.IsGroupToggled("VelocityVectors");
 
+		Vector2 playerVelocity = Vector2.zero;
 		Vector2 targetVelocity = Vector2.zero;
-		if((velocityDifferenceActive || velocityActive) && targetSpacecraftRigidbody != null)
+		if(velocityDifferenceActive || velocityActive)
 		{
-			targetVelocity = targetSpacecraft.IsOnRails() ? (Vector2)targetSpacecraft.CalculateVelocity(Time.time) : targetSpacecraftRigidbody.velocity;
+			playerVelocity = playerSpacecraft.IsOnRails() ? (Vector2)playerSpacecraft.CalculateVelocity(Time.time) : playerSpacecraftRigidbody.velocity;
+			if(targetSpacecraftRigidbody != null)
+			{
+				targetVelocity = targetSpacecraft.IsOnRails() ? (Vector2)targetSpacecraft.CalculateVelocity(Time.time) : targetSpacecraftRigidbody.velocity;
+			}
 		}
 
 		if(velocityDifferenceActive)
 		{
 			if(targetSpacecraftRigidbody != null)
 			{
-				Vector2 velocityDifference = playerSpacecraftRigidbody.velocity - targetVelocity;
+				Vector2 velocityDifference = playerVelocity - targetVelocity;
 				UpdateVelocityVector(velocityDifferenceVector, velocityDifference, velocityVectorWidth, scaleFactor, null, 0.0f, true);
 			}
 			else
@@ -218,7 +223,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 		if(velocityActive)
 		{
-			UpdateVelocityVector(playerVelocityVector, playerSpacecraftRigidbody.velocity, velocityVectorWidth, scaleFactor, playerHead, playerHeadRotation);
+			UpdateVelocityVector(playerVelocityVector, playerVelocity, velocityVectorWidth, scaleFactor, playerHead, playerHeadRotation);
 			if(targetSpacecraftRigidbody != null)
 			{
 				UpdateVelocityVector(targetVelocityVector, targetVelocity, velocityVectorWidth, scaleFactor, targetHead, targetHeadRotation);
