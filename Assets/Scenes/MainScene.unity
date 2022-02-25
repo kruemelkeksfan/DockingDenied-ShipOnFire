@@ -9639,16 +9639,29 @@ MonoBehaviour:
   minMapMarkerDisplayDistance: 2000
   vectorPrefab: {fileID: 7898308147322084694, guid: be4fe62fc8d3a594f9103b4b4f86777c,
     type: 3}
-  vectorLengthFactor: 0.04
-  constantVectorLengthFactor: 4
-  velocityDifferenceVectorColor: {r: 0, g: 1, b: 1, a: 1}
+  playerHeadPrefab: {fileID: 7898308147322084694, guid: 11513461cf8188f4a8052c8245e2e80f,
+    type: 3}
+  targetHeadPrefab: {fileID: 7898308147322084694, guid: cf1fdab714157974e96a529ce2e5e110,
+    type: 3}
+  orbitalHeadPrefab: {fileID: 7898308147322084694, guid: e0065a99c46add945b25ac9817907864,
+    type: 3}
+  navVectorPrefab: {fileID: 7898308147322084694, guid: 8bc72640502ee1e41b51a40ca422e1d0,
+    type: 3}
+  velocityDifferenceVectorColor: {r: 1, g: 0.2509804, b: 0, a: 1}
   playerVelocityVectorColor: {r: 0, g: 0.2509804, b: 1, a: 1}
   targetVelocityVectorColor: {r: 1, g: 0.75294125, b: 0.2509804, a: 1}
   orbitalVelocityVectorColor: {r: 0, g: 1, b: 0, a: 1}
-  navVectorPrefab: {fileID: 7898308147322084694, guid: 8bc72640502ee1e41b51a40ca422e1d0,
-    type: 3}
   targetNavVectorColor: {r: 1, g: 0.7529412, b: 0.2509804, a: 0.2509804}
   planetNavVectorColor: {r: 0, g: 1, b: 0, a: 0.2509804}
+  vectorLengthFactor: 0.04
+  constantVectorLengthFactor: 4
+  velocityVectorWidth: 1
+  vectorHeadWidthFactor: 3
+  targetNavVectorWidth: 3
+  planetNavVectorWidth: 5
+  playerHeadRotation: 45
+  targetHeadRotation: 0
+  orbitalHeadRotation: 0
   orbitMarkerPrefab: {fileID: 5224629465746526750, guid: 4e93e41fcb87b3845847f695070bbc4e,
     type: 3}
   targetOrbitMarkerColor: {r: 1, g: 0.75294125, b: 0.2509804, a: 0.627451}
@@ -10948,7 +10961,6 @@ MonoBehaviour:
   buildAreaButton: {fileID: 730489021}
   blueprintScrollPane: {fileID: 452516121}
   velocityButton: {fileID: 1221168059}
-  navLineButton: {fileID: 0}
   highlightColor: {r: 0.7529412, g: 0.3764706, b: 0, a: 1}
   nextButton: {fileID: 205045155}
   skipButton: {fileID: 367900225}
