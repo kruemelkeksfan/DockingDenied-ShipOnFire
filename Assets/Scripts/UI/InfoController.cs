@@ -152,19 +152,19 @@ public class InfoController : MonoBehaviour, IListener
 					int apoapsis = (int)(playerSpacecraft.CalculateApoapsisAltitude() / 1000.0);
 
 					textBuilder.Clear();
-					textBuilder.Append("Altitude - ");
+					textBuilder.Append("Alt - ");
 					textBuilder.Append((int)(gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position).Magnitude() / 1000.0));
 					textBuilder.Append(" km / Speed - ");
 					textBuilder.Append((playerSpacecraftRigidbody.velocity.magnitude / 1000.0f).ToString("F4"));
-					textBuilder.Append(" km/s / Periapsis - ");
+					textBuilder.Append(" km/s / Peri - ");
 					if(periapsis > 0)
 					{
 						textBuilder.Append(periapsis.ToString());
-						textBuilder.Append(" km / Apoapsis - ");
+						textBuilder.Append(" km / Apo - ");
 					}
 					else
 					{
-						textBuilder.Append("¯\\_(ツ)_/¯ / Apoapsis - ");
+						textBuilder.Append("¯\\_(ツ)_/¯ / Apo - ");
 					}					
 					if(apoapsis > 0)
 					{
@@ -186,7 +186,7 @@ public class InfoController : MonoBehaviour, IListener
 						{
 							textBuilder.Append(" / Docking Permission - ");
 							textBuilder.Append((int)(expiryTime - Time.realtimeSinceStartup));
-							textBuilder.Append(" Seconds");
+							textBuilder.Append(" s");
 						}
 					}
 					secondaryDisplay.text = textBuilder.ToString();
