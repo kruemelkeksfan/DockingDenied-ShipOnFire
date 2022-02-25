@@ -41,7 +41,7 @@ public class SpacecraftBlueprintController
 		string path = Application.persistentDataPath + Path.DirectorySeparatorChar + blueprintFolderName;
 		if(Directory.Exists(path))
 		{
-			return Directory.GetFiles(path);
+			return Directory.GetFiles(path, "*.json");
 		}
 		else
 		{
@@ -118,9 +118,20 @@ public class SpacecraftBlueprintController
 
 	public static SpacecraftData LoadBlueprintModules(string blueprintPath)
 	{
-		using(StreamReader reader = new StreamReader(blueprintPath))
+		try
 		{
-			return JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd());
+			using(StreamReader reader = new StreamReader(blueprintPath))
+			{
+				return JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd());
+			}
+		}
+		catch(Exception exc)
+		{
+			InfoController.GetInstance().AddMessage("This Blueprint File does not contain a valid Spacecraft Definition");
+			Debug.LogWarning("Somebody tried to load an invalid Blueprint File");
+			Debug.LogWarning(exc.ToString());
+
+			return new SpacecraftData(new List<ModuleData>(0));
 		}
 	}
 

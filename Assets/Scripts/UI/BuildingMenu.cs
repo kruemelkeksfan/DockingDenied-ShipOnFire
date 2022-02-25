@@ -381,6 +381,11 @@ public class BuildingMenu : MonoBehaviour, IListener
 
 	private void SelectBlueprint()
 	{
+		if(selectedBlueprintData.moduleData.Count <= 0)
+		{
+			return;
+		}
+
 		menuController.CloseModuleMenu();
 		DeselectModule();
 
