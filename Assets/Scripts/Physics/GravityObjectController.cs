@@ -119,8 +119,10 @@ public class GravityObjectController : MonoBehaviour
 		Vector2Double eccentricity = ((globalPosition * ((startVelocitySqrMagnitude / gravitationalParameter) - (1.0 / globalPositionMagnitude)))
 			- (startVelocity * (Vector2Double.Dot(globalPosition, startVelocity) / gravitationalParameter)));
 		eccentricityMagnitude = eccentricity.Magnitude();
+		bool circular = eccentricityMagnitude < 0.001;
+		bool parabolic = eccentricityMagnitude > 0.95;
 		// Check for valid Eccentricity
-		if(eccentricityMagnitude > 0.01 && eccentricityMagnitude < (1.0 - 0.01))
+		if(!circular && !parabolic)
 		{
 			// https://en.wikipedia.org/wiki/Semi-major_and_semi-minor_axes#Energy;_calculation_of_semi-major_axis_from_state_vectors
 			semiMajorAxis = -gravitationalParameter / (2.0 * specificOrbitalEnergy);
@@ -151,7 +153,7 @@ public class GravityObjectController : MonoBehaviour
 				- globalPosition);
 		}
 		// Circular Orbit
-		else if(eccentricityMagnitude < (1.0 - 0.01 - MathUtil.EPSILON))
+		else if(circular)
 		{
 			semiMajorAxis = globalPositionMagnitude;
 			semiMinorAxis = globalPositionMagnitude;
