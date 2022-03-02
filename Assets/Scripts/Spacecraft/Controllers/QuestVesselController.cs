@@ -19,6 +19,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	[Tooltip("Delay for Reactivation of the Docking Port, if it is disabled, for Example after docking to the wrong Port of a Station")]
 	[SerializeField] private float dockingPortReactivateDelay = 20.0f;
 	[SerializeField] private float despawnDelay = 300.0f;
+	private UpdateController updateController = null;
 	private RectTransform uiTransform = null;
 	private MenuController menuController = null;
 	private SpacecraftController spacecraft = null;
@@ -74,7 +75,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		playerSpacecraftController = localPlayerSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
-		spacecraft.AddUpdateListener(this);
+		updateController = UpdateController.GetInstance();
+		updateController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
@@ -83,6 +85,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			GameObject.Destroy(mapMarker.gameObject);
 		}
+
+		updateController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()

@@ -92,6 +92,15 @@ public struct Vector2Double
 		return Math.Sqrt(x * x + y * y);
 	}
 
+	public static double SignedAngle(Vector2Double from, Vector2Double to)
+	{
+		// Copy-pasted from https://github.com/Unity-Technologies/UnityCsReference/blob/e740821767d2290238ea7954457333f06e952bad/Runtime/Export/Math/Vector2.cs
+		// sqrt(a) * sqrt(b) == sqrt(a * b)
+		double unsignedAngle = Math.Acos(Dot(from, to) / Math.Sqrt(from.SqrMagnitude() * to.SqrMagnitude()));
+        double sign = Math.Sign(from.x * to.y - from.y * to.x);
+        return unsignedAngle * sign;
+	}
+
 	public static Vector2Double Perpendicular(Vector2Double vector)
 	{
 		return new Vector2Double(-vector.y, vector.x);

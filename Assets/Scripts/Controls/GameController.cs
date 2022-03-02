@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-public class GameController : MonoBehaviour
+public class GameController : MonoBehaviour, IUpdateListener
 {
 	private static GameController instance = null;
 	private static string deathMessage = null;
 	
+	private UpdateController updateController = null;
 	private MenuController menuController = null;
 	private ToggleController toggleController = null;
 	private bool killScene = false;
@@ -25,10 +26,18 @@ public class GameController : MonoBehaviour
 
 	private void Start()
 	{
+		updateController = UpdateController.GetInstance();
 		menuController = MenuController.GetInstance();
+
+		updateController.AddUpdateListener(this);
 	}
 
-	private void Update()
+	private void OnDestroy()
+	{
+		updateController?.RemoveUpdateListener(this);
+	}
+
+	public void UpdateNotify()
 	{
 		if(toggleController == null)
 		{

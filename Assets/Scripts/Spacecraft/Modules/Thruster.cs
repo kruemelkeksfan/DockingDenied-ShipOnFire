@@ -51,8 +51,8 @@ public class Thruster : Module
 		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
 		if(constructed && throttle > 0.0f && !gravityWellController.IsOriginShifted())
 		{
-			float finalThrottle = throttle * capacitor.DischargePartial(energyConsumption * throttle * Time.fixedDeltaTime);
-			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustVector * finalThrottle * Time.fixedDeltaTime, transform.position, ForceMode2D.Impulse);
+			float finalThrottle = throttle * capacitor.DischargePartial(energyConsumption * throttle * updateController.GetFixedDeltaTime());
+			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustVector * finalThrottle * updateController.GetFixedDeltaTime(), transform.position, ForceMode2D.Impulse);
 
 			thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * finalThrottle;
 			thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * finalThrottle;

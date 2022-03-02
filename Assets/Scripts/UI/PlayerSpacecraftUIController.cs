@@ -38,6 +38,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	[SerializeField] private float orbitMarkerTimeStep = 0.01f;
 	[SerializeField] private int largeOrbitMarkerIntervall = 5;
 	[SerializeField] private float orbitUpdateIntervall = 0.2f;
+	private UpdateController updateController = null;
 	private ToggleController toggleController = null;
 	private GravityWellController gravityWellController = null;
 	private SpacecraftController playerSpacecraft = null;
@@ -69,6 +70,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	{
 		waitForOrbitUpdateInterval = new WaitForSecondsRealtime(orbitUpdateIntervall);
 
+		updateController = UpdateController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 		toggleController = ToggleController.GetInstance();
 
@@ -138,12 +140,12 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 		StartCoroutine(UpdateOrbitDisplay());
 
-		playerSpacecraft.AddUpdateListener(this);
+		updateController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
 	{
-		playerSpacecraft?.RemoveUpdateListener(this);
+		updateController?.RemoveUpdateListener(this);
 
 		if(toggleController != null)
 		{
@@ -201,10 +203,11 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		Vector2 targetVelocity = Vector2.zero;
 		if(velocityDifferenceActive || velocityActive)
 		{
-			playerVelocity = playerSpacecraft.IsOnRails() ? (Vector2)playerSpacecraft.CalculateVelocity(Time.time) : playerSpacecraftRigidbody.velocity;
+			float time = updateController.GetFixedTime();
+			playerVelocity = playerSpacecraft.IsOnRails() ? (Vector2)playerSpacecraft.CalculateVelocity(time) : playerSpacecraftRigidbody.velocity;
 			if(targetSpacecraftRigidbody != null)
 			{
-				targetVelocity = targetSpacecraft.IsOnRails() ? (Vector2)targetSpacecraft.CalculateVelocity(Time.time) : targetSpacecraftRigidbody.velocity;
+				targetVelocity = targetSpacecraft.IsOnRails() ? (Vector2)targetSpacecraft.CalculateVelocity(time) : targetSpacecraftRigidbody.velocity;
 			}
 		}
 
@@ -327,7 +330,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 			if(toggleController.IsGroupToggled("OrbitMarkers"))
 			{
-				float startTime = Time.time;
+				float startTime = updateController.GetFixedTime();
 				float scaleFactor = (playerSpacecraftTransform.position - cameraTransform.position).magnitude * this.scaleFactor;
 				float orbitMarkerTimeStep = this.orbitMarkerTimeStep * scaleFactor;
 

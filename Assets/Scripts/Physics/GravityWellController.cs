@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
-public class GravityWellController : MonoBehaviour, IListener
+public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListener
 {
 	public const double GRAVITY_CONSTANT = 0.000000000066743;
 
@@ -41,6 +41,7 @@ public class GravityWellController : MonoBehaviour, IListener
 	[Tooltip("Distance to the Player at which un-railed Objects are on-railed again")]
 	[SerializeField] private float onrailDistance = 12000.0f;
 	private TimeController timeController = null;
+	private UpdateController updateController = null;
 	private SpawnController spawnController = null;
 	private InfoController infoController = null;
 	private Transform planetTransform = null;
@@ -100,14 +101,22 @@ public class GravityWellController : MonoBehaviour, IListener
 		spawnController = SpawnController.GetInstance();
 		infoController = InfoController.GetInstance();
 
+		updateController = UpdateController.GetInstance();
+		updateController.AddFixedUpdateListener(this);
+
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 	}
 
-	private void FixedUpdate()
+	private void OnDestroy()
+	{
+		updateController?.RemoveFixedUpdateListener(this);
+	}
+
+	public void FixedUpdateNotify()
 	{
 		Vector2 playerPosition = localPlayerMainTransform.position;
-		float time = Time.time;
+		float time = updateController.GetFixedTime();
 		nearbyGravityObjects.Clear();
 		// Avoid Dictionary.Get() for Performance Reasons
 		foreach(KeyValuePair<Rigidbody2D, GravityObjectController> gravityObject in gravityObjects)
@@ -150,6 +159,7 @@ public class GravityWellController : MonoBehaviour, IListener
 						infoController.AddMessage("Somebody fired Thrusters");
 					}
 
+					// This also sets Position and Velocity
 					gravityObjectValue.UnRail();
 				}
 				else
@@ -157,22 +167,15 @@ public class GravityWellController : MonoBehaviour, IListener
 					// Analytical Gravity Solution
 					Vector2Double position = GlobalToLocalPosition(gravityObjectValue.CalculateOnRailPosition(time));
 					gravityObjectTransform.position = new Vector3((float)position.x, (float)position.y, gravityObjectPosition.z);
-
-					gravityObjectTransform.Rotate(0.0f, 0.0f, gravityObject.Key.angularVelocity * Time.fixedDeltaTime);
+					gravityObjectTransform.Rotate(0.0f, 0.0f, gravityObject.Key.angularVelocity * updateController.GetFixedDeltaTime());
 				}
 			}
-
-			// Check again, in case we unrailed above, to avoid skipping a Frame
-			if(!gravityObjectValue.IsOnRails())
+			else
 			{
 				// Don't on-Rail thrusting or dying Objects to avoid interfering with Unity Physics or Destruction Coroutines
 				// Use Time from last Frame, since this Frames rigidbody.velocity and Forces have not been applied by the Physics Engine yet
-				if((spacecraft == null || !spacecraft.IsThrusting()) && !gravityObjectValue.IsDecaying()
-					&& sqrDistance >= onrailDistance)
-				{
-					gravityObjectValue.OnRail(LocalToGlobalPosition(gravityObjectPosition), gravityObject.Key.velocity, Time.time - Time.fixedDeltaTime);
-				}
-				else
+				if((spacecraft != null && spacecraft.IsThrusting()) || gravityObjectValue.IsDecaying()
+					|| sqrDistance < onrailDistance || !gravityObjectValue.OnRail(LocalToGlobalPosition(gravityObjectPosition), gravityObject.Key.velocity, time))
 				{
 					// Gravity Simulation
 					// The Gravity Source is always at global (0.0|0.0)
@@ -191,7 +194,7 @@ public class GravityWellController : MonoBehaviour, IListener
 
 						Vector2Double gravity = gravityDirection
 							* ((gravitationalParameter / (gravityDirectionMagnitude * gravityDirectionMagnitude * gravityDirectionMagnitude))
-							* Time.fixedDeltaTime);
+							* updateController.GetFixedDeltaTime());
 						// Fucking Box2D Physics Engine does not have a ForceMode.VelocityChange
 						gravityObject.Key.velocity = ((Vector2Double)gravityObject.Key.velocity) + gravity;
 					}
@@ -214,8 +217,10 @@ public class GravityWellController : MonoBehaviour, IListener
 		localPlayerMainRigidbody = localPlayerMainSpacecraft.GetRigidbody();
 	}
 
+	// OnRail all Gravity Objects for Time Speedup and along the Way reset fixedTime to 0, because large Values seem to lead to Inaccuracies
 	public bool OnRailAll()
 	{
+		float oldFixedTime = updateController.GetFixedTime();
 		List<GravityObjectController> onRailedObjects = new List<GravityObjectController>();
 		foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
 		{
@@ -223,17 +228,16 @@ public class GravityWellController : MonoBehaviour, IListener
 
 			if(objectRecord.IsOnRails())
 			{
-				continue;
+				objectRecord.UnRail(oldFixedTime);
 			}
 
-			SpacecraftController spacecraft = objectRecord as SpacecraftController;
-			if(objectRecord.IsDecaying() || (spacecraft != null && spacecraft.IsThrusting())
-				|| !objectRecord.OnRail(
+			if(!objectRecord.OnRail(
 				LocalToGlobalPosition(objectRecord.GetTransform().position),
 				objectRecord.GetRigidbody().velocity,
-				Time.time))
+				0.0f))
 			{
 				// Error Messages
+				SpacecraftController spacecraft = objectRecord as SpacecraftController;
 				if(objectRecord.IsDecaying())
 				{
 					infoController.AddMessage("An Object is currently burning in the Atmosphere");
@@ -246,7 +250,7 @@ public class GravityWellController : MonoBehaviour, IListener
 				// Rollback
 				foreach(GravityObjectController onRailedObject in onRailedObjects)
 				{
-					onRailedObject.UnRail();
+					onRailedObject.UnRail(0.0f);
 				}
 
 				return false;
@@ -254,6 +258,8 @@ public class GravityWellController : MonoBehaviour, IListener
 
 			onRailedObjects.Add(objectRecord);
 		}
+
+		updateController.ResetFixedTime();
 
 		return true;
 	}
@@ -336,7 +342,7 @@ public class GravityWellController : MonoBehaviour, IListener
 			{
 				Vector2Double playerPosition = LocalToGlobalPosition(localPlayerMainTransform.position);
 				double sqrPlayerAltitude = playerPosition.SqrMagnitude();
-				localPlayerMainSpacecraft.CalculateOrbitalElements(playerPosition, localPlayerMainRigidbody.velocity, Time.time);
+				localPlayerMainSpacecraft.CalculateOrbitalElements(playerPosition, localPlayerMainRigidbody.velocity, updateController.GetFixedTime());
 				double periapsis = localPlayerMainSpacecraft.CalculatePeriapsisAltitude();
 				double apoapsis = localPlayerMainSpacecraft.CalculateApoapsisAltitude();
 				if(periapsis * periapsis <= atmosphereEntryAltitude && sqrPlayerAltitude <= tooLowWarningAltitude && sqrPlayerAltitude > atmosphereEntryAltitude)
@@ -496,6 +502,7 @@ public class GravityWellController : MonoBehaviour, IListener
 			for(int j = i + 1; j < nearbyGravityObjects.Count; ++j)
 			{
 				float sqrDistance = (nearbyGravityObjects[i].GetTransform().position - nearbyGravityObjects[j].GetTransform().position).sqrMagnitude;
+				// TODO: c < a + b => c^2 < (a + b)^2, not c < a + b => c^2 < a^2 + b^2
 				if(sqrDistance < nearbyGravityObjects[i].GetSqrColliderRadius() + nearbyGravityObjects[j].GetSqrColliderRadius())
 				{
 					StringBuilder collisionMessage = new StringBuilder();

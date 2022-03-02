@@ -5,7 +5,7 @@ using UnityEngine;
 
 // TODO: What happens to attached Modules when link is severed? Maybe implement Shift LeftClick to make Selection and select the severed Modules automatically for easy Movement/Reattachment
 
-public class SpacecraftController : GravityObjectController, IDockingListener
+public class SpacecraftController : GravityObjectController, IUpdateListener, IFixedUpdateListener, IDockingListener
 {
 	private enum ThrusterGroup
 	{
@@ -30,8 +30,6 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 	[Tooltip("Time until a slow Rotation will be stopped, if the angularVelocity stays too low")]
 	[SerializeField] private float rotationStopTime = 2.0f;
 	private Dictionary<Vector2Int, Module> modules = null;
-	private HashSet<IUpdateListener> updateListeners = null;
-	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
 	private BuildingMenu buildingMenu = null;
 	private InventoryController inventoryController = null;
 	private float inertiaFactor = 1.0f;
@@ -53,8 +51,6 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		waitForFixedUpdate = new WaitForFixedUpdate();
 
 		modules = new Dictionary<Vector2Int, Module>();
-		updateListeners = new HashSet<IUpdateListener>();
-		fixedUpdateListeners = new HashSet<IFixedUpdateListener>();
 		inventoryController = gameObject.GetComponent<InventoryController>();
 
 		thrusters = new HashSet<Thruster>[Enum.GetValues(typeof(ThrusterGroup)).Length];
@@ -92,6 +88,8 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		centerOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled("COMIndicators"));
 		foreignCenterOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled("COMIndicators"));
 
+		updateController.AddUpdateListener(this);
+		updateController.AddFixedUpdateListener(this);
 		gravityWellController.AddGravityObject(this);
 	}
 
@@ -105,15 +103,13 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		ToggleController toggleController = ToggleController.GetInstance();
 		toggleController?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 		toggleController?.RemoveToggleObject("COMIndicators", foreignCenterOfMassIndicator.gameObject);
+
+		updateController?.RemoveUpdateListener(this);
+		updateController?.RemoveFixedUpdateListener(this);
 	}
 
-	private void Update()
+	public void UpdateNotify()
 	{
-		foreach(IUpdateListener listener in updateListeners)
-		{
-			listener.UpdateNotify();
-		}
-
 		// Do this in Update instead of FixedUpdate(), since it might take some Time
 		if(calculateCollider)
 		{
@@ -122,13 +118,8 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 		}
 	}
 
-	private void FixedUpdate()
+	public void FixedUpdateNotify()
 	{
-		foreach(IFixedUpdateListener listener in fixedUpdateListeners)
-		{
-			listener.FixedUpdateNotify();
-		}
-
 		if(!stoppingRotation && rigidbody.angularVelocity != 0.0f && Mathf.Abs(rigidbody.angularVelocity) < minAngularVelocity)
 		{
 			StartCoroutine(StopRotation());
@@ -171,7 +162,7 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 
 	public void SetThrottles(float horizontal, float vertical, float rotationSpeed)
 	{
-		if(!Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(vertical, 0.0f))
+		if(!Mathf.Approximately(horizontal, 0.0f) || !Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(rotationSpeed, 0.0f))
 		{
 			thrusting = true;
 		}
@@ -613,26 +604,6 @@ public class SpacecraftController : GravityObjectController, IDockingListener
 	{
 		modules.Remove(position);
 		calculateCollider = true;
-	}
-
-	public void AddUpdateListener(IUpdateListener listener)
-	{
-		updateListeners.Add(listener);
-	}
-
-	public void RemoveUpdateListener(IUpdateListener listener)
-	{
-		updateListeners.Remove(listener);
-	}
-
-	public void AddFixedUpdateListener(IFixedUpdateListener listener)
-	{
-		fixedUpdateListeners.Add(listener);
-	}
-
-	public void RemoveFixedUpdateListener(IFixedUpdateListener listener)
-	{
-		fixedUpdateListeners.Remove(listener);
 	}
 
 	// Call this for all Thrusters when building the Ship

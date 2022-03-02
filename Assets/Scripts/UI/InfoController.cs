@@ -6,7 +6,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InfoController : MonoBehaviour, IListener
+public class InfoController : MonoBehaviour, IUpdateListener, IListener
 {
 	private struct Message
 	{
@@ -27,6 +27,7 @@ public class InfoController : MonoBehaviour, IListener
 	[SerializeField] private Text autoThrottleDisplay = null;
 	[SerializeField] private GameObject keyBindingDisplay = null;
 	[SerializeField] private Text showFlightInfoButtonText = null;
+	private UpdateController updateController = null;
 	private GravityWellController gravityWellController = null;
 	private Queue<Message> messages = null;
 	private float lastDequeue = 0.0f;
@@ -65,9 +66,17 @@ public class InfoController : MonoBehaviour, IListener
 
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
+
+		updateController = UpdateController.GetInstance();
+		updateController.AddUpdateListener(this);
 	}
 
-	private void Update()
+	private void OnDestroy()
+	{
+		updateController?.RemoveUpdateListener(this);
+	}
+
+	public void UpdateNotify()
 	{
 		if(updateResourceDisplay)
 		{

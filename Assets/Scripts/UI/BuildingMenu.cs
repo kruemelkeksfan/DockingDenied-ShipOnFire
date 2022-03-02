@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-public class BuildingMenu : MonoBehaviour, IListener
+public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 {
 	private struct CurrentModule
 	{
@@ -51,6 +51,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 	[SerializeField] private string blueprintFolder = "Blueprints";
 	[SerializeField] private TextAsset starterShip = null;
 	[SerializeField] private Text cheaterModeText = null;
+	private UpdateController updateController = null;
 	private GoodManager goodManager = null;
 	private SpacecraftManager spacecraftManager = null;
 	private MenuController menuController = null;
@@ -116,6 +117,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 				});
 		}
 
+		updateController = UpdateController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 		menuController = MenuController.GetInstance();
 		infoController = InfoController.GetInstance();
@@ -133,6 +135,13 @@ public class BuildingMenu : MonoBehaviour, IListener
 		gameObject.SetActive(false);
 		blueprintMenu.gameObject.SetActive(false);
 		infoController.SetShowBuildingResourceDisplay(false);
+
+		updateController.AddUpdateListener(this);
+	}
+
+	private void OnDestroy()
+	{
+		updateController?.RemoveUpdateListener(this);
 	}
 
 	public void Notify()
@@ -141,7 +150,7 @@ public class BuildingMenu : MonoBehaviour, IListener
 		localPlayerMainSpacecraftTransform = localPlayerMainSpacecraft.GetTransform();
 	}
 
-	private void Update()
+	public void UpdateNotify()
 	{
 		Vector2Int gridPosition = lastGridPosition;
 		if(Input.mousePosition != lastMousePosition)

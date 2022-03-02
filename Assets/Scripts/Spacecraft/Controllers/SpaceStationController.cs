@@ -41,6 +41,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private RectTransform tradingEntryPrefab = null;
 	[SerializeField] private ColorBlock questStationMarkerColors = new ColorBlock();
 	[SerializeField] private Color questStationTextColor = Color.red;
+	private UpdateController updateController = null;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private MenuController menuController = null;
@@ -120,7 +121,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * maxGoodStockFactor));
 		}
 
-		spacecraft.AddUpdateListener(this);
+		updateController = UpdateController.GetInstance();
+		updateController.AddUpdateListener(this);
 
 		StartCoroutine(UpdateStation());
 	}
@@ -132,7 +134,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			GameObject.Destroy(mapMarker.gameObject);
 		}
 
-		spacecraft?.RemoveUpdateListener(this);
+		updateController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()

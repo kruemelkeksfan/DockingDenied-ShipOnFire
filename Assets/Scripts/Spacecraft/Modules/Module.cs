@@ -15,6 +15,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
+	protected UpdateController updateController = null;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
@@ -24,12 +25,13 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	protected virtual void Awake()
 	{
+		updateController = UpdateController.GetInstance();
 		transform = gameObject.GetComponent<Transform>();
 	}
 
 	protected virtual void Start()
 	{
-
+		
 	}
 
 	protected virtual void OnDestroy()
@@ -59,11 +61,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 		if(listenUpdates)
 		{
-			spacecraft.AddUpdateListener(this);
+			updateController.AddUpdateListener(this);
 		}
 		if(listenFixedUpdates)
 		{
-			spacecraft.AddFixedUpdateListener(this);
+			updateController.AddFixedUpdateListener(this);
 		}
 	}
 
@@ -78,8 +80,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 		GameObject.Destroy(gameObject);
 
-		spacecraft.RemoveUpdateListener(this);
-		spacecraft.RemoveFixedUpdateListener(this);
+		updateController.RemoveUpdateListener(this);
+		updateController.RemoveFixedUpdateListener(this);
 	}
 
 	public void Rotate(int direction)

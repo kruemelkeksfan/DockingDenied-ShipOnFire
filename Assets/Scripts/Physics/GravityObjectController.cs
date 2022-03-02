@@ -7,9 +7,14 @@ public class GravityObjectController : MonoBehaviour
 	[SerializeField] private int maxIterations = 200;
 	[Tooltip("Target Precision for eccentricAnomaly Calculation")]
 	[SerializeField] private double minPrecision = 0.0001;
+	[Tooltip("Maximum Eccentricity up to which an Orbit will be considered circular")]
+	[SerializeField] private double circularOrbitThreshold = 0.0001;
+	[Tooltip("Minimum Eccentricity from which on an Orbit will be considered parabolic or hyperbolic")]
+	[SerializeField] private double parabolicOrbitThreshold = 0.95;
 	[Tooltip("Safety Factor for Collisions during Time Speedup")]
 	[SerializeField] private float collisionSafetyFactor = 2.0f;
-	private TimeController timeController = null;
+	protected TimeController timeController = null;
+	protected UpdateController updateController = null;
 	protected GravityWellController gravityWellController = null;
 	protected new Transform transform = null;
 	protected new Rigidbody2D rigidbody = null;
@@ -43,13 +48,16 @@ public class GravityObjectController : MonoBehaviour
 
 	protected virtual void Start()
 	{
+		updateController = UpdateController.GetInstance();
 		timeController = TimeController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 	}
 
 	public bool OnRail(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
 	{
-		if(!decaying && CalculateOrbitalElements(globalPosition, startVelocity, startTime))
+		SpacecraftController spacecraft = this as SpacecraftController;
+		if(!decaying && !(spacecraft != null && spacecraft.IsThrusting())
+			&& CalculateOrbitalElements(globalPosition, startVelocity, startTime))
 		{
 			rigidbody.simulated = false;
 			onRails = true;
@@ -81,14 +89,15 @@ public class GravityObjectController : MonoBehaviour
 			InfoController.GetInstance().AddMessage("An Object needs to be simulated, stopping Time Speedup");
 			timeController.SetTimeScale(0);
 		}
-		
+
 		if(onRails)
 		{
 			if(time < 0.0f)
 			{
-				time = Time.time;
+				time = updateController.GetFixedTime();
 			}
 
+			transform.position = gravityWellController.GlobalToLocalPosition(CalculateOnRailPosition(time));
 			rigidbody.velocity = CalculateVelocity(time);
 		}
 
@@ -119,8 +128,8 @@ public class GravityObjectController : MonoBehaviour
 		Vector2Double eccentricity = ((globalPosition * ((startVelocitySqrMagnitude / gravitationalParameter) - (1.0 / globalPositionMagnitude)))
 			- (startVelocity * (Vector2Double.Dot(globalPosition, startVelocity) / gravitationalParameter)));
 		eccentricityMagnitude = eccentricity.Magnitude();
-		bool circular = eccentricityMagnitude < 0.001;
-		bool parabolic = eccentricityMagnitude > 0.95;
+		bool circular = eccentricityMagnitude <= circularOrbitThreshold;
+		bool parabolic = eccentricityMagnitude >= parabolicOrbitThreshold;
 		// Check for valid Eccentricity
 		if(!circular && !parabolic)
 		{
@@ -128,8 +137,7 @@ public class GravityObjectController : MonoBehaviour
 			semiMajorAxis = -gravitationalParameter / (2.0 * specificOrbitalEnergy);
 			semiMinorAxis = Math.Sqrt(1.0 - eccentricityMagnitude * eccentricityMagnitude) * semiMajorAxis;
 			// phi is the Angle by which the Orbit is rotated around the Origin of the Coordinate System
-			// Vector2.SignedAngle() returns the Result in Degrees, must convert to Radians!
-			phi = (Math.PI * 2.0) - Vector2.SignedAngle(eccentricity, Vector2.right) * Mathf.Deg2Rad;
+			phi = (Math.PI * 2.0) - Vector2Double.SignedAngle(eccentricity, new Vector2Double(1.0, 0.0));
 			phiSin = Math.Sin(phi);
 			phiCos = Math.Cos(phi);
 
@@ -170,9 +178,9 @@ public class GravityObjectController : MonoBehaviour
 			eccentricAnomalyCos = Math.Cos(eccentricAnomaly);
 			startMeanAnomaly = eccentricAnomaly;
 
-			phi = 0.0f;
-			phiSin = 0.0f;
-			phiCos = 1.0f;
+			phi = 0.0;
+			phiSin = 0.0;
+			phiCos = 1.0;
 
 			orbitCenter = Vector2Double.zero;
 		}
@@ -181,13 +189,11 @@ public class GravityObjectController : MonoBehaviour
 		// https://en.wikipedia.org/wiki/Hyperbolic_trajectory
 		else
 		{
-			/*
 			Debug.LogWarning("Parabolic or Hyperbolic Trajectory detected!");
 			Debug.Log("Position: " + globalPosition);
 			Debug.Log("Velocity: " + startVelocity);
 			Debug.Log("Eccentricity: " + eccentricity);
 			LogOrbitalParameters();
-			*/
 
 			lastOrbitalElementResult = false;
 			return false;
@@ -272,6 +278,7 @@ public class GravityObjectController : MonoBehaviour
 
 	private void LogOrbitalParameters()
 	{
+		Debug.Log("Object: " + gameObject.name);
 		Debug.Log("Specific Orbital Energy: " + specificOrbitalEnergy);
 		Debug.Log("|Eccentricity|: " + eccentricityMagnitude);
 		Debug.Log("Semi-Major Axis: " + semiMajorAxis);
@@ -296,7 +303,7 @@ public class GravityObjectController : MonoBehaviour
 		// https://en.wikipedia.org/wiki/Kepler%27s_equation#Numerical_approximation_of_inverse_problem
 		double eccentricAnomaly = meanAnomaly;
 		// Skip Calculation if Orbit is (almost) circular
-		if(eccentricityMagnitude > 0.02)
+		if(eccentricityMagnitude > circularOrbitThreshold)
 		{
 			// Use different initial Guess for very elliptic Orbits
 			if(eccentricityMagnitude > 0.8)

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class CameraController : MonoBehaviour, IListener
+public class CameraController : MonoBehaviour, IUpdateListener, IListener
 {
 	[SerializeField] private float movementSpeed = 1.0f;
 	[SerializeField] private float rotationSpeed = 1.0f;
@@ -11,6 +11,7 @@ public class CameraController : MonoBehaviour, IListener
 	[SerializeField] private float maxViewAngle = 60.0f;
 	[SerializeField] private float maxZHeight = -0.04f;
 	[SerializeField] private float maxDistance = 2000.0f;
+	private UpdateController updateController = null;
 	private GravityWellController gravityWellController = null;
 	private new Transform transform = null;
 	private Transform spacecraftTransform = null;
@@ -24,6 +25,7 @@ public class CameraController : MonoBehaviour, IListener
 
 	private void Start()
 	{
+		updateController = UpdateController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 
 		transform = gameObject.GetComponent<Transform>();
@@ -40,9 +42,16 @@ public class CameraController : MonoBehaviour, IListener
 		planetSurfaceAltitude = gravityWellController.GetSurfaceAltitude();
 		// Square to avoid Sqrt later
 		sqrPlanetSurfaceAltitude = planetSurfaceAltitude * planetSurfaceAltitude;
+
+		updateController.AddUpdateListener(this);
 	}
 
-	private void Update()
+	private void OnDestroy()
+	{
+		updateController?.RemoveUpdateListener(this);
+	}
+
+	public void UpdateNotify()
 	{
 		// Query and apply Controls
 		if(Input.GetButtonUp("Camera Mode"))
