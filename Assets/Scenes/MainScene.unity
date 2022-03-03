@@ -3705,7 +3705,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   messageField: {fileID: 1116002635}
-  skippingMessageDuration: 0.2
+  skippingMessageDuration: 0.1
   messageDuration: 6
   controlHint: {fileID: 82966304}
   resourceDisplay: {fileID: 775159703}
