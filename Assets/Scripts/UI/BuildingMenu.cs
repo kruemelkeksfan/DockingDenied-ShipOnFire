@@ -51,7 +51,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 	[SerializeField] private string blueprintFolder = "Blueprints";
 	[SerializeField] private TextAsset starterShip = null;
 	[SerializeField] private Text cheaterModeText = null;
-	private UpdateController updateController = null;
+	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private SpacecraftManager spacecraftManager = null;
 	private MenuController menuController = null;
@@ -117,7 +117,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 				});
 		}
 
-		updateController = UpdateController.GetInstance();
+		timeController = TimeController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 		menuController = MenuController.GetInstance();
 		infoController = InfoController.GetInstance();
@@ -136,12 +136,12 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 		blueprintMenu.gameObject.SetActive(false);
 		infoController.SetShowBuildingResourceDisplay(false);
 
-		updateController.AddUpdateListener(this);
+		timeController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
 	{
-		updateController?.RemoveUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public void Notify()

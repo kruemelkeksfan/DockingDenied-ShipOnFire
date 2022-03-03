@@ -88,8 +88,8 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		centerOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled("COMIndicators"));
 		foreignCenterOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled("COMIndicators"));
 
-		updateController.AddUpdateListener(this);
-		updateController.AddFixedUpdateListener(this);
+		timeController.AddUpdateListener(this);
+		timeController.AddFixedUpdateListener(this);
 		gravityWellController.AddGravityObject(this);
 	}
 
@@ -104,8 +104,8 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		toggleController?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 		toggleController?.RemoveToggleObject("COMIndicators", foreignCenterOfMassIndicator.gameObject);
 
-		updateController?.RemoveUpdateListener(this);
-		updateController?.RemoveFixedUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
+		timeController?.RemoveFixedUpdateListener(this);
 	}
 
 	public void UpdateNotify()
@@ -479,7 +479,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	{
 		stoppingRotation = true;
 
-		float startTime = Time.time;
+		double startTime = timeController.GetTime();
 		do
 		{
 			yield return waitForFixedUpdate;
@@ -490,7 +490,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 				yield break;
 			}
 		}
-		while(Time.time - startTime < rotationStopTime);
+		while(timeController.GetTime() - startTime < rotationStopTime);
 
 		rigidbody.angularVelocity = 0.0f;
 		stoppingRotation = false;

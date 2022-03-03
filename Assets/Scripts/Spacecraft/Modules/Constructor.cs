@@ -62,10 +62,10 @@ public class Constructor : Module
 		LineRenderer constructionBeam = GameObject.Instantiate<LineRenderer>(constructionBeamPrefab, beamOrigin.position, Quaternion.identity, transform);
 		constructionBeam.SetPositions(new Vector3[]{Vector3.zero, transform.InverseTransformPoint(position)});
 
-		float startTime = Time.time;
-		while(Time.time < startTime + constructionBeamDuration)
+		double startTime = timeController.GetTime();
+		while(timeController.GetTime() < startTime + constructionBeamDuration)
 		{
-			float progress = ((Time.time - startTime) / constructionBeamDuration) * 2.0f;
+			float progress = (float)((timeController.GetTime() - startTime) / constructionBeamDuration) * 2.0f;
 			if(progress > 1.0f)
 			{
 				progress = 2.0f - progress;

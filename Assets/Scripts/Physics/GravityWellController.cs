@@ -41,7 +41,6 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 	[Tooltip("Distance to the Player at which un-railed Objects are on-railed again")]
 	[SerializeField] private float onrailDistance = 12000.0f;
 	private TimeController timeController = null;
-	private UpdateController updateController = null;
 	private SpawnController spawnController = null;
 	private InfoController infoController = null;
 	private Transform planetTransform = null;
@@ -101,8 +100,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 		spawnController = SpawnController.GetInstance();
 		infoController = InfoController.GetInstance();
 
-		updateController = UpdateController.GetInstance();
-		updateController.AddFixedUpdateListener(this);
+		timeController.AddFixedUpdateListener(this);
 
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
@@ -110,13 +108,13 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 	private void OnDestroy()
 	{
-		updateController?.RemoveFixedUpdateListener(this);
+		timeController?.RemoveFixedUpdateListener(this);
 	}
 
 	public void FixedUpdateNotify()
 	{
 		Vector2 playerPosition = localPlayerMainTransform.position;
-		float time = updateController.GetFixedTime();
+		double time = timeController.GetFixedTime();
 		nearbyGravityObjects.Clear();
 		// Avoid Dictionary.Get() for Performance Reasons
 		foreach(KeyValuePair<Rigidbody2D, GravityObjectController> gravityObject in gravityObjects)
@@ -167,7 +165,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 					// Analytical Gravity Solution
 					Vector2Double position = GlobalToLocalPosition(gravityObjectValue.CalculateOnRailPosition(time));
 					gravityObjectTransform.position = new Vector3((float)position.x, (float)position.y, gravityObjectPosition.z);
-					gravityObjectTransform.Rotate(0.0f, 0.0f, gravityObject.Key.angularVelocity * updateController.GetFixedDeltaTime());
+					gravityObjectTransform.Rotate(0.0f, 0.0f, gravityObject.Key.angularVelocity * timeController.GetFixedDeltaTime());
 				}
 			}
 			else
@@ -194,7 +192,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 						Vector2Double gravity = gravityDirection
 							* ((gravitationalParameter / (gravityDirectionMagnitude * gravityDirectionMagnitude * gravityDirectionMagnitude))
-							* updateController.GetFixedDeltaTime());
+							* timeController.GetFixedDeltaTime());
 						// Fucking Box2D Physics Engine does not have a ForceMode.VelocityChange
 						gravityObject.Key.velocity = ((Vector2Double)gravityObject.Key.velocity) + gravity;
 					}
@@ -220,7 +218,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 	// OnRail all Gravity Objects for Time Speedup and along the Way reset fixedTime to 0, because large Values seem to lead to Inaccuracies
 	public bool OnRailAll()
 	{
-		float oldFixedTime = updateController.GetFixedTime();
+		double fixedTime = timeController.GetFixedTime();
 		List<GravityObjectController> onRailedObjects = new List<GravityObjectController>();
 		foreach(Rigidbody2D gravityObject in gravityObjects.Keys)
 		{
@@ -228,13 +226,13 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 			if(objectRecord.IsOnRails())
 			{
-				objectRecord.UnRail(oldFixedTime);
+				continue;
 			}
 
 			if(!objectRecord.OnRail(
 				LocalToGlobalPosition(objectRecord.GetTransform().position),
 				objectRecord.GetRigidbody().velocity,
-				0.0f))
+				fixedTime))
 			{
 				// Error Messages
 				SpacecraftController spacecraft = objectRecord as SpacecraftController;
@@ -250,7 +248,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				// Rollback
 				foreach(GravityObjectController onRailedObject in onRailedObjects)
 				{
-					onRailedObject.UnRail(0.0f);
+					onRailedObject.UnRail(fixedTime);
 				}
 
 				return false;
@@ -258,8 +256,6 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 			onRailedObjects.Add(objectRecord);
 		}
-
-		updateController.ResetFixedTime();
 
 		return true;
 	}
@@ -342,7 +338,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 			{
 				Vector2Double playerPosition = LocalToGlobalPosition(localPlayerMainTransform.position);
 				double sqrPlayerAltitude = playerPosition.SqrMagnitude();
-				localPlayerMainSpacecraft.CalculateOrbitalElements(playerPosition, localPlayerMainRigidbody.velocity, updateController.GetFixedTime());
+				localPlayerMainSpacecraft.CalculateOrbitalElements(playerPosition, localPlayerMainRigidbody.velocity, timeController.GetFixedTime());
 				double periapsis = localPlayerMainSpacecraft.CalculatePeriapsisAltitude();
 				double apoapsis = localPlayerMainSpacecraft.CalculateApoapsisAltitude();
 				if(periapsis * periapsis <= atmosphereEntryAltitude && sqrPlayerAltitude <= tooLowWarningAltitude && sqrPlayerAltitude > atmosphereEntryAltitude)
@@ -384,7 +380,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 		ParticleSystem.VelocityOverLifetimeModule velocity = plasmaParticles.velocityOverLifetime;
 		plasmaParticles.Play();
 
-		float destructionTime = 0.0f;
+		double destructionTime = 0.0f;
 		while(true)
 		{
 			yield return waitForFixedUpdate;
@@ -426,7 +422,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 					emission.rateOverTimeMultiplier = startRateOverTimeMultiplier * Mathf.Sqrt(Mathf.Max(drag, plasmaMinDrag));
 					if(destructionTime > 0.0f)
 					{
-						if(Time.time - destructionTime > 2.0f)
+						if(timeController.GetTime() - destructionTime > 2.0f)
 						{
 							// TODO: Call kill in Spacecraft.OnDestroy() and simply destroy Player Spacecraft here
 							// TODO: Destroy Player Spacecraft if Altitude is too high
@@ -444,7 +440,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 					}
 					else
 					{
-						destructionTime = Time.time;
+						destructionTime = timeController.GetTime();
 					}
 				}
 				else if(drag >= plasmaMinDrag)

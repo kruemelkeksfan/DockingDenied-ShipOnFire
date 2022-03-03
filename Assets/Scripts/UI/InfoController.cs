@@ -27,7 +27,7 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 	[SerializeField] private Text autoThrottleDisplay = null;
 	[SerializeField] private GameObject keyBindingDisplay = null;
 	[SerializeField] private Text showFlightInfoButtonText = null;
-	private UpdateController updateController = null;
+	private TimeController timeController = null;
 	private GravityWellController gravityWellController = null;
 	private Queue<Message> messages = null;
 	private float lastDequeue = 0.0f;
@@ -42,7 +42,7 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 	private bool updateBuildingResourceDisplay = true;
 	private bool showBuildingResourceDisplay = false;
 	private bool showFlightInfo = false;
-	private float expiryTime = -1.0f;
+	private double expiryTime = -1.0;
 	private bool flightControls = true;
 
 	public static InfoController GetInstance()
@@ -67,13 +67,13 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 
-		updateController = UpdateController.GetInstance();
-		updateController.AddUpdateListener(this);
+		timeController = TimeController.GetInstance();
+		timeController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
 	{
-		updateController?.RemoveUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()
@@ -153,11 +153,12 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 			{
 				if(showFlightInfo)
 				{
+					double fixedTime = timeController.GetFixedTime();
 					playerSpacecraft.CalculateOrbitalElements(
 						gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position),
 						playerSpacecraftRigidbody.velocity,
-						Time.time);
-					float playerVelocity = playerSpacecraft.IsOnRails() ? (float)playerSpacecraft.CalculateVelocity(Time.time).Magnitude() : playerSpacecraftRigidbody.velocity.magnitude;
+						fixedTime);
+					float playerVelocity = playerSpacecraft.IsOnRails() ? (float)playerSpacecraft.CalculateVelocity(fixedTime).Magnitude() : playerSpacecraftRigidbody.velocity.magnitude;
 					int periapsis = (int)(playerSpacecraft.CalculatePeriapsisAltitude() / 1000.0);
 					int apoapsis = (int)(playerSpacecraft.CalculateApoapsisAltitude() / 1000.0);
 
@@ -186,16 +187,17 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 						textBuilder.Append("¯\\_(ツ)_/¯");
 					}
 
+					double time = timeController.GetTime();
 					if(expiryTime > 0.0f)
 					{
-						if(Time.realtimeSinceStartup >= expiryTime)
+						if(time >= expiryTime)
 						{
 							expiryTime = -1.0f;
 						}
 						else
 						{
 							textBuilder.Append(" / Docking Permission - ");
-							textBuilder.Append((int)(expiryTime - Time.realtimeSinceStartup));
+							textBuilder.Append((int)(expiryTime - time));
 							textBuilder.Append(" s");
 						}
 					}
@@ -355,7 +357,7 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 		UpdateBuildingResourceDisplay();
 	}
 
-	public void SetDockingExpiryTime(float expiryTime)
+	public void SetDockingExpiryTime(double expiryTime)
 	{
 		this.expiryTime = expiryTime;
 	}

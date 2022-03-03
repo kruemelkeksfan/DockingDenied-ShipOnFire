@@ -11,7 +11,7 @@ public class CameraController : MonoBehaviour, IUpdateListener, IListener
 	[SerializeField] private float maxViewAngle = 60.0f;
 	[SerializeField] private float maxZHeight = -0.04f;
 	[SerializeField] private float maxDistance = 2000.0f;
-	private UpdateController updateController = null;
+	private TimeController timeController = null;
 	private GravityWellController gravityWellController = null;
 	private new Transform transform = null;
 	private Transform spacecraftTransform = null;
@@ -25,7 +25,7 @@ public class CameraController : MonoBehaviour, IUpdateListener, IListener
 
 	private void Start()
 	{
-		updateController = UpdateController.GetInstance();
+		timeController = TimeController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 
 		transform = gameObject.GetComponent<Transform>();
@@ -43,12 +43,12 @@ public class CameraController : MonoBehaviour, IUpdateListener, IListener
 		// Square to avoid Sqrt later
 		sqrPlanetSurfaceAltitude = planetSurfaceAltitude * planetSurfaceAltitude;
 
-		updateController.AddUpdateListener(this);
+		timeController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
 	{
-		updateController?.RemoveUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()

@@ -14,7 +14,6 @@ public class GravityObjectController : MonoBehaviour
 	[Tooltip("Safety Factor for Collisions during Time Speedup")]
 	[SerializeField] private float collisionSafetyFactor = 2.0f;
 	protected TimeController timeController = null;
-	protected UpdateController updateController = null;
 	protected GravityWellController gravityWellController = null;
 	protected new Transform transform = null;
 	protected new Rigidbody2D rigidbody = null;
@@ -29,14 +28,14 @@ public class GravityObjectController : MonoBehaviour
 	private Vector2Double orbitCenter = Vector2Double.zero;
 	private double orbitalPeriod = 0.0;
 	private bool clockwise = false;
-	private float startTime = 0.0f;
+	private double startTime = 0.0f;
 	private double eccentricAnomalySin = 0.0;
 	private double eccentricAnomalyCos = 1.0;
 	private bool onRails = false;
 	private bool decaying = false;
 	private Vector2Double lastGlobalPosition = Vector2Double.zero;
 	private Vector2Double lastStartVelocity = Vector2Double.zero;
-	private float lastStartTime = 0.0f;
+	private double lastStartTime = 0.0f;
 	private bool lastOrbitalElementResult = false;
 	private float sqrColliderRadius = 0.0f;
 
@@ -48,12 +47,11 @@ public class GravityObjectController : MonoBehaviour
 
 	protected virtual void Start()
 	{
-		updateController = UpdateController.GetInstance();
 		timeController = TimeController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 	}
 
-	public bool OnRail(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
+	public bool OnRail(Vector2Double globalPosition, Vector2Double startVelocity, double startTime)
 	{
 		SpacecraftController spacecraft = this as SpacecraftController;
 		if(!decaying && !(spacecraft != null && spacecraft.IsThrusting())
@@ -80,7 +78,7 @@ public class GravityObjectController : MonoBehaviour
 		return false;
 	}
 
-	public void UnRail(float time = -1.0f)
+	public void UnRail(double time = -1.0f)
 	{
 		// TODO: Check if materializing inside another Object and if necessary resolve
 
@@ -94,7 +92,7 @@ public class GravityObjectController : MonoBehaviour
 		{
 			if(time < 0.0f)
 			{
-				time = updateController.GetFixedTime();
+				time = timeController.GetFixedTime();
 			}
 
 			transform.position = gravityWellController.GlobalToLocalPosition(CalculateOnRailPosition(time));
@@ -105,9 +103,9 @@ public class GravityObjectController : MonoBehaviour
 		onRails = false;
 	}
 
-	public bool CalculateOrbitalElements(Vector2Double globalPosition, Vector2Double startVelocity, float startTime)
+	public bool CalculateOrbitalElements(Vector2Double globalPosition, Vector2Double startVelocity, double startTime)
 	{
-		if(onRails || (globalPosition == lastGlobalPosition && startVelocity == lastStartVelocity && Mathf.Approximately(startTime, lastStartTime)))
+		if(onRails || (globalPosition == lastGlobalPosition && startVelocity == lastStartVelocity && Math.Abs(startTime - lastStartTime) < MathUtil.EPSILON))
 		{
 			return lastOrbitalElementResult;
 		}
@@ -219,7 +217,7 @@ public class GravityObjectController : MonoBehaviour
 		return true;
 	}
 
-	public Vector2Double CalculateOnRailPosition(float time)
+	public Vector2Double CalculateOnRailPosition(double time)
 	{
 		if(lastOrbitalElementResult)
 		{
@@ -239,7 +237,7 @@ public class GravityObjectController : MonoBehaviour
 		}
 	}
 
-	public Vector2Double CalculateVelocity(float time)
+	public Vector2Double CalculateVelocity(double time)
 	{
 		if(lastOrbitalElementResult)
 		{
@@ -293,7 +291,7 @@ public class GravityObjectController : MonoBehaviour
 		Debug.Log("cos(eccenctricAnomaly): " + eccentricAnomalyCos);
 	}
 
-	private void CalculateEccentricAnomaly(float time)
+	private void CalculateEccentricAnomaly(double time)
 	{
 		// Calculate Eccentric- and Mean Anomaly from current Time
 		// Calculate Mean Anomaly

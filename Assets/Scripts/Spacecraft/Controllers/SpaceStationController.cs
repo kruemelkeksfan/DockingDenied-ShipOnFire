@@ -41,7 +41,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private RectTransform tradingEntryPrefab = null;
 	[SerializeField] private ColorBlock questStationMarkerColors = new ColorBlock();
 	[SerializeField] private Color questStationTextColor = Color.red;
-	private UpdateController updateController = null;
+	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private MenuController menuController = null;
@@ -71,7 +71,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private QuestManager.TaskType[] allTasks = null;
 	private QuestManager.Quest[] questSelection = null;
 	private bool updateQuestSelection = true;
-	private float lastStationUpdate = 0.0f;
+	private double lastStationUpdate = 0.0;
 	private Dictionary<string, GoodTradingInfo> tradingInventory;
 	private List<string> goodNames = null;
 	private bool spawnProtection = true;
@@ -121,8 +121,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * maxGoodStockFactor));
 		}
 
-		updateController = UpdateController.GetInstance();
-		updateController.AddUpdateListener(this);
+		timeController = TimeController.GetInstance();
+		timeController.AddUpdateListener(this);
 
 		StartCoroutine(UpdateStation());
 	}
@@ -134,7 +134,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			GameObject.Destroy(mapMarker.gameObject);
 		}
 
-		updateController?.RemoveUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()
@@ -607,7 +607,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private IEnumerator DockingTimeout(DockingPort port, SpacecraftController requester)
 	{
-		infoController.SetDockingExpiryTime(Time.realtimeSinceStartup + (dockingTimeout / Time.timeScale));
+		infoController.SetDockingExpiryTime(timeController.GetTime() + dockingTimeout);
 
 		yield return waitForDockingTimeout;
 
@@ -624,7 +624,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	{
 		while(true)
 		{
-			lastStationUpdate = Time.realtimeSinceStartup;
+			lastStationUpdate = timeController.GetTime();
 
 			updateQuestSelection = true;
 

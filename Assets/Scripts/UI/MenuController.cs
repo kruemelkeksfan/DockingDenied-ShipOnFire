@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -311,7 +312,7 @@ public class MenuController : MonoBehaviour, IListener
 		}
 	}
 
-	public void UpdateTrading(SpaceStationController requester, RectTransform[] tradingEntries, int stationMoney, float lastStationUpdate, float stationUpdateInterval)
+	public void UpdateTrading(SpaceStationController requester, RectTransform[] tradingEntries, int stationMoney, double lastStationUpdate, float stationUpdateInterval)
 	{
 		if(requester == activeStation)
 		{
@@ -457,13 +458,13 @@ public class MenuController : MonoBehaviour, IListener
 		localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>().SetTarget(null, null, null);
 	}
 
-	private IEnumerator UpdateNextUpdateField(float lastStationUpdate, float stationUpdateInterval)
+	private IEnumerator UpdateNextUpdateField(double lastStationUpdate, float stationUpdateInterval)
 	{
 		int remainingTime = 0;
 		while(stationTradingMenu.activeSelf && remainingTime >= 0)
 		{
-			remainingTime = Mathf.FloorToInt((lastStationUpdate + (stationUpdateInterval / Time.timeScale)) - Time.realtimeSinceStartup);
-			nextUpdateField.text = remainingTime + " Seconds";
+			remainingTime = Math.Max((int)((lastStationUpdate + stationUpdateInterval) - timeController.GetTime()), 0);
+			nextUpdateField.text = remainingTime + " s";
 			yield return waitASecond;
 		}
 	}

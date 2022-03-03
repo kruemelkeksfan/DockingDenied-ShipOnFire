@@ -19,7 +19,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	[Tooltip("Delay for Reactivation of the Docking Port, if it is disabled, for Example after docking to the wrong Port of a Station")]
 	[SerializeField] private float dockingPortReactivateDelay = 20.0f;
 	[SerializeField] private float despawnDelay = 300.0f;
-	private UpdateController updateController = null;
+	private TimeController timeController = null;
 	private RectTransform uiTransform = null;
 	private MenuController menuController = null;
 	private SpacecraftController spacecraft = null;
@@ -43,7 +43,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	private QuestManager.Quest quest = null;
 	private bool interactable = false;
 	private bool playerDocked = false;
-	private float questCompleteTime = -1.0f;
+	private double questCompleteTime = -1.0f;
 
 	private void Start()
 	{
@@ -75,8 +75,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		playerSpacecraftController = localPlayerSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
-		updateController = UpdateController.GetInstance();
-		updateController.AddUpdateListener(this);
+		timeController = TimeController.GetInstance();
+		timeController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
@@ -86,7 +86,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			GameObject.Destroy(mapMarker.gameObject);
 		}
 
-		updateController?.RemoveUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()
@@ -95,11 +95,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			if(questCompleteTime < 0.0f)
 			{
-				questCompleteTime = Time.time;
+				questCompleteTime = timeController.GetTime();
 				mapMarker.localScale = Vector3.zero;
 				quest.destination.AbortDocking(spacecraft);
 			}
-			else if(Time.time > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
+			else if(timeController.GetTime() > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
 			{
 				StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));
 			}

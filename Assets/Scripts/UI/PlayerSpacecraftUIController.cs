@@ -38,7 +38,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	[SerializeField] private float orbitMarkerTimeStep = 0.01f;
 	[SerializeField] private int largeOrbitMarkerIntervall = 5;
 	[SerializeField] private float orbitUpdateIntervall = 0.2f;
-	private UpdateController updateController = null;
+	private TimeController timeController = null;
 	private ToggleController toggleController = null;
 	private GravityWellController gravityWellController = null;
 	private SpacecraftController playerSpacecraft = null;
@@ -70,7 +70,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 	{
 		waitForOrbitUpdateInterval = new WaitForSecondsRealtime(orbitUpdateIntervall);
 
-		updateController = UpdateController.GetInstance();
+		timeController = TimeController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 		toggleController = ToggleController.GetInstance();
 
@@ -140,12 +140,12 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 		StartCoroutine(UpdateOrbitDisplay());
 
-		updateController.AddUpdateListener(this);
+		timeController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
 	{
-		updateController?.RemoveUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
 
 		if(toggleController != null)
 		{
@@ -203,7 +203,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		Vector2 targetVelocity = Vector2.zero;
 		if(velocityDifferenceActive || velocityActive)
 		{
-			float time = updateController.GetFixedTime();
+			double time = timeController.GetFixedTime();
 			playerVelocity = playerSpacecraft.IsOnRails() ? (Vector2)playerSpacecraft.CalculateVelocity(time) : playerSpacecraftRigidbody.velocity;
 			if(targetSpacecraftRigidbody != null)
 			{
@@ -330,7 +330,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 			if(toggleController.IsGroupToggled("OrbitMarkers"))
 			{
-				float startTime = updateController.GetFixedTime();
+				double startTime = timeController.GetFixedTime();
 				float scaleFactor = (playerSpacecraftTransform.position - cameraTransform.position).magnitude * this.scaleFactor;
 				float orbitMarkerTimeStep = this.orbitMarkerTimeStep * scaleFactor;
 
@@ -358,7 +358,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		}
 	}
 
-	private void UpdateOrbitMarkers(float startTime, float scaleFactor, float orbitMarkerTimeStep,
+	private void UpdateOrbitMarkers(double startTime, float scaleFactor, float orbitMarkerTimeStep,
 		SpacecraftController orbiter, Transform orbiterTransform, Rigidbody2D orbiterRigidbody,
 		List<Transform> orbitMarkers, Color orbitMarkerColor)
 	{

@@ -2,15 +2,24 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+// Why handle Update() and FixedUpdate() in this Class?
+// 1) Update()-/FixedUpdate()-Calls have a lot of Overhead
+// 2) Avoiding FixedUpdate allows to shutdown Physics completely or change fixed Timesteps without glitching Unity Physics
+// 3) Emulating Coroutines allows for timeScales greater than the 100x Unity-Limit
 public class TimeController : MonoBehaviour
 {
 	private static TimeController instance = null;
 
 	[SerializeField] private float[] timeScales = { };
-	private UpdateController updateController = null;
+	[SerializeField] private float fixedUpdateInterval = 0.02f;
 	private InfoController infoController = null;
 	private GravityWellController gravityWellController = null;
 	private int currentTimeScaleIndex = 0;
+	private HashSet<IUpdateListener> updateListeners = null;
+	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
+	private double gameTime = 0.0;
+	private double fixedTime = 0.0;
+	private float timeScale = 1.0f;
 
 	public static TimeController GetInstance()
 	{
@@ -19,53 +28,117 @@ public class TimeController : MonoBehaviour
 
 	private void Awake()
 	{
+		updateListeners = new HashSet<IUpdateListener>();
+		fixedUpdateListeners = new HashSet<IFixedUpdateListener>();
+
 		instance = this;
 	}
 
 	private void Start()
 	{
-		updateController = UpdateController.GetInstance();
 		infoController = InfoController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 	}
 
-	public void SetTimeScale(int timeScaleIndex)
+	private void Update()
 	{
-		if(currentTimeScaleIndex == 0 && timeScaleIndex != 0)
+		gameTime += Time.deltaTime * timeScale;
+
+		float fixedDeltaTime = GetFixedDeltaTime();
+		while(fixedTime + fixedDeltaTime < gameTime)
 		{
-			if(gravityWellController.AreCollisionsNearby() || !gravityWellController.OnRailAll())
+			fixedTime += fixedDeltaTime;
+
+			foreach(IFixedUpdateListener listener in fixedUpdateListeners)
 			{
-				infoController.AddMessage("Can not speed up Time");
-				return;
+				listener.FixedUpdateNotify();
 			}
 
-			updateController.ToggleUnityPhysics(false);
+			if(timeScale <= 1.0f + MathUtil.EPSILON)
+			{
+				Physics2D.Simulate(fixedUpdateInterval);
+			}
 		}
-		else if(timeScaleIndex == 0)
+
+		foreach(IUpdateListener listener in updateListeners)
 		{
-			updateController.ToggleUnityPhysics(true);
+			listener.UpdateNotify();
 		}
+	}
 
-		currentTimeScaleIndex = timeScaleIndex;
-		Time.timeScale = timeScales[timeScaleIndex];
+	public void SetTimeScale(int timeScaleIndex)
+	{
+		if(timeScale > MathUtil.EPSILON)
+		{
+			if(currentTimeScaleIndex == 0 && timeScaleIndex != 0)
+			{
+				if(gravityWellController.AreCollisionsNearby() || !gravityWellController.OnRailAll())
+				{
+					infoController.AddMessage("Can not speed up Time");
+					return;
+				}
+			}
 
-		infoController.AddMessage("Set Time Speedup to " + timeScales[timeScaleIndex].ToString("F0") + "x");
+			currentTimeScaleIndex = timeScaleIndex;
+			timeScale = timeScales[timeScaleIndex];
+
+			infoController.AddMessage("Set Time Speedup to " + timeScales[timeScaleIndex].ToString("F0") + "x");
+		}
+		else
+		{
+			infoController.AddMessage("Game is paused and can not be sped up");
+		}
 	}
 
 	public void TogglePause(bool pause)
 	{
 		if(pause)
 		{
-			Time.timeScale = 0.0f;
+			timeScale = 0.0f;
 		}
 		else
 		{
-			Time.timeScale = timeScales[currentTimeScaleIndex];
+			timeScale = timeScales[currentTimeScaleIndex];
 		}
+	}
+
+	public void AddUpdateListener(IUpdateListener listener)
+	{
+		updateListeners.Add(listener);
+	}
+
+	public void RemoveUpdateListener(IUpdateListener listener)
+	{
+		updateListeners.Remove(listener);
+	}
+
+	public void AddFixedUpdateListener(IFixedUpdateListener listener)
+	{
+		fixedUpdateListeners.Add(listener);
+	}
+
+	public void RemoveFixedUpdateListener(IFixedUpdateListener listener)
+	{
+		fixedUpdateListeners.Remove(listener);
 	}
 
 	public bool IsScaled()
 	{
 		return currentTimeScaleIndex != 0;
+	}
+
+	public float GetFixedDeltaTime()
+	{
+		return fixedUpdateInterval * timeScale;
+	}
+
+	public double GetTime()
+	{
+		return gameTime;
+	}
+
+	public double GetFixedTime()
+	{
+		return fixedTime;
 	}
 }

@@ -8,7 +8,7 @@ public class GameController : MonoBehaviour, IUpdateListener
 	private static GameController instance = null;
 	private static string deathMessage = null;
 	
-	private UpdateController updateController = null;
+	private TimeController timeController = null;
 	private MenuController menuController = null;
 	private ToggleController toggleController = null;
 	private bool killScene = false;
@@ -26,15 +26,15 @@ public class GameController : MonoBehaviour, IUpdateListener
 
 	private void Start()
 	{
-		updateController = UpdateController.GetInstance();
+		timeController = TimeController.GetInstance();
 		menuController = MenuController.GetInstance();
 
-		updateController.AddUpdateListener(this);
+		timeController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
 	{
-		updateController?.RemoveUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()

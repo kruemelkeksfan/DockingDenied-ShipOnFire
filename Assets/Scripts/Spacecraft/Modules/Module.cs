@@ -15,7 +15,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
-	protected UpdateController updateController = null;
+	protected TimeController timeController = null;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
@@ -25,7 +25,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	protected virtual void Awake()
 	{
-		updateController = UpdateController.GetInstance();
+		timeController = TimeController.GetInstance();
 		transform = gameObject.GetComponent<Transform>();
 	}
 
@@ -61,11 +61,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 		if(listenUpdates)
 		{
-			updateController.AddUpdateListener(this);
+			timeController.AddUpdateListener(this);
 		}
 		if(listenFixedUpdates)
 		{
-			updateController.AddFixedUpdateListener(this);
+			timeController.AddFixedUpdateListener(this);
 		}
 	}
 
@@ -80,8 +80,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 		GameObject.Destroy(gameObject);
 
-		updateController.RemoveUpdateListener(this);
-		updateController.RemoveFixedUpdateListener(this);
+		timeController.RemoveUpdateListener(this);
+		timeController.RemoveFixedUpdateListener(this);
 	}
 
 	public void Rotate(int direction)
