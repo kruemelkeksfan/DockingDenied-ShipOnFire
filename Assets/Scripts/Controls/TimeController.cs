@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -8,6 +9,20 @@ using UnityEngine;
 // 3) Emulating Coroutines allows for timeScales greater than the 100x Unity-Limit
 public class TimeController : MonoBehaviour
 {
+	public class Coroutine
+	{
+		public double timestamp = 0.0;
+		public readonly IEnumerator<float> callback = null;
+		public readonly bool isRealTime = false;
+
+		public Coroutine(double timestamp, IEnumerator<float> callback, bool isRealTime)
+		{
+			this.timestamp = timestamp;
+			this.callback = callback;
+			this.isRealTime = isRealTime;
+		}
+	}
+
 	private static TimeController instance = null;
 
 	[SerializeField] private float[] timeScales = { };
@@ -20,6 +35,11 @@ public class TimeController : MonoBehaviour
 	private double gameTime = 0.0;
 	private double fixedTime = 0.0;
 	private float timeScale = 1.0f;
+	private HashSet<Coroutine> gameTimeCoroutines = null;
+	private HashSet<Coroutine> realTimeCoroutines = null;
+	private double nextGameTimestamp = double.MaxValue;
+	private double nextRealTimestamp = double.MaxValue;
+	private List<Coroutine> iteratableCoroutines = null;
 
 	public static TimeController GetInstance()
 	{
@@ -30,6 +50,10 @@ public class TimeController : MonoBehaviour
 	{
 		updateListeners = new HashSet<IUpdateListener>();
 		fixedUpdateListeners = new HashSet<IFixedUpdateListener>();
+
+		gameTimeCoroutines = new HashSet<Coroutine>();
+		realTimeCoroutines = new HashSet<Coroutine>();
+		iteratableCoroutines = new List<Coroutine>();
 
 		instance = this;
 	}
@@ -56,13 +80,101 @@ public class TimeController : MonoBehaviour
 
 			if(timeScale <= 1.0f + MathUtil.EPSILON)
 			{
-				Physics2D.Simulate(fixedUpdateInterval);
+				Physics2D.Simulate(fixedDeltaTime);
 			}
 		}
 
 		foreach(IUpdateListener listener in updateListeners)
 		{
 			listener.UpdateNotify();
+		}
+
+		if(gameTime >= nextGameTimestamp)
+		{
+			CallCoroutines(ref nextGameTimestamp, gameTime, gameTimeCoroutines);
+		}
+		float realTimeSinceStartup = Time.realtimeSinceStartup;
+		if(realTimeSinceStartup >= nextRealTimestamp)
+		{
+			CallCoroutines(ref nextRealTimestamp, realTimeSinceStartup, realTimeCoroutines);
+		}
+	}
+
+	public Coroutine StartCoroutine(IEnumerator<float> callback, bool isRealTime)
+	{
+		if(callback.MoveNext())
+		{
+			if(isRealTime)
+			{
+				return StartCoroutine(ref nextRealTimestamp, Time.realtimeSinceStartup, realTimeCoroutines, callback, isRealTime);
+			}
+			else
+			{
+				return StartCoroutine(ref nextGameTimestamp, gameTime, gameTimeCoroutines, callback, isRealTime);
+			}
+		}
+
+		return null;
+	}
+
+	public bool StopCoroutine(Coroutine coroutine)
+	{
+		if(coroutine.isRealTime)
+		{
+			return realTimeCoroutines.Remove(coroutine);
+		}
+		else
+		{
+			return gameTimeCoroutines.Remove(coroutine);
+		}
+	}
+
+	private Coroutine StartCoroutine(ref double nextTimestamp, double time, HashSet<Coroutine> coroutines, IEnumerator<float> callback, bool isRealTime)
+	{
+		double newTimestamp = time + callback.Current;
+		Coroutine coroutine = new Coroutine(newTimestamp, callback, isRealTime);
+		coroutines.Add(coroutine);
+
+		if(newTimestamp < nextTimestamp)
+		{
+			nextTimestamp = newTimestamp;
+		}
+
+		return coroutine;
+	}
+
+	private void CallCoroutines(ref double nextTimestamp, double time, HashSet<Coroutine> coroutines)
+	{
+		if(nextTimestamp <= time)
+		{
+			nextTimestamp = double.MaxValue;
+		}
+		iteratableCoroutines.Clear();
+		// Copy beforehand and iterate over Copy to enable starting/stopping other Coroutines from within Coroutines without throwing ConcurrentModificationExceptions
+		iteratableCoroutines.AddRange(coroutines);
+		foreach(Coroutine coroutine in iteratableCoroutines)
+		{
+			if(time >= coroutine.timestamp)
+			{
+				if(coroutine.callback.MoveNext())
+				{
+					double newTimestamp = coroutine.timestamp + coroutine.callback.Current;
+					coroutine.timestamp = newTimestamp;
+				}
+				else
+				{
+					// Defuse timestamp, so that it does not screw up nextTimestamp
+					coroutine.timestamp = double.MaxValue;
+
+					coroutine.callback.Dispose();
+					coroutines.Remove(coroutine);
+				}
+			}
+
+			if(coroutine.timestamp < nextTimestamp)
+			{
+				nextTimestamp = coroutine.timestamp;
+			}
 		}
 	}
 
