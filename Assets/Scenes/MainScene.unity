@@ -9761,7 +9761,7 @@ MonoBehaviour:
   vectorLengthFactor: 0.04
   constantVectorLengthFactor: 4
   velocityVectorWidth: 1
-  vectorHeadWidthFactor: 3
+  vectorHeadWidthFactor: 5
   targetNavVectorWidth: 3
   planetNavVectorWidth: 5
   playerHeadRotation: 45
@@ -14187,7 +14187,7 @@ MonoBehaviour:
   m_FallbackScreenDPI: 96
   m_DefaultSpriteDPI: 96
   m_DynamicPixelsPerUnit: 1
-  m_PresetInfoIsWorld: 0
+  m_PresetInfoIsWorld: 1
 --- !u!223 &2076587814
 Canvas:
   m_ObjectHideFlags: 0
