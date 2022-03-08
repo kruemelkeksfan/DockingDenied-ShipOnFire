@@ -252,9 +252,11 @@ public class GravityObjectController : MonoBehaviour
 			// E' = M' / (1 - e * cos(E))
 			// E' = (2 * pi) / (T - T * e * cos(E))
 			double derivedEccentricAnomaly = (2.0 * Math.PI) / (orbitalPeriod - orbitalPeriod * eccentricityMagnitude * eccentricAnomalyCos);
-			return new Vector2Double(
+			Vector2Double velocity = new Vector2Double(
 				(-semiMajorAxis * phiCos * eccentricAnomalySin * derivedEccentricAnomaly - semiMinorAxis * phiSin * eccentricAnomalyCos * derivedEccentricAnomaly),
 				(-semiMajorAxis * phiSin * eccentricAnomalySin * derivedEccentricAnomaly + semiMinorAxis * phiCos * eccentricAnomalyCos * derivedEccentricAnomaly));
+			// Position Calculation lets Time run backward to achieve clockwise Orbits, so Velocity needs to be inverted manually
+			return clockwise ? -velocity : velocity;
 		}
 		else
 		{
