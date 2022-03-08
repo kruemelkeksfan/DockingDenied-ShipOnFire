@@ -5,7 +5,6 @@ using UnityEngine;
 public class AsteroidSpawner : MonoBehaviour
 {
 	private static AsteroidSpawner instance = null;
-	private static WaitForSeconds waitForSpawnInterval = null;
 
 	[Tooltip("Prefab for new Asteroids")]
 	[SerializeField] private Rigidbody2D[] asteroidPrefabs = null;
@@ -19,6 +18,7 @@ public class AsteroidSpawner : MonoBehaviour
 	[SerializeField] private float spawnInterval = 5.0f;
 	[Tooltip("A Set of Spawn Areas for Asteroids defined by Minimum and Maximum Orbit Heights")]
 	[SerializeField] private MinMax[] asteroidBeltHeights = null;
+	private TimeController timeController = null;
 	private GravityWellController gravityWellController = null;
 	private SpawnController spawnController = null;
 	private float[] asteroidBeltChances = null;
@@ -37,11 +37,7 @@ public class AsteroidSpawner : MonoBehaviour
 
 	private void Start()
 	{
-		if(waitForSpawnInterval == null)
-		{
-			waitForSpawnInterval = new WaitForSeconds(spawnInterval);
-		}
-
+		timeController = TimeController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 		spawnController = SpawnController.GetInstance();
 
@@ -53,14 +49,14 @@ public class AsteroidSpawner : MonoBehaviour
 			totalAsteroidBeltChances += asteroidBeltArea;
 		}
 
-		StartCoroutine(SpawnUpdate());
+		timeController.StartCoroutine(SpawnUpdate(), false);
 	}
 
-	private IEnumerator SpawnUpdate()
+	private IEnumerator<float> SpawnUpdate()
 	{
 		while(true)
 		{
-			yield return waitForSpawnInterval;
+			yield return spawnInterval;
 
 			if(asteroidCount < maxAsteroids)
 			{
@@ -69,7 +65,7 @@ public class AsteroidSpawner : MonoBehaviour
 				{
 					if(beltRandom <= asteroidBeltChances[i])
 					{
-						StartCoroutine(spawnController.SpawnObject(asteroidPrefabs[Random.Range(0, asteroidPrefabs.Length - 1)], Vector2.zero, asteroidBeltHeights[i], 10));
+						timeController.StartCoroutine(spawnController.SpawnObject(asteroidPrefabs[Random.Range(0, asteroidPrefabs.Length - 1)], Vector2.zero, asteroidBeltHeights[i], 10), false);
 						break;
 					}
 				}

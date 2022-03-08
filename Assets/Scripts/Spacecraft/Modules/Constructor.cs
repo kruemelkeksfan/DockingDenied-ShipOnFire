@@ -53,10 +53,10 @@ public class Constructor : Module
 
 	public void StartConstruction(Vector2 position)
 	{
-		StartCoroutine(Construction(position));
+		timeController.StartCoroutine(Construction(position), false);
 	}
 
-	private IEnumerator Construction(Vector3 position)
+	private IEnumerator<float> Construction(Vector3 position)
 	{
 		// TODO: Object Pooling
 		LineRenderer constructionBeam = GameObject.Instantiate<LineRenderer>(constructionBeamPrefab, beamOrigin.position, Quaternion.identity, transform);
@@ -73,7 +73,7 @@ public class Constructor : Module
 			constructionBeam.startColor = new Color(startColor.r, startColor.g, startColor.b, startColor.a * progress);
 			constructionBeam.endColor = new Color(endColor.r, endColor.g, endColor.b, endColor.a * progress);
 
-			yield return waitForEndOfFrame;
+			yield return -1.0f;
 		}
 		
 		GameObject.Destroy(constructionBeam.gameObject);

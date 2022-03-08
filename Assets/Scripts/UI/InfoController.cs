@@ -225,10 +225,11 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 
 		float messageDuration = Input.GetButton("Skip Info Log") ? skippingMessageDuration : this.messageDuration;
 
-		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < Time.realtimeSinceStartup && lastDequeue + messageDuration < Time.realtimeSinceStartup)
+		float realtimeSinceStartup = Time.realtimeSinceStartup;
+		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < realtimeSinceStartup && lastDequeue + messageDuration < realtimeSinceStartup)
 		{
 			messages.Dequeue();
-			lastDequeue = Time.realtimeSinceStartup;
+			lastDequeue = realtimeSinceStartup;
 		}
 
 		textBuilder.Clear();

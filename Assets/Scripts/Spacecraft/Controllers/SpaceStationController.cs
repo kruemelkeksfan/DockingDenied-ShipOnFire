@@ -19,9 +19,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private static WaitForSeconds waitForStationUpdateInterval = null;
-	private static WaitForSeconds waitForDockingTimeout = null;
-
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[Tooltip("Distance up from which no more digital Digits will be displayed")]
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
@@ -63,7 +60,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private Button mapMarkerButton = null;
 	private string stationName = null;
 	private DockingPort[] dockingPorts = null;
-	private IEnumerator dockingTimeoutCoroutine = null;
+	private TimeController.Coroutine dockingTimeoutCoroutine = null;
 	private Dictionary<DockingPort, SpacecraftController> expectedDockings = null;
 	private HashSet<SpacecraftController> dockedSpacecraft = null;
 	private QuestManager.TaskType[] firstTasks = null;
@@ -81,12 +78,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private void Start()
 	{
-		if(waitForStationUpdateInterval == null || waitForDockingTimeout == null)
-		{
-			waitForStationUpdateInterval = new WaitForSeconds(stationUpdateInterval);
-			waitForDockingTimeout = new WaitForSeconds(dockingTimeout);
-		}
-
 		maxApproachDistance *= maxApproachDistance;
 		spacecraft = GetComponent<SpacecraftController>();
 		transform = spacecraft.GetTransform();
@@ -124,7 +115,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		timeController = TimeController.GetInstance();
 		timeController.AddUpdateListener(this);
 
-		StartCoroutine(UpdateStation());
+		timeController.StartCoroutine(UpdateStation(), false);
 	}
 
 	private void OnDestroy()
@@ -173,7 +164,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 				if(otherSpacecraft == localPlayerMainSpacecraft)
 				{
-					StopCoroutine(dockingTimeoutCoroutine);
+					timeController.StopCoroutine(dockingTimeoutCoroutine);
 					dockingTimeoutCoroutine = null;
 					infoController.SetDockingExpiryTime(-1.0f);
 				}
@@ -252,8 +243,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 						if(requester == localPlayerMainSpacecraft)
 						{
-							dockingTimeoutCoroutine = DockingTimeout(alignedPort, requester);
-							StartCoroutine(dockingTimeoutCoroutine);
+							dockingTimeoutCoroutine = timeController.StartCoroutine(DockingTimeout(alignedPort, requester), false);
 
 							infoController.AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetActionName() + "!");
 						}
@@ -605,11 +595,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		return true;
 	}
 
-	private IEnumerator DockingTimeout(DockingPort port, SpacecraftController requester)
+	private IEnumerator<float> DockingTimeout(DockingPort port, SpacecraftController requester)
 	{
 		infoController.SetDockingExpiryTime(timeController.GetTime() + dockingTimeout);
 
-		yield return waitForDockingTimeout;
+		yield return dockingTimeout;
 
 		if(port.IsActive() && port.IsFree())
 		{
@@ -620,7 +610,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private IEnumerator UpdateStation()
+	private IEnumerator<float> UpdateStation()
 	{
 		while(true)
 		{
@@ -649,7 +639,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 			UpdateTrading();
 
-			yield return waitForStationUpdateInterval;
+			yield return stationUpdateInterval;
 		}
 	}
 

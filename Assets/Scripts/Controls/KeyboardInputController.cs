@@ -42,7 +42,7 @@ public class KeyboardInputController : InputController
 
 		if((flightControls || autoThrottleSetting != Vector3.zero) && !Input.GetButton("Rotate Camera"))
 		{
-			throttle += Input.GetAxis("Throttle") * Time.deltaTime;
+			throttle += Input.GetAxis("Throttle") * timeController.GetDeltaTime();
 			throttle = Mathf.Clamp01(throttle);
 
 			if(Input.GetButtonDown("AutoThrottle"))

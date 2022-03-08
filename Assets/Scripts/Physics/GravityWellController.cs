@@ -9,8 +9,6 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 	public const double GRAVITY_CONSTANT = 0.000000000066743;
 
 	private static GravityWellController instance = null;
-	private static WaitForSecondsRealtime waitForPositionCheckInterval = null;
-	private static WaitForFixedUpdate waitForFixedUpdate = null;
 
 	[Tooltip("The Mass of this Gravity Well in kg")]
 	[SerializeField] private double mass = 6.2e+21;
@@ -40,6 +38,8 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 	[SerializeField] private float unrailDistance = 10000.0f;
 	[Tooltip("Distance to the Player at which un-railed Objects are on-railed again")]
 	[SerializeField] private float onrailDistance = 12000.0f;
+	[Tooltip("Update Frequency for Deorbit-Physics and -Particle Effect")]
+	[SerializeField] private float deorbitUpdateInterval = 0.1f;
 	private TimeController timeController = null;
 	private SpawnController spawnController = null;
 	private InfoController infoController = null;
@@ -64,9 +64,6 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 	{
 		if(instance == null)
 		{
-			waitForPositionCheckInterval = new WaitForSecondsRealtime(positionCheckInterval);
-			waitForFixedUpdate = new WaitForFixedUpdate();
-
 			planetTransform = gameObject.GetComponent<Transform>();
 
 			gravitationalParameter = GRAVITY_CONSTANT * mass;
@@ -94,8 +91,6 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 	private void Start()
 	{
-		StartCoroutine(CheckGravityObjectPositions());
-
 		timeController = TimeController.GetInstance();
 		spawnController = SpawnController.GetInstance();
 		infoController = InfoController.GetInstance();
@@ -104,6 +99,8 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
+
+		timeController.StartCoroutine(CheckGravityObjectPositions(), true);
 	}
 
 	private void OnDestroy()
@@ -260,13 +257,13 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 		return true;
 	}
 
-	private IEnumerator CheckGravityObjectPositions()
+	private IEnumerator<float> CheckGravityObjectPositions()
 	{
 		List<Rigidbody2D> deorbitObjects = new List<Rigidbody2D>();
 		List<Rigidbody2D> despawnObjects = new List<Rigidbody2D>();
 		while(true)
 		{
-			yield return waitForPositionCheckInterval;
+			yield return positionCheckInterval;
 
 			// Check, and if necessary move, Origin
 			// Must perform Origin Ship outside FixedUpdate() to avoid Interference with Physics Engine
@@ -319,16 +316,16 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 			foreach(Rigidbody2D deorbitObject in deorbitObjects)
 			{
-				StartCoroutine(Deorbit(deorbitObject));
+				timeController.StartCoroutine(Deorbit(deorbitObject), false);
 			}
 			foreach(Rigidbody2D despawnObject in despawnObjects)
 			{
-				StartCoroutine(spawnController.DespawnObject(despawnObject));
+				timeController.StartCoroutine(spawnController.DespawnObject(despawnObject), false);
 			}
 
 			if(originShifted)
 			{
-				yield return waitForFixedUpdate;
+				yield return timeController.GetFixedDeltaTime() + MathUtil.EPSILON;
 
 				originShifted = false;
 			}
@@ -353,7 +350,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 		}
 	}
 
-	private IEnumerator Deorbit(Rigidbody2D gravityObject)
+	private IEnumerator<float> Deorbit(Rigidbody2D gravityObject)
 	{
 		GravityObjectController objectRecord = gravityObjects[gravityObject];
 		objectRecord.UnRail();
@@ -383,7 +380,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 		double destructionTime = 0.0f;
 		while(true)
 		{
-			yield return waitForFixedUpdate;
+			yield return deorbitUpdateInterval;
 
 			float sqrOrbitalAltitude = (float)LocalToGlobalPosition(objectRecord.transform.position).SqrMagnitude();
 			if(sqrOrbitalAltitude <= atmosphereEntryAltitude)
@@ -408,7 +405,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				// https://en.wikipedia.org/wiki/Drag_(physics)#The_drag_equation
 				// Drag Coefficient for a Cube is roughly 1.0, if we ignore that Drag Coefficient is dependent on the Reynolds Number
 				float drag = (0.5f * currentDensity * gravityObject.velocity.sqrMagnitude * shipRadius * bounds.extents.z);
-				gravityObject.AddForce(-gravityObject.velocity.normalized * (drag * Time.deltaTime), ForceMode2D.Impulse);
+				gravityObject.AddForce(-gravityObject.velocity.normalized * (drag * deorbitUpdateInterval), ForceMode2D.Impulse);
 
 				// Don't rotate ParticleSystem with Ship, so Particle Velocity can be given in global Coordinates
 				plasmaParticles.transform.rotation = Quaternion.identity;

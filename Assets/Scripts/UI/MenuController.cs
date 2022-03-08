@@ -9,7 +9,6 @@ using UnityEngine.UI;
 public class MenuController : MonoBehaviour, IListener
 {
 	private static MenuController instance = null;
-	private static WaitForSecondsRealtime waitASecond = null;
 
 	[SerializeField] private RectTransform uiTransform = null;
 	[SerializeField] private RectTransform moduleMenu = null;
@@ -46,6 +45,7 @@ public class MenuController : MonoBehaviour, IListener
 	private SpacecraftController localPlayerMainSpacecraft = null;
 	private InventoryController localPlayerMainInventory = null;
 	private InputController localPlayerMainInputController = null;
+	private TimeController.Coroutine nextUpdateFieldCoroutine = null;
 
 	public static MenuController GetInstance()
 	{
@@ -61,11 +61,6 @@ public class MenuController : MonoBehaviour, IListener
 
 	private void Start()
 	{
-		if(waitASecond == null)
-		{
-			waitASecond = new WaitForSecondsRealtime(1.0f);
-		}
-
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 
@@ -316,8 +311,12 @@ public class MenuController : MonoBehaviour, IListener
 	{
 		if(requester == activeStation)
 		{
-			StopAllCoroutines();
-			StartCoroutine(UpdateNextUpdateField(lastStationUpdate, stationUpdateInterval));
+			if(nextUpdateFieldCoroutine != null)
+			{
+				timeController.StopCoroutine(nextUpdateFieldCoroutine);
+				nextUpdateFieldCoroutine = null;
+			}
+			nextUpdateFieldCoroutine = timeController.StartCoroutine(UpdateNextUpdateField(lastStationUpdate, stationUpdateInterval), false);
 
 			playerMoneyField.text = localPlayerMainInventory.GetMoney() + "$";
 			stationMoneyField.text = stationMoney + "$";
@@ -458,14 +457,14 @@ public class MenuController : MonoBehaviour, IListener
 		localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>().SetTarget(null, null, null);
 	}
 
-	private IEnumerator UpdateNextUpdateField(double lastStationUpdate, float stationUpdateInterval)
+	private IEnumerator<float> UpdateNextUpdateField(double lastStationUpdate, float stationUpdateInterval)
 	{
 		int remainingTime = 0;
 		while(stationTradingMenu.activeSelf && remainingTime >= 0)
 		{
 			remainingTime = Math.Max((int)((lastStationUpdate + stationUpdateInterval) - timeController.GetTime()), 0);
 			nextUpdateField.text = remainingTime + " s";
-			yield return waitASecond;
+			yield return 1.0f;
 		}
 	}
 

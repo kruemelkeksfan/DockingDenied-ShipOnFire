@@ -6,8 +6,6 @@ using UnityEngine.UI;
 // TODO: What if Player has multiple Spacecraft? Activate/deactivate this when switching Spacecraft
 public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 {
-	private static WaitForSecondsRealtime waitForOrbitUpdateInterval = null;
-
 	[SerializeField] private RectTransform uiTransform = null;
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[SerializeField] private float minMapMarkerDisplayDistance = 1.0f;
@@ -68,8 +66,6 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 
 	private void Start()
 	{
-		waitForOrbitUpdateInterval = new WaitForSecondsRealtime(orbitUpdateIntervall);
-
 		timeController = TimeController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 		toggleController = ToggleController.GetInstance();
@@ -138,7 +134,7 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		toggleController.AddToggleObject("TargetNavVector", targetNavVector.gameObject);
 		toggleController.AddToggleObject("PlanetNavVector", planetNavVector.gameObject);
 
-		StartCoroutine(UpdateOrbitDisplay());
+		timeController.StartCoroutine(UpdateOrbitDisplay(), true);
 
 		timeController.AddUpdateListener(this);
 	}
@@ -311,11 +307,11 @@ public class PlayerSpacecraftUIController : MonoBehaviour, IUpdateListener
 		vector.localRotation = rotation;
 	}
 
-	private IEnumerator UpdateOrbitDisplay()
+	private IEnumerator<float> UpdateOrbitDisplay()
 	{
 		while(true)
 		{
-			yield return waitForOrbitUpdateInterval;
+			yield return orbitUpdateIntervall;
 
 			// Set targetOrbitMarkers inactive if target was reset
 			if(currentOrbitMarkerTarget != null && targetSpacecraftTransform == null)

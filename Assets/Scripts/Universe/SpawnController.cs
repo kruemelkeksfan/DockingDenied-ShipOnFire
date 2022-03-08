@@ -14,6 +14,7 @@ public class SpawnController : MonoBehaviour
 	[SerializeField] private float approachSpeed = 200.0f;
 	[Tooltip("Acceleration of freshly despawned Objects")]
 	[SerializeField] private float disappearingAcceleration = 20.0f;
+	private TimeController timeController = null;
 	private AsteroidSpawner asteroidSpawner = null;
 	private GravityWellController gravityWellController = null;
 	private int layerMask = Physics2D.DefaultRaycastLayers;
@@ -32,11 +33,12 @@ public class SpawnController : MonoBehaviour
 
 	private void Start()
 	{
+		timeController = TimeController.GetInstance();
 		asteroidSpawner = AsteroidSpawner.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 	}
 
-	public IEnumerator SpawnObject(Rigidbody2D spawnObjectPrefab, Vector2 globalSpawnCenter, MinMax spawnRange, int layer, QuestManager.Quest quest = null)
+	public IEnumerator<float> SpawnObject(Rigidbody2D spawnObjectPrefab, Vector2 globalSpawnCenter, MinMax spawnRange, int layer, QuestManager.Quest quest = null)
 	{
 		float alpha = Random.Range(0.0f, Mathf.PI * 2.0f);
 		float radius = Random.Range(spawnRange.min, spawnRange.max);
@@ -69,11 +71,11 @@ public class SpawnController : MonoBehaviour
 				spawnObject.gameObject.layer = layer;
 			}
 
-			spawnObjectTransform.position -= new Vector3(0.0f, 0.0f, spawnObject.transform.position.z * approachSpeed * Time.deltaTime);
+			spawnObjectTransform.position -= new Vector3(0.0f, 0.0f, spawnObject.transform.position.z * approachSpeed * timeController.GetDeltaTime());
 			float currentSize = 1.0f - (spawnObject.transform.position.z / spawnHeight);
 			spawnObjectTransform.localScale = spawnObjectSize * currentSize;
 
-			yield return null;
+			yield return -1.0f;
 		}
 
 		if(spawnObject != null && spawnObject.gameObject.layer != 9)
@@ -83,7 +85,7 @@ public class SpawnController : MonoBehaviour
 		}
 	}
 
-	public IEnumerator DespawnObject(Rigidbody2D despawnObject)
+	public IEnumerator<float> DespawnObject(Rigidbody2D despawnObject)
 	{
 		DockingPort[] ports = despawnObject.GetComponentsInChildren<DockingPort>();
 		foreach(DockingPort port in ports)
@@ -102,12 +104,13 @@ public class SpawnController : MonoBehaviour
 		while(despawnObject.transform.position.z < spawnHeight)
 		{
 			// Add Sqrt(height) to Acceleration to accelerate Disappearance slightly
-			speed += (disappearingAcceleration + Mathf.Sqrt(despawnObject.transform.position.z)) * Time.deltaTime;
-			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * Time.deltaTime);
+			float deltaTime = timeController.GetDeltaTime();
+			speed += (disappearingAcceleration + Mathf.Sqrt(despawnObject.transform.position.z)) * deltaTime;
+			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * deltaTime);
 			float currentSize = 1.0f - (despawnObject.transform.position.z / spawnHeight);
 			spawnObjectTransform.localScale = spawnObjectSize * currentSize;
 
-			yield return null;
+			yield return -1.0f;
 		}
 
 		GameObject.Destroy(despawnObject.gameObject);

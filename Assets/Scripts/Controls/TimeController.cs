@@ -33,6 +33,7 @@ public class TimeController : MonoBehaviour
 	private HashSet<IUpdateListener> updateListeners = null;
 	private HashSet<IFixedUpdateListener> fixedUpdateListeners = null;
 	private double gameTime = 0.0;
+	private float deltaTime = 0.0f;
 	private double fixedTime = 0.0;
 	private float timeScale = 1.0f;
 	private HashSet<Coroutine> gameTimeCoroutines = null;
@@ -66,7 +67,8 @@ public class TimeController : MonoBehaviour
 
 	private void Update()
 	{
-		gameTime += Time.deltaTime * timeScale;
+		deltaTime = Time.deltaTime * timeScale;
+		gameTime += deltaTime;
 
 		float fixedDeltaTime = GetFixedDeltaTime();
 		while(fixedTime + fixedDeltaTime < gameTime)
@@ -131,7 +133,8 @@ public class TimeController : MonoBehaviour
 
 	private Coroutine StartCoroutine(ref double nextTimestamp, double time, HashSet<Coroutine> coroutines, IEnumerator<float> callback, bool isRealTime)
 	{
-		double newTimestamp = time + callback.Current;
+		// If callback returns a Value <= 0.0, wait a minimum Amount of Time (== until next Frame)
+		double newTimestamp = time + (callback.Current > 0.0 ? callback.Current : MathUtil.EPSILON);
 		Coroutine coroutine = new Coroutine(newTimestamp, callback, isRealTime);
 		coroutines.Add(coroutine);
 
@@ -158,7 +161,8 @@ public class TimeController : MonoBehaviour
 			{
 				if(coroutine.callback.MoveNext())
 				{
-					double newTimestamp = coroutine.timestamp + coroutine.callback.Current;
+					// If callback returns a Value <= 0.0, wait a minimum Amount of Time (== until next Frame)
+					double newTimestamp = (coroutine.callback.Current > 0.0) ? (coroutine.timestamp + coroutine.callback.Current) : (time + MathUtil.EPSILON);
 					coroutine.timestamp = newTimestamp;
 				}
 				else
@@ -237,6 +241,11 @@ public class TimeController : MonoBehaviour
 	public bool IsScaled()
 	{
 		return currentTimeScaleIndex != 0;
+	}
+
+	public float GetDeltaTime()
+	{
+		return deltaTime;
 	}
 
 	public float GetFixedDeltaTime()

@@ -8,8 +8,6 @@ using UnityEngine.UI;
 
 public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingListener, IListener
 {
-	private static WaitForSeconds waitForDockingPortReactivationDelay = null;
-
 	[SerializeField] private TextAsset[] questVesselBlueprints = { };
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[Tooltip("Distance up from which no more digital Digits will be displayed")]
@@ -47,11 +45,6 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	private void Start()
 	{
-		if(waitForDockingPortReactivationDelay == null)
-		{
-			waitForDockingPortReactivationDelay = new WaitForSeconds(dockingPortReactivateDelay);
-		}
-
 		spacecraft = GetComponent<SpacecraftController>();
 		transform = spacecraft.GetTransform();
 		SpacecraftBlueprintController.InstantiateModules(SpacecraftBlueprintController.LoadBlueprintModules(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)]), transform);
@@ -101,7 +94,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			}
 			else if(timeController.GetTime() > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
 			{
-				StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));
+				timeController.StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody), false);
 			}
 		}
 		else
@@ -155,7 +148,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		if(!port.IsActive() && port.gameObject.activeSelf && gameObject.activeSelf)
 		{
 			quest.progress = 0.0002f;
-			StartCoroutine(ReactivateDockingPort(port));
+			timeController.StartCoroutine(ReactivateDockingPort(port), false);
 		}
 
 		UpdateQuestVesselMenu();
@@ -186,9 +179,9 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		menuController.UpdateQuestVesselMenu(this, vesselName, progress, hint, interactionLabel, (quest.progress < 1.0f && interactable && playerDocked) ? interaction : null);
 	}
 
-	public IEnumerator ReactivateDockingPort(DockingPort port)
+	public IEnumerator<float> ReactivateDockingPort(DockingPort port)
 	{
-		yield return waitForDockingPortReactivationDelay;
+		yield return dockingPortReactivateDelay;
 
 		if(!port.IsActive())
 		{

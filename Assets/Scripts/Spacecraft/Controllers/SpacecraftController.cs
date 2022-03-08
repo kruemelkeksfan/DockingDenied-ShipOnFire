@@ -18,8 +18,6 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		all
 	};
 
-	private static WaitForFixedUpdate waitForFixedUpdate = null;
-
 	[SerializeField] private Module commandModulePrefab = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
 	[SerializeField] private Transform foreignCenterOfMassIndicator = null;
@@ -47,8 +45,6 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	protected override void Awake()
 	{
 		base.Awake();
-
-		waitForFixedUpdate = new WaitForFixedUpdate();
 
 		modules = new Dictionary<Vector2Int, Module>();
 		inventoryController = gameObject.GetComponent<InventoryController>();
@@ -122,7 +118,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	{
 		if(!stoppingRotation && rigidbody.angularVelocity != 0.0f && Mathf.Abs(rigidbody.angularVelocity) < minAngularVelocity)
 		{
-			StartCoroutine(StopRotation());
+			timeController.StartCoroutine(StopRotation(), false);
 		}
 	}
 
@@ -475,14 +471,14 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		}
 	}
 
-	private IEnumerator StopRotation()
+	private IEnumerator<float> StopRotation()
 	{
 		stoppingRotation = true;
 
 		double startTime = timeController.GetTime();
 		do
 		{
-			yield return waitForFixedUpdate;
+			yield return -1.0f;
 
 			if(Mathf.Abs(rigidbody.angularVelocity) >= minAngularVelocity)
 			{

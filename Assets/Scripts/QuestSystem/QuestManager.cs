@@ -64,6 +64,7 @@ public class QuestManager : MonoBehaviour, IListener
 	[Tooltip("Range in which Quest Vessels will spawn around the Station.")]
 	[SerializeField] private MinMax questVesselSpawnRange = new MinMax(4.0f, 12.0f);
 	[SerializeField] private Rigidbody2D questVesselPrefab = null;
+	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private SpawnController spawnController = null;
 	private GravityWellController gravityWellController = null;
@@ -71,7 +72,7 @@ public class QuestManager : MonoBehaviour, IListener
 	private BackstoryData[] backstories = null;
 	private QuestGiverData[] questGivers = null;
 	private TaskData[] tasks = null;
-	private string[] goodNames = null;                                              // Dictionary does not allow random Element picking, therefore 2 Arrays
+	private string[] goodNames = null;													// Dictionary does not allow random Element picking, therefore 2 Arrays
 	private int[] goodRewards = null;
 	private List<int>[] taskBackstories = null;
 	private List<int>[] taskQuestGivers = null;
@@ -223,6 +224,7 @@ public class QuestManager : MonoBehaviour, IListener
 
 	private void Start()
 	{
+		timeController = TimeController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 		spawnController = SpawnController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
@@ -433,8 +435,8 @@ public class QuestManager : MonoBehaviour, IListener
 		if(/* TODO: quest.taskType == TaskType.Destroy || */quest.taskType == TaskType.Bribe || quest.taskType == TaskType.JumpStart
 			|| quest.taskType == TaskType.Supply || quest.taskType == TaskType.Plunder || quest.taskType == TaskType.Tow)
 		{
-			StartCoroutine(spawnController.SpawnObject(questVesselPrefab,
-				gravityWellController.LocalToGlobalPosition(quest.destination.GetTransform().position), questVesselSpawnRange, 11, quest));
+			timeController.StartCoroutine(spawnController.SpawnObject(questVesselPrefab,
+				gravityWellController.LocalToGlobalPosition(quest.destination.GetTransform().position), questVesselSpawnRange, 11, quest), false);
 		}
 	}
 
