@@ -70,19 +70,22 @@ public class TimeController : MonoBehaviour
 		deltaTime = Time.deltaTime * timeScale;
 		gameTime += deltaTime;
 
-		float fixedDeltaTime = GetFixedDeltaTime();
-		while(fixedTime + fixedDeltaTime < gameTime)
+		if(timeScale > MathUtil.EPSILON)
 		{
-			fixedTime += fixedDeltaTime;
-
-			foreach(IFixedUpdateListener listener in fixedUpdateListeners)
+			float fixedDeltaTime = GetFixedDeltaTime();
+			while(fixedTime + fixedDeltaTime < gameTime)
 			{
-				listener.FixedUpdateNotify();
-			}
+				fixedTime += fixedDeltaTime;
 
-			if(timeScale <= 1.0f + MathUtil.EPSILON)
-			{
-				Physics2D.Simulate(fixedDeltaTime);
+				foreach(IFixedUpdateListener listener in fixedUpdateListeners)
+				{
+					listener.FixedUpdateNotify();
+				}
+
+				if(timeScale <= 1.0f + MathUtil.EPSILON)
+				{
+					Physics2D.Simulate(fixedDeltaTime);
+				}
 			}
 		}
 
@@ -202,7 +205,7 @@ public class TimeController : MonoBehaviour
 		}
 		else
 		{
-			infoController.AddMessage("Game is paused and can not be sped up");
+			infoController.AddMessage("Game is paused and can not be sped up or slowed down");
 		}
 	}
 
