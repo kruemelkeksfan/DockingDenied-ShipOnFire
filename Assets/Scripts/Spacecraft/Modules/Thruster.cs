@@ -49,7 +49,7 @@ public class Thruster : Module
 		// Don't apply Thrust during a Frame in which the Origin shifted,
 		// because the Physics freak out when moving transform.position while Forces are being applied
 		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
-		if(constructed && throttle > 0.0f && !gravityWellController.IsOriginShifted())
+		if(constructed && throttle > MathUtil.EPSILON && !gravityWellController.IsOriginShifted())
 		{
 			float finalThrottle = throttle * capacitor.DischargePartial(energyConsumption * throttle * timeController.GetFixedDeltaTime());
 			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustVector * finalThrottle * timeController.GetFixedDeltaTime(), transform.position, ForceMode2D.Impulse);
@@ -71,6 +71,10 @@ public class Thruster : Module
 		{
 			if(this.throttle <= 0.0f)
 			{
+				thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * throttle;
+				thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * throttle;
+				thrustParticlesMain.startSizeZMultiplier = initialParticleSize.z * throttle;
+
 				thrustParticles.Play();
 			}
 		}
