@@ -93,6 +93,9 @@ Combat
 	Scanner/Sensors
 		Component for Command Module
 		Different Ranges (ca. 500-5000km)
+		Space Stations are always visible
+		For Quest Vessels, last known Position is marked
+		Players can ping Positions, Pings stay visible for about 10 Seconds
 		2 Types
 			Sensors
 				Observe all Objects in Radius
@@ -134,6 +137,8 @@ New Quest System
 	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Difficulty and Spawn Distance)
 	Difficult Tasks/Boss Fights in Story Quests as memorable Milestones
 	Rework Tutorial
+	Spawn Quest Vessels on Quest Generation and instead of on Acceptance
+	Rename QuestVessel to NPC Vessel or something else more neutral
 Multiplayer
 	Enum method = { Spawn, Despawn, UpdatePosition, ... }
 	method-index gets send over network instead of string name
