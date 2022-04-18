@@ -12,7 +12,6 @@ Component System
  		Components for Reactors, Weapons, Thrusters, Shields, etc.
 		Low Grade Radiators lead to overheating and Dysfunction
 Combat
-	Combat Quests/Boss Fights
 	Weapons
 		Liquid Cooled Machineguns
 			Low Range
@@ -133,8 +132,14 @@ New Quest System
 	Abandon JSON and generate Quests from pure Code
 	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
 	only generate Quests for which the Requirements are met by the current Ship
+	Task Types
+		Destroy
+		Jump-Start
+		Supply (Reward must be larger than Investment)
+		Tow
+		(Plunder)
 	various Tiers: later Quests require bigger Ships and spawn further away from Stations
-	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Difficulty and Spawn Distance)
+	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Task Type, Difficulty and Spawn Distance)
 	Difficult Tasks/Boss Fights in Story Quests as memorable Milestones
 	Rework Tutorial
 	Spawn Quest Vessels on Quest Generation and instead of on Acceptance
