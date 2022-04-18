@@ -342,9 +342,13 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				{
 					infoController.AddMessage("Dangerously low, increase Speed!");
 				}
-				if((apoapsis == 0 || apoapsis * apoapsis >= maximumAltitude) && sqrPlayerAltitude >= tooHighWarningAltitude)
+				else if((apoapsis == 0 || apoapsis * apoapsis >= maximumAltitude) && sqrPlayerAltitude >= tooHighWarningAltitude)
 				{
 					infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
+				}
+				else if(periapsis == 0 && apoapsis == 0)
+				{
+					infoController.AddMessage("Unstable Orbit!");
 				}
 			}
 		}
