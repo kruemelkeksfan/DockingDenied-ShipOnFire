@@ -585,11 +585,6 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		return inventoryController;
 	}
 
-	public void SetThrusting(bool thrusting)
-	{
-		this.thrusting = thrusting;
-	}
-
 	public void AddModule(Vector2Int position, Module module)
 	{
 		modules[position] = module;

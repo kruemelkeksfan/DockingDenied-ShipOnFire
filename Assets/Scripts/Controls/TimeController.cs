@@ -72,6 +72,7 @@ public class TimeController : MonoBehaviour
 
 		if(timeScale > MathUtil.EPSILON)
 		{
+			float timeScale = GetTimeScale();
 			float fixedDeltaTime = GetFixedDeltaTime();
 			while(fixedTime + fixedDeltaTime < gameTime)
 			{
@@ -86,6 +87,10 @@ public class TimeController : MonoBehaviour
 				{
 					Physics2D.Simulate(fixedDeltaTime);
 				}
+
+				// Update Time Variables in case that something was unrailed during this Frame
+				timeScale = GetTimeScale();
+				fixedDeltaTime = GetFixedDeltaTime();
 			}
 		}
 
