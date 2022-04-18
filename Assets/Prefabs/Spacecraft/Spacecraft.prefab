@@ -132,7 +132,7 @@ MonoBehaviour:
   minPrecision: 0.0001
   circularOrbitThreshold: 0.0001
   parabolicOrbitThreshold: 0.95
-  collisionSafetyFactor: 2
+  collisionSafetyFactor: 1.2
   commandModulePrefab: {fileID: 8512460041063511880, guid: 230c4d248802d6a4388df0d17a08f193,
     type: 3}
   centerOfMassIndicator: {fileID: 5754137890348040591}

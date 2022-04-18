@@ -501,90 +501,107 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 		}
 	}
 
-	public bool AreCollisionsNearby()
+	public bool AreCollisionsNearby(float desiredTimeScale = -1.0f)
 	{
+		if(desiredTimeScale < 0.0f)
+		{
+			desiredTimeScale = timeController.GetTimeScale();
+		}
+
+		double fixedTime = timeController.GetFixedTime();
 		// Don't rely on Physics Engine, because Physics are disabled for many Objects
 		// Elaborate nested Loop which checks every Pair exactly once (hopefully, I'm very tired right now tbh)
 		for(int i = 0; i < nearbyGravityObjects.Count - 1; ++i)
 		{
 			for(int j = i + 1; j < nearbyGravityObjects.Count; ++j)
 			{
-				float sqrDistance = (nearbyGravityObjects[i].GetTransform().position - nearbyGravityObjects[j].GetTransform().position).sqrMagnitude;
-				// TODO: c < a + b => c^2 < (a + b)^2, not c < a + b => c^2 < a^2 + b^2
-				if(sqrDistance < nearbyGravityObjects[i].GetSqrColliderRadius() + nearbyGravityObjects[j].GetSqrColliderRadius())
+				Vector2Double positionDifference = nearbyGravityObjects[i].GetTransform().position - nearbyGravityObjects[j].GetTransform().position;
+				Vector2Double iVelocity = nearbyGravityObjects[i].IsOnRails() ?
+					nearbyGravityObjects[i].CalculateVelocity(fixedTime) : new Vector2Double(nearbyGravityObjects[i].GetRigidbody().velocity);
+				Vector2Double jVelocity = nearbyGravityObjects[j].IsOnRails() ?
+					nearbyGravityObjects[j].CalculateVelocity(fixedTime) : new Vector2Double(nearbyGravityObjects[j].GetRigidbody().velocity);
+				double sqrMinDistance = nearbyGravityObjects[i].GetColliderRadius() + nearbyGravityObjects[j].GetColliderRadius();
+				if(Vector2Double.Dot(positionDifference, jVelocity - iVelocity) > 0.0)
 				{
-					StringBuilder collisionMessage = new StringBuilder();
+					// Make (reasonably) sure, that the 2 Objects will not collide in the next Second of real Time
+					sqrMinDistance += (jVelocity - iVelocity).Magnitude() * desiredTimeScale;
+					// Do not use Squares right away, because c < a + b => c^2 < (a + b)^2, not c < a + b => c^2 < a^2 + b^2
+					sqrMinDistance *= sqrMinDistance;
+					if(positionDifference.SqrMagnitude() < sqrMinDistance)
+					{
+						StringBuilder collisionMessage = new StringBuilder();
 
-					SpaceStationController spaceStation = null;
-					QuestVesselController questVessel = null;
-					SpacecraftController firstSpacecraft = nearbyGravityObjects[i] as SpacecraftController;
+						SpaceStationController spaceStation = null;
+						QuestVesselController questVessel = null;
+						SpacecraftController firstSpacecraft = nearbyGravityObjects[i] as SpacecraftController;
 
-					if(nearbyGravityObjects[i] is AsteroidController)
-					{
-						collisionMessage.Append("An Asteroid");
-					}
-					else if((questVessel = nearbyGravityObjects[i].GetComponentInParent<QuestVesselController>()) != null)
-					{
-						collisionMessage.Append(questVessel.GetQuest().vesselType.ToString());
-						collisionMessage.Append(" Vessel");
-					}
-					else if((spaceStation = nearbyGravityObjects[i].GetComponentInParent<SpaceStationController>()) != null)
-					{
-						collisionMessage.Append(spaceStation.GetStationName());
-					}
-					else if(firstSpacecraft != null)
-					{
-						if(firstSpacecraft == localPlayerMainSpacecraft)
+						if(nearbyGravityObjects[i] is AsteroidController)
 						{
-							collisionMessage.Append("Your Spacecraft");
+							collisionMessage.Append("An Asteroid");
 						}
-						else
+						else if((questVessel = nearbyGravityObjects[i].GetComponentInParent<QuestVesselController>()) != null)
 						{
-							collisionMessage.Append("A Spacecraft");
+							collisionMessage.Append(questVessel.GetQuest().vesselType.ToString());
+							collisionMessage.Append(" Vessel");
 						}
-					}
-
-					collisionMessage.Append(" is dangerously close to ");
-
-					spaceStation = null;
-					questVessel = null;
-					SpacecraftController secondSpacecraft = nearbyGravityObjects[j] as SpacecraftController;
-
-					if(firstSpacecraft.GetDockedSpacecraftRecursively().Contains(secondSpacecraft))
-					{
-						// Why that? Because each Spacecrafts Position would be determined individually and they would therefore not stay aligned at their Docking Ports
-						// TODO: Determine "Main" Docking Object (preferably the heaviest one) and disable Orbit Calculations and Rotation Updates for the Rest and isntead update them by aligning them correctly with the Main Object every Frame
-						infoController.AddMessage("Time Speedup while being docked is not supported");
-					}
-
-					if(nearbyGravityObjects[j] is AsteroidController)
-					{
-						collisionMessage.Append("an Asteroid");
-					}
-					else if((questVessel = nearbyGravityObjects[j].GetComponentInParent<QuestVesselController>()) != null)
-					{
-						collisionMessage.Append(questVessel.GetQuest().vesselType.ToString());
-						collisionMessage.Append(" Vessel");
-					}
-					else if((spaceStation = nearbyGravityObjects[j].GetComponentInParent<SpaceStationController>()) != null)
-					{
-						collisionMessage.Append(spaceStation.GetStationName());
-					}
-					else if(secondSpacecraft != null)
-					{
-						if(secondSpacecraft == localPlayerMainSpacecraft)
+						else if((spaceStation = nearbyGravityObjects[i].GetComponentInParent<SpaceStationController>()) != null)
 						{
-							collisionMessage.Append("your Spacecraft");
+							collisionMessage.Append(spaceStation.GetStationName());
 						}
-						else
+						else if(firstSpacecraft != null)
 						{
-							collisionMessage.Append("a Spacecraft");
+							if(firstSpacecraft == localPlayerMainSpacecraft)
+							{
+								collisionMessage.Append("Your Spacecraft");
+							}
+							else
+							{
+								collisionMessage.Append("A Spacecraft");
+							}
 						}
+
+						collisionMessage.Append(" is dangerously close to ");
+
+						spaceStation = null;
+						questVessel = null;
+						SpacecraftController secondSpacecraft = nearbyGravityObjects[j] as SpacecraftController;
+
+						if(firstSpacecraft.GetDockedSpacecraftRecursively().Contains(secondSpacecraft))
+						{
+							// Why that? Because each Spacecrafts Position would be determined individually and they would therefore not stay aligned at their Docking Ports
+							// TODO: Determine "Main" Docking Object (preferably the heaviest one) and disable Orbit Calculations and Rotation Updates for the Rest and isntead update them by aligning them correctly with the Main Object every Frame
+							infoController.AddMessage("Time Speedup while being docked is not supported");
+						}
+
+						if(nearbyGravityObjects[j] is AsteroidController)
+						{
+							collisionMessage.Append("an Asteroid");
+						}
+						else if((questVessel = nearbyGravityObjects[j].GetComponentInParent<QuestVesselController>()) != null)
+						{
+							collisionMessage.Append(questVessel.GetQuest().vesselType.ToString());
+							collisionMessage.Append(" Vessel");
+						}
+						else if((spaceStation = nearbyGravityObjects[j].GetComponentInParent<SpaceStationController>()) != null)
+						{
+							collisionMessage.Append(spaceStation.GetStationName());
+						}
+						else if(secondSpacecraft != null)
+						{
+							if(secondSpacecraft == localPlayerMainSpacecraft)
+							{
+								collisionMessage.Append("your Spacecraft");
+							}
+							else
+							{
+								collisionMessage.Append("a Spacecraft");
+							}
+						}
+
+						infoController.AddMessage(collisionMessage.ToString());
+
+						return true;
 					}
-
-					infoController.AddMessage(collisionMessage.ToString());
-
-					return true;
 				}
 			}
 		}

@@ -185,13 +185,63 @@ public class TimeController : MonoBehaviour
 		}
 	}
 
+	public void AddUpdateListener(IUpdateListener listener)
+	{
+		updateListeners.Add(listener);
+	}
+
+	public void RemoveUpdateListener(IUpdateListener listener)
+	{
+		updateListeners.Remove(listener);
+	}
+
+	public void AddFixedUpdateListener(IFixedUpdateListener listener)
+	{
+		fixedUpdateListeners.Add(listener);
+	}
+
+	public void RemoveFixedUpdateListener(IFixedUpdateListener listener)
+	{
+		fixedUpdateListeners.Remove(listener);
+	}
+
+	public bool IsScaled()
+	{
+		return currentTimeScaleIndex != 0;
+	}
+
+	public float GetTimeScale()
+	{
+		return timeScale;
+	}
+
+	public float GetDeltaTime()
+	{
+		return deltaTime;
+	}
+
+	public float GetFixedDeltaTime()
+	{
+		return fixedUpdateInterval * timeScale;
+	}
+
+	public double GetTime()
+	{
+		return gameTime;
+	}
+
+	public double GetFixedTime()
+	{
+		return fixedTime;
+	}
+
 	public void SetTimeScale(int timeScaleIndex)
 	{
 		if(timeScale > MathUtil.EPSILON)
 		{
 			if(currentTimeScaleIndex == 0 && timeScaleIndex != 0)
 			{
-				if(gravityWellController.AreCollisionsNearby() || !gravityWellController.OnRailAll())
+				if(gravityWellController.AreCollisionsNearby(timeScales[timeScaleIndex]) || !gravityWellController.OnRailAll())
 				{
 					infoController.AddMessage("Can not speed up Time");
 					return;
@@ -219,50 +269,5 @@ public class TimeController : MonoBehaviour
 		{
 			timeScale = timeScales[currentTimeScaleIndex];
 		}
-	}
-
-	public void AddUpdateListener(IUpdateListener listener)
-	{
-		updateListeners.Add(listener);
-	}
-
-	public void RemoveUpdateListener(IUpdateListener listener)
-	{
-		updateListeners.Remove(listener);
-	}
-
-	public void AddFixedUpdateListener(IFixedUpdateListener listener)
-	{
-		fixedUpdateListeners.Add(listener);
-	}
-
-	public void RemoveFixedUpdateListener(IFixedUpdateListener listener)
-	{
-		fixedUpdateListeners.Remove(listener);
-	}
-
-	public bool IsScaled()
-	{
-		return currentTimeScaleIndex != 0;
-	}
-
-	public float GetDeltaTime()
-	{
-		return deltaTime;
-	}
-
-	public float GetFixedDeltaTime()
-	{
-		return fixedUpdateInterval * timeScale;
-	}
-
-	public double GetTime()
-	{
-		return gameTime;
-	}
-
-	public double GetFixedTime()
-	{
-		return fixedTime;
 	}
 }

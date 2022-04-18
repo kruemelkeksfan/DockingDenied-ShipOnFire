@@ -12,7 +12,7 @@ public class GravityObjectController : MonoBehaviour
 	[Tooltip("Minimum Eccentricity from which on an Orbit will be considered parabolic or hyperbolic")]
 	[SerializeField] private double parabolicOrbitThreshold = 0.95;
 	[Tooltip("Safety Factor for Collisions during Time Speedup")]
-	[SerializeField] private float collisionSafetyFactor = 2.0f;
+	[SerializeField] private float collisionSafetyFactor = 1.2f;
 	protected TimeController timeController = null;
 	protected GravityWellController gravityWellController = null;
 	protected new Transform transform = null;
@@ -37,7 +37,7 @@ public class GravityObjectController : MonoBehaviour
 	private Vector2Double lastStartVelocity = Vector2Double.zero;
 	private double lastStartTime = 0.0f;
 	private bool lastOrbitalElementResult = false;
-	private float sqrColliderRadius = 0.0f;
+	private float colliderRadius = 0.0f;
 
 	protected virtual void Awake()
 	{
@@ -61,8 +61,7 @@ public class GravityObjectController : MonoBehaviour
 			onRails = true;
 
 			Vector2 extents = gameObject.GetComponent<Collider2D>().bounds.extents;
-			sqrColliderRadius = Mathf.Max(extents.x, extents.y) * collisionSafetyFactor;
-			sqrColliderRadius *= sqrColliderRadius;
+			colliderRadius = Mathf.Max(extents.x, extents.y) * collisionSafetyFactor;
 
 			// Set Velocity to zero to avoid Trouble with Physics
 			rigidbody.velocity = Vector2.zero;
@@ -374,9 +373,9 @@ public class GravityObjectController : MonoBehaviour
 		return orbitalPeriod;
 	}
 
-	public float GetSqrColliderRadius()
+	public float GetColliderRadius()
 	{
-		return sqrColliderRadius;
+		return colliderRadius;
 	}
 
 	public void SetDecaying(bool decaying)
