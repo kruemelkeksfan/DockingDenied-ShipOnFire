@@ -12884,6 +12884,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnAreaRadius: 200
+  maxSpawnTries: 20
+  spawnRadiusFactor: 2
   spawnHeight: 10000
   approachSpeed: 0.2
   disappearingAcceleration: 4

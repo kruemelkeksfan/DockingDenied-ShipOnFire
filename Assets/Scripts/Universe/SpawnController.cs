@@ -6,8 +6,12 @@ public class SpawnController : MonoBehaviour
 {
 	private static SpawnController instance = null;
 
-	[Tooltip("The clear area which is required for a new Object to spawn at a specific Position")]
+	[Tooltip("The clear Area which is required for a new Object to spawn at a specific Position")]
 	[SerializeField] private float spawnAreaRadius = 200.0f;
+	[Tooltip("The maximum of Spawn Tries, before increasing the Spawn Radius")]
+	[SerializeField] private int maxSpawnTries = 20;
+	[Tooltip("The Factor by which the Spawn Radius is increased, if the maximum Amount of Spawn Tries is reached")]
+	[SerializeField] private float spawnRadiusFactor = 2.0f;
 	[Tooltip("Height above the XY-Plane at which new Objects spawn before descending into the XY-Plane")]
 	[SerializeField] private float spawnHeight = 10000.0f;
 	[Tooltip("Approach Velocity of freshly spawned Objects")]
@@ -17,7 +21,7 @@ public class SpawnController : MonoBehaviour
 	private TimeController timeController = null;
 	private AsteroidSpawner asteroidSpawner = null;
 	private GravityWellController gravityWellController = null;
-	private int layerMask = Physics2D.DefaultRaycastLayers;
+	private int collisionLayers = Physics2D.DefaultRaycastLayers;
 
 	public static SpawnController GetInstance()
 	{
@@ -26,7 +30,7 @@ public class SpawnController : MonoBehaviour
 
 	private void Awake()
 	{
-		layerMask = LayerMask.GetMask(new string[] { "Approaching", "Asteroids", "Spacecraft" });
+		collisionLayers = LayerMask.GetMask(new string[] { "Approaching", "Asteroids", "Spacecraft" });
 
 		instance = this;
 	}
@@ -42,13 +46,22 @@ public class SpawnController : MonoBehaviour
 	{
 		float alpha = Random.Range(0.0f, Mathf.PI * 2.0f);
 		float radius = Random.Range(spawnRange.min, spawnRange.max);
-		Vector2 position = gravityWellController.GlobalToLocalPosition(globalSpawnCenter
-			+ (new Vector2(Mathf.Cos(alpha), Mathf.Sin(alpha)) * radius));
-		// TODO: What if Position is blocked?!
-		if(Physics2D.OverlapCircle(position, spawnAreaRadius, layerMask) != null)
+		Vector2 position;
+		int i = 0;
+		do
 		{
-			yield break;
+			if(i >= maxSpawnTries)
+			{
+				Debug.LogWarning("Spawn of " + spawnObjectPrefab + " unsuccessful at Position " + globalSpawnCenter + " with Radius " + radius + "!");
+
+				radius *= spawnRadiusFactor;
+				i = 0;
+			}
+
+			position = gravityWellController.GlobalToLocalPosition(globalSpawnCenter
+				+ (new Vector2(Mathf.Cos(alpha), Mathf.Sin(alpha)) * radius));
 		}
+		while(Physics2D.OverlapCircle(position, spawnAreaRadius, collisionLayers) != null);
 
 		Rigidbody2D spawnObject = GameObject.Instantiate<Rigidbody2D>(spawnObjectPrefab, new Vector3(position.x, position.y, spawnHeight), Quaternion.identity);
 		spawnObject.gameObject.layer = 8;
@@ -87,14 +100,7 @@ public class SpawnController : MonoBehaviour
 
 	public IEnumerator<float> DespawnObject(Rigidbody2D despawnObject)
 	{
-		DockingPort[] ports = despawnObject.GetComponentsInChildren<DockingPort>();
-		foreach(DockingPort port in ports)
-		{
-			if(!port.IsFree())
-			{
-				port.HotkeyDown();
-			}
-		}
+		UndockAll(despawnObject);
 
 		despawnObject.gameObject.layer = 9;
 
@@ -113,6 +119,24 @@ public class SpawnController : MonoBehaviour
 			yield return -1.0f;
 		}
 
+		DestroyObject(despawnObject);
+	}
+
+	private void UndockAll(Rigidbody2D spacecraft)
+	{
+		DockingPort[] ports = spacecraft.GetComponentsInChildren<DockingPort>();
+		foreach(DockingPort port in ports)
+		{
+			if(!port.IsFree())
+			{
+				port.HotkeyDown();
+			}
+		}
+	}
+
+	public void DestroyObject(Rigidbody2D despawnObject)
+	{
+		UndockAll(despawnObject);
 		GameObject.Destroy(despawnObject.gameObject);
 	}
 }

@@ -187,11 +187,11 @@ public class GravityObjectController : MonoBehaviour
 		// https://en.wikipedia.org/wiki/Hyperbolic_trajectory
 		else
 		{
-			Debug.LogWarning("Parabolic or Hyperbolic Trajectory detected!");
+			/*Debug.LogWarning("Parabolic or Hyperbolic Trajectory detected!");
 			Debug.Log("Position: " + globalPosition);
 			Debug.Log("Velocity: " + startVelocity);
 			Debug.Log("Eccentricity: " + eccentricity);
-			LogOrbitalParameters();
+			LogOrbitalParameters();*/
 
 			lastOrbitalElementResult = false;
 			return false;

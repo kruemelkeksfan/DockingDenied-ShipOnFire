@@ -21,6 +21,7 @@ public class SpacecraftManager : MonoBehaviour
 	public static SpacecraftManager instance = null;
 
 	[SerializeField] private SpacecraftController localPlayerSpacecraft = null;		// Temporary Solution until multiple Ships and Multiplayer is implemented
+	private GravityWellController gravityWellController = null;
 	private Dictionary<string, PlayerSpacecraftRecord> playerSpacecraft = null;
 	private List<Constructor> constructors = null;
 	// private List<SpaceStationController> aiSpacecraft = null;    // Enable if necessary
@@ -42,6 +43,11 @@ public class SpacecraftManager : MonoBehaviour
 		spacecraftChangeListeners = new List<IListener>();
 
 		instance = this;
+	}
+
+	private void Start()
+	{
+		gravityWellController = GravityWellController.GetInstance();
 	}
 
 	public void AddConstructor(Constructor constructor)
@@ -87,5 +93,21 @@ public class SpacecraftManager : MonoBehaviour
 		}
 
 		return constructors;
+	}
+
+	public double GetMinPlayerDistance(Vector2Double globalPosition)
+	{
+		double minDistance = double.MaxValue;
+		foreach(PlayerSpacecraftRecord player in playerSpacecraft.Values)
+		{
+			double distance = (gravityWellController.LocalToGlobalPosition(player.mainSpacecraft.GetTransform().position) - globalPosition).Magnitude();
+
+			if(distance < minDistance)
+			{
+				minDistance = distance;
+			}
+		}
+
+		return minDistance;
 	}
 }

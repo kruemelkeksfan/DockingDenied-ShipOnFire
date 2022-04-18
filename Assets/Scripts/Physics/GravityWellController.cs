@@ -40,9 +40,12 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 	[SerializeField] private float onrailDistance = 12000.0f;
 	[Tooltip("Update Frequency for Deorbit-Physics and -Particle Effect")]
 	[SerializeField] private float deorbitUpdateInterval = 0.1f;
+	[Tooltip("Minimum Distance to the nearest Player above which Objects will disappear instantely instead of having a Deorbit- or Despawn-Animation")]
+	[SerializeField] private double instantDespawnDistance = 20000.0;
 	private TimeController timeController = null;
 	private SpawnController spawnController = null;
 	private InfoController infoController = null;
+	private SpacecraftManager spacecraftManager = null;
 	private Transform planetTransform = null;
 	private SpacecraftController localPlayerMainSpacecraft = null;
 	private GameObject localPlayerMainObject = null;
@@ -94,6 +97,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 		timeController = TimeController.GetInstance();
 		spawnController = SpawnController.GetInstance();
 		infoController = InfoController.GetInstance();
+		spacecraftManager = SpacecraftManager.GetInstance();
 
 		timeController.AddFixedUpdateListener(this);
 
@@ -206,7 +210,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 	public void Notify()
 	{
-		localPlayerMainSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
+		localPlayerMainSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
 		localPlayerMainObject = localPlayerMainSpacecraft.gameObject;
 		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
 		localPlayerMainRigidbody = localPlayerMainSpacecraft.GetRigidbody();
@@ -301,16 +305,23 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 					|| sqrOrbitalAltitude < atmosphereEntryAltitude || sqrOrbitalAltitude > maximumAltitude)
 					&& !objectRecord.IsDecaying())
 				{
-					if(sqrOrbitalAltitude < atmosphereEntryAltitude)
+					if(spacecraftManager.GetMinPlayerDistance(LocalToGlobalPosition(gravityObjects[gravityObject].GetTransform().position)) < instantDespawnDistance)
 					{
-						deorbitObjects.Add(gravityObject);
+						if(sqrOrbitalAltitude < atmosphereEntryAltitude)
+						{
+							deorbitObjects.Add(gravityObject);
+						}
+						else
+						{
+							despawnObjects.Add(gravityObject);
+						}
+
+						objectRecord.SetDecaying(true);
 					}
 					else
 					{
-						despawnObjects.Add(gravityObject);
+						spawnController.DestroyObject(gravityObject);
 					}
-
-					objectRecord.SetDecaying(true);
 				}
 			}
 
@@ -433,7 +444,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 							}
 							else
 							{
-								GameObject.Destroy(gravityObject.gameObject);
+								spawnController.DestroyObject(gravityObject);
 							}
 
 							yield break;
