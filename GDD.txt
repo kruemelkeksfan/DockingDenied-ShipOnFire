@@ -145,13 +145,22 @@ New Quest System
 	Spawn Quest Vessels on Quest Generation and instead of on Acceptance
 	Rename QuestVessel to NPC Vessel or something else more neutral
 Multiplayer
-	Enum method = { Spawn, Despawn, UpdatePosition, ... }
-	method-index gets send over network instead of string name
-	method-struct with delegate (delegate calls the real method), parameter- and maybe returntype-info (how do these infos look like?)
-	create array with method-structs at startup
-	index will be method-enum-index, value the corresponding struct
-	see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for delegates
-	when receiving index and parameters over network, start delegate
+	Send-Receive-Mechanism
+		Following might be obsolete, in Case of Doubt stick to Tinkers Throne Architecture
+		Enum methods = { Spawn, Despawn, UpdatePosition, ... }
+		Method-Index gets send over Network instead of String Name
+		Method-Struct with Delegate (Delegate calls the real Method), Parameter- and maybe Returntype-Info (how do these infos look like?)
+		Create Array with Method-Structs at startup
+		Index will be Method-Enum-Index, Value the corresponding Struct
+		see http://www.thejoyofcode.com/Performance_of_Method.Invoke_vs_a_Delegate.aspx for Delegates
+		When receiving Index and Parameters over Network, start Delegate
+	Host Architecture
+		1 Scene per Player
+		1 Scene is Master Scene which tracks which Objects belong to which Scene
+		Master Scene implemented via Singleton with lazy Initialization
+		Master Scene also manages all Objects which are not in unrail-Distance of any Player
+		When in multiple Scenes, Objects belong to Scene they entered first
+		Every Scene communicates with its corresponding Client
 Building System 2.0
 	Construction via Contructors should cost Energy and possibly Time
 	Enable spawning Blueprints over existing Ships when external Constructor is used and has enough Capacity to store all Deconstruction Materials
