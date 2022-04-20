@@ -230,13 +230,30 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				continue;
 			}
 
+			SpacecraftController spacecraft = objectRecord as SpacecraftController;
+			if(spacecraft != null && spacecraft.GetDockedSpacecraftRecursively().Count > 1)
+			{
+				// Why that? Because each Spacecrafts Position would be determined individually and they would therefore not stay aligned at their Docking Ports
+				// TODO: Determine "Main" Docking Object (preferably the heaviest one) and disable Orbit Calculations and Rotation Updates for the Rest and isntead update them by aligning them correctly with the Main Object every Frame
+
+				// Error Message
+				infoController.AddMessage("Time Speedup while Spacecraft are docked is currently not supported");
+
+				// Rollback
+				foreach(GravityObjectController onRailedObject in onRailedObjects)
+				{
+					onRailedObject.UnRail(fixedTime);
+				}
+
+				return false;
+			}
+
 			if(!objectRecord.OnRail(
 				LocalToGlobalPosition(objectRecord.GetTransform().position),
 				objectRecord.GetRigidbody().velocity,
 				fixedTime))
 			{
 				// Error Messages
-				SpacecraftController spacecraft = objectRecord as SpacecraftController;
 				if(objectRecord.IsDecaying())
 				{
 					infoController.AddMessage("An Object is currently burning in the Atmosphere");
@@ -565,14 +582,6 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 						spaceStation = null;
 						questVessel = null;
 						SpacecraftController secondSpacecraft = nearbyGravityObjects[j] as SpacecraftController;
-
-						if(firstSpacecraft.GetDockedSpacecraftRecursively().Contains(secondSpacecraft))
-						{
-							// Why that? Because each Spacecrafts Position would be determined individually and they would therefore not stay aligned at their Docking Ports
-							// TODO: Determine "Main" Docking Object (preferably the heaviest one) and disable Orbit Calculations and Rotation Updates for the Rest and isntead update them by aligning them correctly with the Main Object every Frame
-							infoController.AddMessage("Time Speedup while being docked is not supported");
-						}
-
 						if(nearbyGravityObjects[j] is AsteroidController)
 						{
 							collisionMessage.Append("an Asteroid");
