@@ -128,6 +128,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerSpacecraft)
 		{
 			playerDocked = true;
+
+			if(quest.taskType == QuestManager.TaskType.Tow)
+			{
+				hint = "Tow this Vessel to the Station!";
+			}
 		}
 
 		if(quest.taskType == QuestManager.TaskType.Tow && otherPort.GetComponentInParent<SpaceStationController>() == quest.destination)
@@ -155,6 +160,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerSpacecraft)
 		{
 			playerDocked = false;
+
+			if(quest.taskType == QuestManager.TaskType.Tow)
+			{
+				hint = "Dock to start Towing!";
+			}
 		}
 
 		// Check if Port and gameObject are still active, to avoid starting Coroutines when getting undocked due to Vessel Destruction
