@@ -94,7 +94,7 @@ public class GravityObjectController : MonoBehaviour
 				time = timeController.GetFixedTime();
 			}
 
-			transform.position = gravityWellController.GlobalToLocalPosition(CalculateOnRailPosition(time));
+			transform.position = (Vector3)gravityWellController.GlobalToLocalPosition(CalculateOnRailPosition(time)) + new Vector3(0.0f, 0.0f, transform.position.z);
 			rigidbody.velocity = CalculateVelocity(time);
 		}
 
