@@ -172,6 +172,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return bufferedReservedPositions;
 	}
 
+	public int GetReservedPositionCount()
+	{
+		return reservedPositions.Length;
+	}
+
 	public bool HasAttachableReservePositions()
 	{
 		return attachableReservePositions;

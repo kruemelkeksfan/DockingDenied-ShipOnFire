@@ -207,6 +207,11 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	// TODO: Unity.Rigidbody Max Mass is 1000000, so assure that this is not exceeded (e.g. let Spacestations deny docking/undock after surpassing a Threshold to force the Player to dump Goods/deconstruct Modules)
 	public void UpdateMass()
 	{
+		if(buildingMenu == null)
+		{
+			buildingMenu = BuildingMenu.GetInstance();
+		}
+
 		// Calculate inefficiently by looping through all Modules, because we need to loop through all Modules for Inertia Calculation anyways
 
 		// Calculate Center of Mass
@@ -232,12 +237,14 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 			float inertia = 0.0f;
 			foreach(KeyValuePair<Vector2Int, Module> moduleData in modules)
 			{
-				if(moduleData.Key == moduleData.Value.GetPosition())
+				if(moduleData.Key == moduleData.Value.GetPosition() || !moduleData.Value.HasOverlappingReservePositions())
 				{
+					float positionMass = moduleData.Value.GetMass() / moduleData.Value.GetReservedPositionCount();
+
 					// Approximate Modules as Cubes and use Steiner's Theorem to calculate their Moment of Inertia around the Ships Center of Mass
 					// https://en.wikipedia.org/wiki/List_of_moments_of_inertia
 					// https://en.wikipedia.org/wiki/Parallel_axis_theorem
-					inertia += (inertiaFactor + ((Vector2)moduleData.Value.GetTransform().localPosition - centerOfMass).sqrMagnitude) * moduleData.Value.GetMass();
+					inertia += (inertiaFactor + ((Vector2)buildingMenu.GridToLocalPosition(moduleData.Key) - centerOfMass).sqrMagnitude) * positionMass;
 				}
 			}
 
