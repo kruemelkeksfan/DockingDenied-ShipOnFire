@@ -14,6 +14,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
 	[Tooltip("Distance the Player needs to be away for this Vessel to start Despawning when its Quest is completed")]
 	[SerializeField] private float playerDespawnDistance = 0.2f;
+	[Tooltip("Delay before a Towing Quest is completed after Docking to make sure that the Station did not cancel the Docking")]
+	[SerializeField] private float towingQuestCompleteDelay = 1.0f;
 	[Tooltip("Delay for Reactivation of the Docking Port, if it is disabled, for Example after docking to the wrong Port of a Station")]
 	[SerializeField] private float dockingPortReactivateDelay = 20.0f;
 	[SerializeField] private float despawnDelay = 300.0f;
@@ -90,7 +92,6 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			{
 				questCompleteTime = timeController.GetTime();
 				mapMarker.localScale = Vector3.zero;
-				quest.destination.AbortDocking(spacecraft);
 			}
 			else if(timeController.GetTime() > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
 			{
@@ -131,10 +132,22 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 		if(quest.taskType == QuestManager.TaskType.Tow && otherPort.GetComponentInParent<SpaceStationController>() == quest.destination)
 		{
-			quest.progress = 1.0f;
+			timeController.StartCoroutine(CompleteTowingQuest(port), false);
 		}
 
 		UpdateQuestVesselMenu();
+	}
+
+	private IEnumerator<float> CompleteTowingQuest(DockingPort port)
+	{
+		yield return towingQuestCompleteDelay;
+
+		// Still docked?
+		if(!port.IsFree())
+		{
+			quest.progress = 1.0f;
+			quest.destination.AbortDocking(spacecraft);
+		}
 	}
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
