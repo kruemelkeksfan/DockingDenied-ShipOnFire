@@ -185,6 +185,7 @@ Building System 2.0
 		Therefore they agreed on a "Free Flight Zone" around the equatorial Plane
 		Zone is very narrow, about 20m, to restrict possible planetary Attacks to a small Area
 		Spacecraft outside the Zone (even just partially outside) will be fired upon from the Surface
+	SpaceStations could take Ship Size into Account when assigning Docking Ports to Docking Requests (Collider Extents, Physics2D.OverlayBox)
 Mining
 	Refineries for Ore to Material Conversion (different Components for different Materials)
 	Bloomeries for Iron + Steel Ingredients to Steel Conversion
