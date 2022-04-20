@@ -26,6 +26,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private float maxApproachDistance = 1.0f;
 	[Tooltip("Maximum Time in Seconds before Docking Permission expires")]
 	[SerializeField] private float dockingTimeout = 600.0f;
+	[Tooltip("Delay before an unauthorized Docking Port is disconnected after Docking")]
+	[SerializeField] private float cancelDockingDelay = 0.5f;
 	[SerializeField] private float stationUpdateInterval = 600.0f;
 	[Tooltip("Determines the maximum Amount of this Good this Station will stockpile by itself, depending on the Consumption.")]
 	[SerializeField] private float maxGoodStockFactor = 12.0f;
@@ -175,11 +177,20 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				{
 					infoController.AddMessage("You have no Docking Permission for this Docking Port!");
 				}
-				otherPort.HotkeyDown();
+				
+				timeController.StartCoroutine(CancelDocking(otherPort), false);
 			}
 		}
 
 		// StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));								// Used for Despawn Testing
+	}
+
+	private IEnumerator<float> CancelDocking(DockingPort otherPort)
+	{
+		// Disconnect with Delay, so that the Joints have some time to adjust themselves, else the Physics freak out
+		yield return cancelDockingDelay;
+
+		otherPort.HotkeyDown();
 	}
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
