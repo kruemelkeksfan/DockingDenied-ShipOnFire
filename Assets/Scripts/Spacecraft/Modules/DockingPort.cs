@@ -6,9 +6,10 @@ using UnityEngine.UI;
 public class DockingPort : HotkeyModule
 {
 	[SerializeField] private Transform dockingLocation = null;
-	[SerializeField] private float dockingPositionThreshold = 1.0f;
 	[SerializeField] private float dockingRotationThreshold = 10.0f;
 	[SerializeField] private Text portNameField = null;
+	[SerializeField] private float jointFrequency = 2.0f;
+	[SerializeField] private float jointDamping = 1.0f;
 	private Transform spacecraftTransform = null;
 	private ParticleSystem magnetParticles = null;
 	private bool active = false;
@@ -20,9 +21,6 @@ public class DockingPort : HotkeyModule
 	protected override void Awake()
 	{
 		base.Awake();
-
-		// Square to avoid Sqrt later on
-		dockingPositionThreshold *= dockingPositionThreshold;
 
 		magnetParticles = gameObject.GetComponentInChildren<ParticleSystem>();
 		dockingListeners = new List<IDockingListener>(2);
@@ -120,15 +118,14 @@ public class DockingPort : HotkeyModule
 				if(rigidbody.mass <= otherRigidbody.mass)
 				{
 					float dRotation = Mathf.DeltaAngle(otherPort.dockingLocation.rotation.eulerAngles.z, (dockingLocation.rotation.eulerAngles.z + 180.0f));
-					Vector2 dPosition = (Vector2)(otherPort.dockingLocation.position - dockingLocation.position);
-
-					if(dRotation < dockingRotationThreshold && dPosition.sqrMagnitude < dockingPositionThreshold)
+					if(dRotation < dockingRotationThreshold)
 					{
-						// Use rigidbody.position/rigidbody.rotation instead of transform.position/transform.rotation, because else the Physics System is not flushed and will fuck up the Joint
+						// Use rigidbody.rotation instead of transform.rotation, because else the Physics System is not flushed and will fuck up the Joint
 						rigidbody.rotation += otherPort.dockingLocation.rotation.eulerAngles.z - (dockingLocation.rotation.eulerAngles.z + 180.0f);
-						rigidbody.position += dPosition;
 
 						joint = spacecraft.gameObject.AddComponent<FixedJoint2D>();
+						joint.frequency = jointFrequency;
+						joint.dampingRatio = jointDamping;
 						joint.connectedBody = otherRigidbody;
 						joint.autoConfigureConnectedAnchor = false;
 						joint.anchor = spacecraftTransform.InverseTransformPoint(dockingLocation.position);
