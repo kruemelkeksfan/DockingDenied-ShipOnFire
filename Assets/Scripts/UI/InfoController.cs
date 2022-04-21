@@ -6,7 +6,7 @@ using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class InfoController : MonoBehaviour, IListener
+public class InfoController : MonoBehaviour, IUpdateListener, IListener
 {
 	private struct Message
 	{
@@ -26,16 +26,23 @@ public class InfoController : MonoBehaviour, IListener
 	[SerializeField] private Text throttleDisplay = null;
 	[SerializeField] private Text autoThrottleDisplay = null;
 	[SerializeField] private GameObject keyBindingDisplay = null;
+	[SerializeField] private Text showFlightInfoButtonText = null;
+	private TimeController timeController = null;
+	private GravityWellController gravityWellController = null;
 	private Queue<Message> messages = null;
 	private float lastDequeue = 0.0f;
 	private Dictionary<string, uint> buildingCosts = null;
-	private InventoryController inventoryController = null;
-	private PlayerSpacecraftUIController playerSpacecraftUIController = null;
+	private float moduleMass = 0.0f;
+	private SpacecraftController playerSpacecraft = null;
+	private Transform playerSpacecraftTransform = null;
+	private Rigidbody2D playerSpacecraftRigidbody = null;
+	private InventoryController playerSpacecraftInventoryController = null;
 	private StringBuilder textBuilder = null;
 	private bool updateResourceDisplay = true;
 	private bool updateBuildingResourceDisplay = true;
 	private bool showBuildingResourceDisplay = false;
-	private float expiryTime = -1.0f;
+	private bool showFlightInfo = false;
+	private double expiryTime = -1.0;
 	private bool flightControls = true;
 
 	public static InfoController GetInstance()
@@ -55,18 +62,31 @@ public class InfoController : MonoBehaviour, IListener
 
 	private void Start()
 	{
+		gravityWellController = GravityWellController.GetInstance();
+
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
+
+		timeController = TimeController.GetInstance();
+		timeController.AddUpdateListener(this);
 	}
 
-	private void Update()
+	private void OnDestroy()
+	{
+		timeController?.RemoveUpdateListener(this);
+	}
+
+	public void UpdateNotify()
 	{
 		if(updateResourceDisplay)
 		{
 			textBuilder.Clear();
-			textBuilder.Append(inventoryController.GetMoney());
-			textBuilder.Append("$ / Energy - ");
-			textBuilder.Append(inventoryController.GetEnergyKWH(true));
+			textBuilder.Append("Money - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetMoney());
+			textBuilder.Append("$ / Mass - ");
+			textBuilder.Append(Mathf.RoundToInt(playerSpacecraftRigidbody.mass));
+			textBuilder.Append(" t / Energy - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetEnergyKWH(true));
 			resourceDisplay.text = textBuilder.ToString();
 			/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
 		+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/
@@ -78,7 +98,7 @@ public class InfoController : MonoBehaviour, IListener
 		{
 			textBuilder.Clear();
 			textBuilder.Append("Steel - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Steel"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Steel"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
@@ -86,7 +106,7 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Append(")");
 			}
 			textBuilder.Append(" / Aluminium - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Aluminium"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Aluminium"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
@@ -94,7 +114,7 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Append(")");
 			}
 			textBuilder.Append(" / Copper - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Copper"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Copper"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
@@ -102,7 +122,7 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Append(")");
 			}
 			textBuilder.Append(" / Gold - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Gold"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Gold"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
@@ -110,12 +130,18 @@ public class InfoController : MonoBehaviour, IListener
 				textBuilder.Append(")");
 			}
 			textBuilder.Append(" / Silicon - ");
-			textBuilder.Append(inventoryController.GetGoodAmount("Silicon"));
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Silicon"));
 			if(buildingCosts != null)
 			{
 				textBuilder.Append(" (");
 				textBuilder.Append(buildingCosts.ContainsKey("Silicon") ? buildingCosts["Silicon"] : 0);
 				textBuilder.Append(")");
+			}
+			if(buildingCosts != null)
+			{
+				textBuilder.Append(" / Mass - ");
+				textBuilder.Append(Mathf.RoundToInt(moduleMass));
+				textBuilder.Append(" t");
 			}
 			secondaryDisplay.text = textBuilder.ToString();
 
@@ -125,29 +151,62 @@ public class InfoController : MonoBehaviour, IListener
 		{
 			if(flightControls)
 			{
-				Vector3 flightData = playerSpacecraftUIController.GetFlightData();
-				textBuilder.Clear();
-				textBuilder.Append("Altitude - ");
-				textBuilder.Append((int)flightData.x);
-				textBuilder.Append("km / Target Speed - ");
-				textBuilder.Append(flightData.y.ToString("F4"));
-				textBuilder.Append("km/s / Orbital Speed - ");
-				textBuilder.Append(flightData.z.ToString("F4"));
-				textBuilder.Append("km/s");
-				if(expiryTime > 0.0f)
+				if(showFlightInfo)
 				{
-					if(Time.realtimeSinceStartup >= expiryTime)
+					double fixedTime = timeController.GetFixedTime();
+					playerSpacecraft.CalculateOrbitalElements(
+						gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position),
+						playerSpacecraftRigidbody.velocity,
+						fixedTime);
+					float playerVelocity = playerSpacecraft.IsOnRails() ? (float)playerSpacecraft.CalculateVelocity(fixedTime).Magnitude() : playerSpacecraftRigidbody.velocity.magnitude;
+					int periapsis = (int)(playerSpacecraft.CalculatePeriapsisAltitude() / 1000.0);
+					int apoapsis = (int)(playerSpacecraft.CalculateApoapsisAltitude() / 1000.0);
+
+					textBuilder.Clear();
+					textBuilder.Append("Alt - ");
+					textBuilder.Append((int)(gravityWellController.LocalToGlobalPosition(playerSpacecraftTransform.position).Magnitude() / 1000.0));
+					textBuilder.Append(" km / Speed - ");
+					textBuilder.Append((playerVelocity / 1000.0f).ToString("F4"));
+					textBuilder.Append(" km/s / Peri - ");
+					if(periapsis > 0)
 					{
-						expiryTime = -1.0f;
+						textBuilder.Append(periapsis.ToString());
+						textBuilder.Append(" km / Apo - ");
 					}
 					else
 					{
-						textBuilder.Append(" / Docking Permission - ");
-						textBuilder.Append((int)(expiryTime - Time.realtimeSinceStartup));
-						textBuilder.Append(" Seconds");
+						textBuilder.Append("¯\\_(ツ)_/¯ / Apo - ");
+					}					
+					if(apoapsis > 0)
+					{
+						textBuilder.Append(apoapsis.ToString());
+						textBuilder.Append(" km");
 					}
+					else
+					{
+						textBuilder.Append("¯\\_(ツ)_/¯");
+					}
+
+					double time = timeController.GetTime();
+					if(expiryTime > 0.0f)
+					{
+						if(time >= expiryTime)
+						{
+							expiryTime = -1.0f;
+						}
+						else
+						{
+							textBuilder.Append(" / Docking Permission - ");
+							textBuilder.Append((int)(expiryTime - time));
+							textBuilder.Append(" s");
+						}
+					}
+					secondaryDisplay.text = textBuilder.ToString();
 				}
-				secondaryDisplay.text = textBuilder.ToString();
+				else
+				{
+					secondaryDisplay.text = string.Empty;
+				}
 			}
 			else
 			{
@@ -166,10 +225,11 @@ public class InfoController : MonoBehaviour, IListener
 
 		float messageDuration = Input.GetButton("Skip Info Log") ? skippingMessageDuration : this.messageDuration;
 
-		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < Time.realtimeSinceStartup && lastDequeue + messageDuration < Time.realtimeSinceStartup)
+		float realtimeSinceStartup = Time.realtimeSinceStartup;
+		while(messages.Count > 0 && messages.Peek().timestamp + messageDuration < realtimeSinceStartup && lastDequeue + messageDuration < realtimeSinceStartup)
 		{
 			messages.Dequeue();
-			lastDequeue = Time.realtimeSinceStartup;
+			lastDequeue = realtimeSinceStartup;
 		}
 
 		textBuilder.Clear();
@@ -182,8 +242,10 @@ public class InfoController : MonoBehaviour, IListener
 
 	public void Notify()
 	{
-		inventoryController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
-		playerSpacecraftUIController = inventoryController.GetComponent<PlayerSpacecraftUIController>();
+		playerSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
+		playerSpacecraftTransform = playerSpacecraft.GetTransform();
+		playerSpacecraftRigidbody = playerSpacecraft.GetRigidbody();
+		playerSpacecraftInventoryController = playerSpacecraft.GetInventoryController();
 	}
 
 	public void UpdateControlHint(Dictionary<string, string[]> keyBindings)
@@ -224,7 +286,21 @@ public class InfoController : MonoBehaviour, IListener
 	public void UpdateThrottleDisplay(float throttle, bool autoThrottle)
 	{
 		throttleDisplay.text = "Throttle - " + ((int)(throttle * 100.0f)) + "%";
-		autoThrottleDisplay.text = "AutoThrottle - " + (autoThrottle ? "on" : "off");
+		autoThrottleDisplay.text = "Hold Throttle - " + (autoThrottle ? "on" : "off");
+	}
+
+	public void ToggleFlightInfo()
+	{
+		showFlightInfo = !showFlightInfo;
+
+		if(showFlightInfo)
+		{
+			showFlightInfoButtonText.text = showFlightInfoButtonText.text.Replace("Show", "Hide");
+		}
+		else
+		{
+			showFlightInfoButtonText.text = showFlightInfoButtonText.text.Replace("Hide", "Show");
+		}
 	}
 
 	public void AddMessage(string message)
@@ -247,25 +323,42 @@ public class InfoController : MonoBehaviour, IListener
 		this.showBuildingResourceDisplay = showBuildingResourceDisplay;
 	}
 
-	public void SetBuildingCosts(GoodManager.Load[] buildingCosts)
+	public void SetBuildingCosts(Module module)
 	{
-		if(buildingCosts != null)
+		if(module != null)
 		{
-			this.buildingCosts = new Dictionary<string, uint>(buildingCosts.Length);
-			foreach(GoodManager.Load cost in buildingCosts)
+			GoodManager.Load[] buildingCostArray = module.GetBuildingCosts();
+			this.buildingCosts = new Dictionary<string, uint>(buildingCostArray.Length);
+			foreach(GoodManager.Load cost in buildingCostArray)
 			{
 				this.buildingCosts.Add(cost.goodName, cost.amount);
 			}
+
+			this.moduleMass = module.GetMass();
 		}
 		else
 		{
 			this.buildingCosts = null;
+			this.moduleMass = 0.0f;
 		}
 
 		UpdateBuildingResourceDisplay();
 	}
 
-	public void SetDockingExpiryTime(float expiryTime)
+	public void SetBuildingCosts(GoodManager.Load[] buildingCostArray, float moduleMass)
+	{
+		this.buildingCosts = new Dictionary<string, uint>(buildingCostArray.Length);
+		foreach(GoodManager.Load cost in buildingCostArray)
+		{
+			this.buildingCosts.Add(cost.goodName, cost.amount);
+		}
+
+		this.moduleMass = moduleMass;
+
+		UpdateBuildingResourceDisplay();
+	}
+
+	public void SetDockingExpiryTime(double expiryTime)
 	{
 		this.expiryTime = expiryTime;
 	}

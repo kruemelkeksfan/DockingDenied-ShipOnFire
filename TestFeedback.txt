@@ -76,22 +76,18 @@
 
 0.8
 -Selling Quests still allow to buy Stuff before Accepting the Quest and selling it after Accepting, don't fix, Sell Quests get removed anyways
--Rework "Full Retard Sentence in Tutorial"?
--Reduce Quest Vessel Spawn Range to ease flying back to the Station even if the Quest takes longer
 -Navigation Lines and Velocity Vector default on
+-LOD for Spacecraft
+-Rotation Cutoff (reduce Rotation Speed to 0 when it is very small)
+-Display Apoapsis/Periapsis
+-Display Ship Mass
+-Add Text Outlines (Add Component -> UI -> Effects -> Outline) to all Texts (don't forget to set Alpha to 255)
+-Tutorial Panel for more Contrast and Highlighting
+-More Stations (8 in lower Orbit)
+-Scale Towing Quest Progress with Distance to Station
+-Rework "Full Retard Sentence in Tutorial"
+-Reduce Quest Vessel Spawn Range to ease flying back to the Station even if the Quest takes longer
 -Different Widths for Navigation Lines and Velocity Vectors (Color-Blind-Improvement)
 -Different Button Pane for Quest Vessels (Color-Blind-Improvement)
 -Mark Stations with active Quests with (!) behind Station Name (Color-Blind-Improvement)
--Tutorial Panel for more Contrast and Highlighting
--Smaller Show-/Hide-Buttons
--Show-/Hide-Buttons for Resource- and Flight-Info-Display
--Change Keybinding-Display to Show-/Hide instead of F1
--Rotation Cutoff (reduce Rotation Speed to 0 when it is very small)
 -Sound!
--Somehow make clear that the Game has 2D Physics
--Camera Mode as Show-/Hide
--Display Ship Mass
--More Stations (8 in lower Orbit)
--LOD for Spacecraft
--Constructor Use should cost Energy
--Add Text Outlines (Add Component -> UI -> Effects -> Outline) to all Texts (don't forget to set Alpha to 255)

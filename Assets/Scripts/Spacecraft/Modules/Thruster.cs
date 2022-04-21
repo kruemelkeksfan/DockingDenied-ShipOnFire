@@ -10,6 +10,7 @@ public class Thruster : Module
 	[SerializeField] private float thrust = 1.0f;
 	private Transform spacecraftTransform = null;
 	private new Rigidbody2D rigidbody = null;
+	private GravityWellController gravityWellController = null;
 	private InventoryController inventoryController = null;
 	private Vector2 thrustVector = Vector2.zero;
 	private float throttle = 0.0f;
@@ -26,6 +27,7 @@ public class Thruster : Module
 		thrustVector = (transform.localRotation * Vector2.up) * thrust;
 		spacecraft.AddThruster(this);
 
+		gravityWellController = GravityWellController.GetInstance();
 		inventoryController = spacecraft.GetInventoryController();
 		inventoryController.AddEnergyConsumer(capacitor);
 
@@ -44,10 +46,13 @@ public class Thruster : Module
 
 	public override void FixedUpdateNotify()
 	{
-		if(constructed && throttle > 0.0f)
+		// Don't apply Thrust during a Frame in which the Origin shifted,
+		// because the Physics freak out when moving transform.position while Forces are being applied
+		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
+		if(constructed && throttle > MathUtil.EPSILON && !gravityWellController.IsOriginShifted())
 		{
-			float finalThrottle = throttle * capacitor.DischargePartial(energyConsumption * throttle * Time.fixedDeltaTime);
-			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustVector * finalThrottle * Time.fixedDeltaTime, transform.position, ForceMode2D.Impulse);
+			float finalThrottle = throttle * capacitor.DischargePartial(energyConsumption * throttle * timeController.GetFixedDeltaTime());
+			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustVector * finalThrottle * timeController.GetFixedDeltaTime(), transform.position, ForceMode2D.Impulse);
 
 			thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * finalThrottle;
 			thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * finalThrottle;
@@ -66,6 +71,10 @@ public class Thruster : Module
 		{
 			if(this.throttle <= 0.0f)
 			{
+				thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * throttle;
+				thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * throttle;
+				thrustParticlesMain.startSizeZMultiplier = initialParticleSize.z * throttle;
+
 				thrustParticles.Play();
 			}
 		}

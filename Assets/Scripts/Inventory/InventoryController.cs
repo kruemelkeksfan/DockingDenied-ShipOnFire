@@ -4,10 +4,9 @@ using UnityEngine;
 
 public class InventoryController : MonoBehaviour, IListener
 {
-	private static WaitForSeconds waitForEnergyUpdateInterval = null;
-
 	[SerializeField] private float energyUpdateInterval = 0.05f;
 	[SerializeField] private int startingMoney = 200;
+	private TimeController timeController = null;
 	private HashSet<EnergyProducer> energyProducers = null;
 	private List<Capacitor> energyConsumers = null;
 	private HashSet<Capacitor> batteries = null;
@@ -22,11 +21,6 @@ public class InventoryController : MonoBehaviour, IListener
 
 	private void Awake()
 	{
-		if(waitForEnergyUpdateInterval == null)
-		{
-			waitForEnergyUpdateInterval = new WaitForSeconds(energyUpdateInterval);
-		}
-
 		energyProducers = new HashSet<EnergyProducer>();
 		energyConsumers = new List<Capacitor>();
 		batteries = new HashSet<Capacitor>();
@@ -42,18 +36,19 @@ public class InventoryController : MonoBehaviour, IListener
 
 	private void Start()
 	{
+		timeController = TimeController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
-		resourceDisplayController = spacecraftManager.GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
+		resourceDisplayController = spacecraftManager.GetLocalPlayerMainSpacecraft() == GetComponent<SpacecraftController>() ? InfoController.GetInstance() : null;
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
-		StartCoroutine(UpdateEnergy());
+		timeController.StartCoroutine(UpdateEnergy(), false);
 	}
 
 	public void Notify()
 	{
-		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<Spacecraft>() ? InfoController.GetInstance() : null;
+		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<SpacecraftController>() ? InfoController.GetInstance() : null;
 		resourceDisplayController?.UpdateResourceDisplay();
 		resourceDisplayController?.UpdateBuildingResourceDisplay();
 	}
@@ -273,17 +268,17 @@ public class InventoryController : MonoBehaviour, IListener
 		return true;
 	}
 
-	private IEnumerator UpdateEnergy()
+	private IEnumerator<float> UpdateEnergy()
 	{
-		float lastUpdate = 0.0f;
+		double lastUpdate = 0.0f;
 		int consumerIndex = 0;
 		while(true)
 		{
-			yield return waitForEnergyUpdateInterval;
+			yield return energyUpdateInterval;
 
 			float energy = transferEnergy;
-			float deltaTime = Time.time - lastUpdate;
-			lastUpdate = Time.time;
+			float deltaTime = (float)(timeController.GetTime() - lastUpdate);
+			lastUpdate = timeController.GetTime();
 			foreach(EnergyProducer producer in energyProducers)
 			{
 				energy += producer.production * deltaTime;

@@ -50,7 +50,6 @@ public class QuestManager : MonoBehaviour, IListener
 		public VesselType vesselType;
 		public string infoString;
 		public int infoInt;
-		public bool feedbackRequested;
 	}
 
 	private static QuestManager instance = null;
@@ -65,14 +64,15 @@ public class QuestManager : MonoBehaviour, IListener
 	[Tooltip("Range in which Quest Vessels will spawn around the Station.")]
 	[SerializeField] private MinMax questVesselSpawnRange = new MinMax(4.0f, 12.0f);
 	[SerializeField] private Rigidbody2D questVesselPrefab = null;
+	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private SpawnController spawnController = null;
-	private QuestFeedbackController questFeedbackController = null;
+	private GravityWellController gravityWellController = null;
 	private InventoryController localPlayerMainInventory = null;
 	private BackstoryData[] backstories = null;
 	private QuestGiverData[] questGivers = null;
 	private TaskData[] tasks = null;
-	private string[] goodNames = null;                                              // Dictionary does not allow random Element picking, therefore 2 Arrays
+	private string[] goodNames = null;													// Dictionary does not allow random Element picking, therefore 2 Arrays
 	private int[] goodRewards = null;
 	private List<int>[] taskBackstories = null;
 	private List<int>[] taskQuestGivers = null;
@@ -224,8 +224,10 @@ public class QuestManager : MonoBehaviour, IListener
 
 	private void Start()
 	{
+		timeController = TimeController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 		spawnController = SpawnController.GetInstance();
+		gravityWellController = GravityWellController.GetInstance();
 		Dictionary<string, GoodManager.Good> goods = GoodManager.GetInstance().GetGoodDictionary();
 		goodNames = new string[goods.Count];
 		goodRewards = new int[goods.Count];
@@ -237,7 +239,6 @@ public class QuestManager : MonoBehaviour, IListener
 			++i;
 		}
 
-		questFeedbackController = QuestFeedbackController.GetInstance();
 		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
 		localPlayerMainInventory = spacecraftManager.GetLocalPlayerMainSpacecraft().GetComponent<InventoryController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
@@ -424,8 +425,6 @@ public class QuestManager : MonoBehaviour, IListener
 			inventoryController.Withdraw(quest.infoString, (uint)(inventoryController.GetGoodAmount(quest.infoString) * 0.5f));
 		}
 
-		quest.feedbackRequested = false;
-
 		return quest;
 	}
 
@@ -436,19 +435,14 @@ public class QuestManager : MonoBehaviour, IListener
 		if(/* TODO: quest.taskType == TaskType.Destroy || */quest.taskType == TaskType.Bribe || quest.taskType == TaskType.JumpStart
 			|| quest.taskType == TaskType.Supply || quest.taskType == TaskType.Plunder || quest.taskType == TaskType.Tow)
 		{
-			StartCoroutine(spawnController.SpawnObject(questVesselPrefab, quest.destination.GetTransform().position, questVesselSpawnRange, 11, quest));
+			timeController.StartCoroutine(spawnController.SpawnObject(questVesselPrefab,
+				gravityWellController.LocalToGlobalPosition(quest.destination.GetTransform().position), questVesselSpawnRange, 11, quest), false);
 		}
 	}
 
 	public bool CompleteQuest(SpaceStationController spaceStation)
 	{
 		Quest quest = activeQuests[spaceStation];
-
-		if(!quest.feedbackRequested)
-		{
-			questFeedbackController.RequestFeedback(quest);
-			quest.feedbackRequested = true;
-		}
 
 		bool success = true;
 		for(int i = 0; i < quest.rewards.Length; ++i)

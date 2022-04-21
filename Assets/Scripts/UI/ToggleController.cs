@@ -21,9 +21,9 @@ public class ToggleController : MonoBehaviour
 
 	private class ToggleGroup
 	{
-		public HashSet<GameObject> toggleObjects;
-		public Text text;
-		public bool active;
+		public HashSet<GameObject> toggleObjects = null;
+		public Text text = null;
+		public bool active = false;
 
 		public ToggleGroup(Text text)
 		{
@@ -35,8 +35,7 @@ public class ToggleController : MonoBehaviour
 		public ToggleGroup(GameObject toggleObject)
 		{
 			toggleObjects = new HashSet<GameObject>();
-			text = null;
-			active = text != null && text.text.Contains("Hide");
+			active = text != null ? text.text.Contains("Hide") : toggleObject.activeSelf;
 
 			toggleObjects.Add(toggleObject);
 		}

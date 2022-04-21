@@ -16,10 +16,10 @@ MonoBehaviour:
   - {fileID: 4900000, guid: 2acd4dc4e30946447900601e68da4573, type: 3}
   mapMarkerPrefab: {fileID: 8860085007747504424, guid: 7c77ffe9b9c549246add687e41963679,
     type: 3}
-  decimalDigitThreshold: 100
-  playerDespawnDistance: 1
-  dockingPortReactivateDelay: 20
-  despawnDelay: 300
+  decimalDigitThreshold: 100000
+  playerDespawnDistance: 2000
+  dockingPortReactivateDelay: 5
+  despawnDelay: 120
 --- !u!1001 &1583003449038245521
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -27,6 +27,11 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: -7770001117343339551, guid: 563dc166c0dffa8498e07f185cb0614a,
+        type: 3}
+      propertyPath: m_AutoTiling
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204188, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_Name
@@ -40,7 +45,7 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_LocalPosition.x
-      value: 500
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}

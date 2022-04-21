@@ -5,10 +5,6 @@ using UnityEngine.UI;
 
 public class TutorialController : MonoBehaviour
 {
-	private delegate bool CancelCondition();
-
-	private static WaitForSecondsRealtime waitForTutorialUpdateInterval = null;
-	private static WaitForSecondsRealtime waitForQuadTutorialUpdateInterval = null;
 	private static bool skipped = false;
 
 	[SerializeField] private float tutorialUpdateInterval = 1.0f;
@@ -20,10 +16,10 @@ public class TutorialController : MonoBehaviour
 	[SerializeField] private Button buildAreaButton = null;
 	[SerializeField] private Transform blueprintScrollPane = null;
 	[SerializeField] private Button velocityButton = null;
-	[SerializeField] private Button navLineButton = null;
 	[SerializeField] private Color highlightColor = Color.red;
 	[SerializeField] private GameObject nextButton = null;
 	[SerializeField] private GameObject skipButton = null;
+	private TimeController timeController = null;
 	private SpacecraftManager spacecraftManager = null;
 	private QuestManager questManager = null;
 	private Button highlightedButton = null;
@@ -33,27 +29,27 @@ public class TutorialController : MonoBehaviour
 	private Color oldKeyBindingColor = Color.white;
 	private bool next = false;
 	private bool complete = false;
+	private TimeController.Coroutine tutorialCoroutine = null;
 
 	private void Start()
 	{
-		if(waitForTutorialUpdateInterval == null || waitForQuadTutorialUpdateInterval == null)
-		{
-			waitForTutorialUpdateInterval = new WaitForSecondsRealtime(tutorialUpdateInterval);
-			waitForQuadTutorialUpdateInterval = new WaitForSecondsRealtime(tutorialUpdateInterval * 4.0f);
-		}
-
+		timeController = TimeController.GetInstance();
 		spacecraftManager = SpacecraftManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 
 		if(!skipped)
 		{
-			StartCoroutine(UpdateTutorial());
+			tutorialCoroutine = timeController.StartCoroutine(UpdateTutorial(), true);
+		}
+		else
+		{
+			SkipTutorial();
 		}
 	}
 
-	private IEnumerator UpdateTutorial()
+	private IEnumerator<float> UpdateTutorial()
 	{
-		yield return waitForQuadTutorialUpdateInterval;
+		yield return tutorialUpdateInterval * 4.0f;
 
 		tutorialMessageField.gameObject.SetActive(true);
 		skipButton.SetActive(true);
@@ -62,7 +58,7 @@ public class TutorialController : MonoBehaviour
 		tutorialMessageField.text = "Welcome to Space!\nIf you get stuck or go full retard, restart through the Main Menu\nStart by clicking 'Build'";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(!buildingMenu.activeSelf);
 		UnHighlightButton(buildButton);
@@ -73,7 +69,7 @@ public class TutorialController : MonoBehaviour
 		tutorialMessageField.text = "For now you can only build in the Vicinity of Stations\nClick 'Show Build Area' to see the Range";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(!next);
 		next = false;
@@ -91,11 +87,11 @@ public class TutorialController : MonoBehaviour
 			}
 		}
 		tutorialMessageField.text = "Load a basic Ship by selecting it from the Left\nAdd or remove Modules with the Buttons on the Right\nRotate Modules with [Q/E]\nBuilding Materials are automatically bought from the Station as long as their Stocks last";
-		Spacecraft playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
+		SpacecraftController playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
 		complete = false;
 		do
 		{
-			yield return waitForQuadTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(playerSpacecraft.GetModules().Count < 6);
 		if(starterShipButton != null)
@@ -107,7 +103,7 @@ public class TutorialController : MonoBehaviour
 		tutorialMessageField.text = "Save your Design by clicking 'Save Blueprint' on the Left\nClick 'Build' again to proceed";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(buildingMenu.activeSelf);
 		UnHighlightButton(buildButton);
@@ -119,7 +115,7 @@ public class TutorialController : MonoBehaviour
 		complete = false;
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 
 			Dictionary<Vector2Int, Module> modules = playerSpacecraft.GetModules();
 			foreach(Vector2Int modulePosition in modules.Keys)
@@ -141,7 +137,7 @@ public class TutorialController : MonoBehaviour
 		tutorialMessageField.text = "Control your Ship with the Buttons shown on the right Side of your Screen\nNow align the activated Port of the Station with the Port of your Ship\nThen come really close to complete the Docking";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(playerSpacecraft.GetDockedSpacecraftCount() <= 0);
 		keyBindingDisplay.color = oldKeyBindingColor;
@@ -150,14 +146,14 @@ public class TutorialController : MonoBehaviour
 		tutorialMessageField.text = "Being docked to a Station allows you to trade Materials or receive Rewards\nYou can accept Quests without docking, but you will need to dock to receive the Rewards\nNow accept any Quest in the Station Menu";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(questManager.GetActiveQuestCount() <= 0);
 
 		tutorialMessageField.text = "Close the Station Menu when you want to undock\nThen simply press the Activation Key for your Docking Port again";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(playerSpacecraft.GetDockedSpacecraftCount() > 0);
 
@@ -166,7 +162,7 @@ public class TutorialController : MonoBehaviour
 		tutorialMessageField.text = "If a Quest requires you to find and dock to a Vessel, zoom out [Scroll Wheel] until you find the red Quest Vessel Marker\nClick the Vessel Name for more Information";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(!next);
 		next = false;
@@ -175,26 +171,16 @@ public class TutorialController : MonoBehaviour
 		tutorialMessageField.text = "You can toggle Velocity Markers in the Top Bar\nThe orange Line shows your Velocity in Relation to the last clicked Target\nThe green Line shows the Difference between your Velocity and perfect Orbiting Velocity";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(!next);
 		next = false;
 		UnHighlightButton(velocityButton);
 
-		HighlightButton(navLineButton);
-		tutorialMessageField.text = "Navigation Lines function similarily\nThe green Line points towards the Planet\nThe orange Line points towards the last clicked Station or Quest Vessel";
-		do
-		{
-			yield return waitForTutorialUpdateInterval;
-		}
-		while(!next);
-		next = false;
-		UnHighlightButton(navLineButton);
-
 		tutorialMessageField.text = "Quests usually reward you with Money and Materials which you can use for Trade or to expand your Spacecraft";
 		do
 		{
-			yield return waitForTutorialUpdateInterval;
+			yield return tutorialUpdateInterval;
 		}
 		while(!next);
 		next = false;
@@ -211,7 +197,11 @@ public class TutorialController : MonoBehaviour
 
 	public void SkipTutorial()
 	{
-		StopAllCoroutines();
+		if(tutorialCoroutine != null)
+		{
+			timeController.StopCoroutine(tutorialCoroutine);
+			tutorialCoroutine = null;
+		}
 
 		nextButton.SetActive(false);
 		tutorialMessageField.gameObject.SetActive(false);

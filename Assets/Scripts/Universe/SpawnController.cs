@@ -6,17 +6,22 @@ public class SpawnController : MonoBehaviour
 {
 	private static SpawnController instance = null;
 
-	[Tooltip("The clear area which is required for a new Object to spawn at a specific Position")]
-	[SerializeField] private float spawnAreaRadius = 2.0f;
+	[Tooltip("The clear Area which is required for a new Object to spawn at a specific Position")]
+	[SerializeField] private float spawnAreaRadius = 200.0f;
+	[Tooltip("The maximum of Spawn Tries, before increasing the Spawn Radius")]
+	[SerializeField] private int maxSpawnTries = 20;
+	[Tooltip("The Factor by which the Spawn Radius is increased, if the maximum Amount of Spawn Tries is reached")]
+	[SerializeField] private float spawnRadiusFactor = 2.0f;
 	[Tooltip("Height above the XY-Plane at which new Objects spawn before descending into the XY-Plane")]
-	[SerializeField] private float spawnHeight = 10.0f;
+	[SerializeField] private float spawnHeight = 10000.0f;
 	[Tooltip("Approach Velocity of freshly spawned Objects")]
-	[SerializeField] private float approachSpeed = 0.2f;
+	[SerializeField] private float approachSpeed = 200.0f;
 	[Tooltip("Acceleration of freshly despawned Objects")]
-	[SerializeField] private float disappearingAcceleration = 0.002f;
+	[SerializeField] private float disappearingAcceleration = 20.0f;
+	private TimeController timeController = null;
 	private AsteroidSpawner asteroidSpawner = null;
 	private GravityWellController gravityWellController = null;
-	private int layerMask = Physics2D.DefaultRaycastLayers;
+	private int collisionLayers = Physics2D.DefaultRaycastLayers;
 
 	public static SpawnController GetInstance()
 	{
@@ -25,26 +30,38 @@ public class SpawnController : MonoBehaviour
 
 	private void Awake()
 	{
-		layerMask = LayerMask.GetMask(new string[] { "Approaching", "Asteroids", "Spacecraft" });
+		collisionLayers = LayerMask.GetMask(new string[] { "Approaching", "Asteroids", "Spacecraft" });
 
 		instance = this;
 	}
 
 	private void Start()
 	{
+		timeController = TimeController.GetInstance();
 		asteroidSpawner = AsteroidSpawner.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 	}
 
-	public IEnumerator SpawnObject(Rigidbody2D spawnObjectPrefab, Vector2 spawnCenter, MinMax spawnRange, int layer, QuestManager.Quest quest = null)
+	public IEnumerator<float> SpawnObject(Rigidbody2D spawnObjectPrefab, Vector2 globalSpawnCenter, MinMax spawnRange, int layer, QuestManager.Quest quest = null)
 	{
-		float orbitalAngle = Random.Range(0.0f, Mathf.PI * 2.0f);
-		float orbitalAltitude = Random.Range(spawnRange.min, spawnRange.max);
-		Vector2 position = spawnCenter + (new Vector2(Mathf.Sin(orbitalAngle), -Mathf.Cos(orbitalAngle)) * orbitalAltitude);
-		if(Physics2D.OverlapCircle(position, spawnAreaRadius, layerMask) != null)
+		float alpha = Random.Range(0.0f, Mathf.PI * 2.0f);
+		float radius = Random.Range(spawnRange.min, spawnRange.max);
+		Vector2 position;
+		int i = 0;
+		do
 		{
-			yield break;
+			if(i >= maxSpawnTries)
+			{
+				Debug.LogWarning("Spawn of " + spawnObjectPrefab + " unsuccessful at Position " + globalSpawnCenter + " with Radius " + radius + "!");
+
+				radius *= spawnRadiusFactor;
+				i = 0;
+			}
+
+			position = gravityWellController.GlobalToLocalPosition(globalSpawnCenter
+				+ (new Vector2(Mathf.Cos(alpha), Mathf.Sin(alpha)) * radius));
 		}
+		while(Physics2D.OverlapCircle(position, spawnAreaRadius, collisionLayers) != null);
 
 		Rigidbody2D spawnObject = GameObject.Instantiate<Rigidbody2D>(spawnObjectPrefab, new Vector3(position.x, position.y, spawnHeight), Quaternion.identity);
 		spawnObject.gameObject.layer = 8;
@@ -56,42 +73,34 @@ public class SpawnController : MonoBehaviour
 		{
 			spawnObject.GetComponent<QuestVesselController>().SetQuest(quest);
 		}
-		spawnObject.velocity = gravityWellController.CalculateOptimalOrbitalVelocity(spawnObject);
 
 		Transform spawnObjectTransform = spawnObject.GetComponent<Transform>();
-		float spawnObjectExtents = Mathf.Max(spawnObjectTransform.GetComponent<Collider2D>().bounds.extents.x, 0.01f);
+		float spawnObjectExtents = Mathf.Max(spawnObjectTransform.GetComponent<Collider2D>().bounds.extents.x, 1.0f);
 		Vector3 spawnObjectSize = spawnObjectTransform.localScale;
-		while(spawnObject.transform.position.z > 0.001f && spawnObject.gameObject.layer != 9)                                                                   // Check if Asteroid is still in Approach and not decaying yet
+		while(spawnObject != null && spawnObject.transform.position.z > 0.1f && spawnObject.gameObject.layer != 9)                                                                   // Check if Asteroid is still in Approach and not decaying yet
 		{
 			if(spawnObject.transform.position.z < spawnObjectExtents)
 			{
 				spawnObject.gameObject.layer = layer;
 			}
 
-			spawnObjectTransform.position -= new Vector3(0.0f, 0.0f, spawnObject.transform.position.z * approachSpeed * Time.deltaTime);
+			spawnObjectTransform.position -= new Vector3(0.0f, 0.0f, spawnObject.transform.position.z * approachSpeed * timeController.GetDeltaTime());
 			float currentSize = 1.0f - (spawnObject.transform.position.z / spawnHeight);
 			spawnObjectTransform.localScale = spawnObjectSize * currentSize;
 
-			yield return null;
+			yield return -1.0f;
 		}
 
-		if(spawnObject.gameObject.layer != 9)
+		if(spawnObject != null && spawnObject.gameObject.layer != 9)
 		{
 			spawnObjectTransform.position = new Vector3(spawnObjectTransform.position.x, spawnObjectTransform.position.y, 0.0f);
 			spawnObjectTransform.localScale = spawnObjectSize;
 		}
 	}
 
-	public IEnumerator DespawnObject(Rigidbody2D despawnObject)
+	public IEnumerator<float> DespawnObject(Rigidbody2D despawnObject)
 	{
-		DockingPort[] ports = despawnObject.GetComponentsInChildren<DockingPort>();
-		foreach(DockingPort port in ports)
-		{
-			if(!port.IsFree())
-			{
-				port.HotkeyDown();
-			}
-		}
+		UndockAll(despawnObject);
 
 		despawnObject.gameObject.layer = 9;
 
@@ -100,14 +109,34 @@ public class SpawnController : MonoBehaviour
 		float speed = 0.0f;
 		while(despawnObject.transform.position.z < spawnHeight)
 		{
-			speed += disappearingAcceleration * Time.deltaTime;
-			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * Time.deltaTime);
+			// Add Sqrt(height) to Acceleration to accelerate Disappearance slightly
+			float deltaTime = timeController.GetDeltaTime();
+			speed += (disappearingAcceleration + Mathf.Sqrt(despawnObject.transform.position.z)) * deltaTime;
+			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * deltaTime);
 			float currentSize = 1.0f - (despawnObject.transform.position.z / spawnHeight);
 			spawnObjectTransform.localScale = spawnObjectSize * currentSize;
 
-			yield return null;
+			yield return -1.0f;
 		}
 
+		DestroyObject(despawnObject);
+	}
+
+	private void UndockAll(Rigidbody2D spacecraft)
+	{
+		DockingPort[] ports = spacecraft.GetComponentsInChildren<DockingPort>();
+		foreach(DockingPort port in ports)
+		{
+			if(!port.IsFree())
+			{
+				port.HotkeyDown();
+			}
+		}
+	}
+
+	public void DestroyObject(Rigidbody2D despawnObject)
+	{
+		UndockAll(despawnObject);
 		GameObject.Destroy(despawnObject.gameObject);
 	}
 }

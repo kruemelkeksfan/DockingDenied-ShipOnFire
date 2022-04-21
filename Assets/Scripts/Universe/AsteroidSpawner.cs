@@ -5,7 +5,6 @@ using UnityEngine;
 public class AsteroidSpawner : MonoBehaviour
 {
 	private static AsteroidSpawner instance = null;
-	private static WaitForSeconds waitForSpawnInterval = null;
 
 	[Tooltip("Prefab for new Asteroids")]
 	[SerializeField] private Rigidbody2D[] asteroidPrefabs = null;
@@ -19,6 +18,7 @@ public class AsteroidSpawner : MonoBehaviour
 	[SerializeField] private float spawnInterval = 5.0f;
 	[Tooltip("A Set of Spawn Areas for Asteroids defined by Minimum and Maximum Orbit Heights")]
 	[SerializeField] private MinMax[] asteroidBeltHeights = null;
+	private TimeController timeController = null;
 	private GravityWellController gravityWellController = null;
 	private SpawnController spawnController = null;
 	private float[] asteroidBeltChances = null;
@@ -37,30 +37,26 @@ public class AsteroidSpawner : MonoBehaviour
 
 	private void Start()
 	{
-		if(waitForSpawnInterval == null)
-		{
-			waitForSpawnInterval = new WaitForSeconds(spawnInterval);
-		}
-
+		timeController = TimeController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 		spawnController = SpawnController.GetInstance();
 
 		asteroidBeltChances = new float[asteroidBeltHeights.Length];
 		for(int i = 0; i < asteroidBeltHeights.Length; ++i)
 		{
-			float asteroidBeltArea = Mathf.PI * (asteroidBeltHeights[i].max * asteroidBeltHeights[i].max) - (asteroidBeltHeights[i].min * asteroidBeltHeights[i].min);      // Ring Area = (PI * R1^2) - (PI * R2^2)
+			float asteroidBeltArea = Mathf.PI * (asteroidBeltHeights[i].max * asteroidBeltHeights[i].max) - (asteroidBeltHeights[i].min * asteroidBeltHeights[i].min);			// Ring Area = (PI * R1^2) - (PI * R2^2)
 			asteroidBeltChances[i] = totalAsteroidBeltChances + asteroidBeltArea;
 			totalAsteroidBeltChances += asteroidBeltArea;
 		}
 
-		StartCoroutine(SpawnUpdate());
+		timeController.StartCoroutine(SpawnUpdate(), false);
 	}
 
-	private IEnumerator SpawnUpdate()
+	private IEnumerator<float> SpawnUpdate()
 	{
 		while(true)
 		{
-			yield return waitForSpawnInterval;
+			yield return spawnInterval;
 
 			if(asteroidCount < maxAsteroids)
 			{
@@ -69,7 +65,7 @@ public class AsteroidSpawner : MonoBehaviour
 				{
 					if(beltRandom <= asteroidBeltChances[i])
 					{
-						StartCoroutine(spawnController.SpawnObject(asteroidPrefabs[Random.Range(0, asteroidPrefabs.Length - 1)], Vector2.zero, asteroidBeltHeights[i], 10));
+						timeController.StartCoroutine(spawnController.SpawnObject(asteroidPrefabs[Random.Range(0, asteroidPrefabs.Length - 1)], Vector2.zero, asteroidBeltHeights[i], 10), false);
 						break;
 					}
 				}
@@ -77,10 +73,11 @@ public class AsteroidSpawner : MonoBehaviour
 		}
 	}
 
-	public void AddAsteroid(Rigidbody2D asteroid, MinMax spawnRange)
+	// Receive Rigidbody instead of AsteroidController, since this is the first Method that requires the AsteroidController and casting as late as possible is desirable
+	public void AddAsteroid(Rigidbody2D asteroidRigidbody, MinMax spawnRange)
 	{
-		asteroid.mass *= densities[Random.Range(0, densities.Length)];
-		gravityWellController.AddGravityObject(asteroid, spawnRange);
+		asteroidRigidbody.mass *= densities[Random.Range(0, densities.Length)];
+		gravityWellController.AddGravityObject(asteroidRigidbody.GetComponent<AsteroidController>(), spawnRange);
 
 		++asteroidCount;
 	}

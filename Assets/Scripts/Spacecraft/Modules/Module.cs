@@ -15,22 +15,23 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
-	protected float mass = 0.0002f;
+	protected TimeController timeController = null;
+	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
 	protected new Transform transform = null;
-	protected Spacecraft spacecraft = null;
+	protected SpacecraftController spacecraft = null;
 	protected Vector2Int position = Vector2Int.zero;
 
 	protected virtual void Awake()
 	{
+		timeController = TimeController.GetInstance();
 		transform = gameObject.GetComponent<Transform>();
-		bufferedReservedPositions = new Vector2Int[reservedPositions.Length];
 	}
 
 	protected virtual void Start()
 	{
-
+		
 	}
 
 	protected virtual void OnDestroy()
@@ -40,23 +41,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public virtual void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
-		spacecraft = gameObject.GetComponentInParent<Spacecraft>();
-
-		GoodManager goodManager = GoodManager.GetInstance();
-		mass = 0.0f;
-		foreach(GoodManager.Load cost in buildingCosts)
-		{
-			mass += goodManager.GetGood(cost.goodName).mass * cost.amount;
-		}
-		if(mass <= 0.0f)
-		{
-			mass = 0.0002f;
-		}
+		spacecraft = gameObject.GetComponentInParent<SpacecraftController>();
 
 		this.position = position;
 		transform.localPosition = BuildingMenu.GetInstance().GridToLocalPosition(position);
 		UpdateReservedPositionBuffer(position, transform.localRotation);
-		spacecraft.UpdateModuleMass(transform.localPosition, mass);
 		constructed = true;
 
 		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
@@ -64,29 +53,35 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			spacecraft.AddModule(bufferedReservedPosition, this);
 		}
 
+		if(mass <= MathUtil.EPSILON * 2.0f)
+		{
+			TryCalculateMass();
+		}
+		spacecraft.UpdateMass();
+
 		if(listenUpdates)
 		{
-			spacecraft.AddUpdateListener(this);
+			timeController.AddUpdateListener(this);
 		}
 		if(listenFixedUpdates)
 		{
-			spacecraft.AddFixedUpdateListener(this);
+			timeController.AddFixedUpdateListener(this);
 		}
 	}
 
 	public virtual void Deconstruct()
 	{
-		spacecraft.UpdateModuleMass(transform.localPosition, -mass);
-
 		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
 		{
 			spacecraft.RemoveModule(bufferedReservedPosition);
 		}
 
+		spacecraft.UpdateMass();
+
 		GameObject.Destroy(gameObject);
 
-		spacecraft.RemoveUpdateListener(this);
-		spacecraft.RemoveFixedUpdateListener(this);
+		timeController.RemoveUpdateListener(this);
+		timeController.RemoveFixedUpdateListener(this);
 	}
 
 	public void Rotate(int direction)
@@ -116,10 +111,28 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	}
 
+	private void TryCalculateMass()
+	{
+		GoodManager goodManager = GoodManager.GetInstance();
+		if(goodManager != null)
+		{
+			mass = 0.0f;
+			foreach(GoodManager.Load cost in buildingCosts)
+			{
+				mass += goodManager.GetGood(cost.goodName).mass * cost.amount;
+			}
+			if(mass <= 0.0f)
+			{
+				mass = 0.0002f;
+			}
+		}
+	}
+
 	private void UpdateReservedPositionBuffer(Vector2Int position, Quaternion localRotation)
 	{
 		if(!constructed)
 		{
+			bufferedReservedPositions = new Vector2Int[reservedPositions.Length];
 			for(int i = 0; i < bufferedReservedPositions.Length; ++i)
 			{
 				bufferedReservedPositions[i] = Vector2Int.RoundToInt(position + (Vector2)(localRotation * (Vector2)reservedPositions[i]));
@@ -147,7 +160,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return transform;
 	}
 
-	public Spacecraft GetSpacecraft()
+	public SpacecraftController GetSpacecraft()
 	{
 		return spacecraft;
 	}
@@ -157,6 +170,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		UpdateReservedPositionBuffer(position, localRotation);
 
 		return bufferedReservedPositions;
+	}
+
+	public int GetReservedPositionCount()
+	{
+		return reservedPositions.Length;
 	}
 
 	public bool HasAttachableReservePositions()
@@ -172,5 +190,15 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public GoodManager.Load[] GetBuildingCosts()
 	{
 		return buildingCosts;
+	}
+
+	public float GetMass()
+	{
+		if(mass <= MathUtil.EPSILON * 2.0f)
+		{
+			TryCalculateMass();
+		}
+
+		return mass;
 	}
 }

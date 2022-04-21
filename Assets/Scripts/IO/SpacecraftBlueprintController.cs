@@ -41,7 +41,7 @@ public class SpacecraftBlueprintController
 		string path = Application.persistentDataPath + Path.DirectorySeparatorChar + blueprintFolderName;
 		if(Directory.Exists(path))
 		{
-			return Directory.GetFiles(path);
+			return Directory.GetFiles(path, "*.json");
 		}
 		else
 		{
@@ -84,6 +84,7 @@ public class SpacecraftBlueprintController
 		Dictionary<string, uint> costDictionary = new Dictionary<string, uint>();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)
 		{
+			// TODO: After implementing that Blueprints can replace constructed Ships, stop ignoring CM and instead refund old CM (like all other old Modules), this would also provide a correct Blueprint Mass to the UI in BuildingMenu.SelectBlueprint()
 			if(moduleData.type != "Command Module")
 			{
 				foreach(GoodManager.Load cost in modulePrefabDictionary[moduleData.type].GetBuildingCosts())
@@ -117,9 +118,20 @@ public class SpacecraftBlueprintController
 
 	public static SpacecraftData LoadBlueprintModules(string blueprintPath)
 	{
-		using(StreamReader reader = new StreamReader(blueprintPath))
+		try
 		{
-			return JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd());
+			using(StreamReader reader = new StreamReader(blueprintPath))
+			{
+				return JsonUtility.FromJson<SpacecraftData>(reader.ReadToEnd());
+			}
+		}
+		catch(Exception exc)
+		{
+			InfoController.GetInstance().AddMessage("This Blueprint File does not contain a valid Spacecraft Definition");
+			Debug.LogWarning("Somebody tried to load an invalid Blueprint File");
+			Debug.LogWarning(exc.ToString());
+
+			return new SpacecraftData(new List<ModuleData>(0));
 		}
 	}
 
@@ -130,7 +142,7 @@ public class SpacecraftBlueprintController
 
 	public static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)
 	{
-		spacecraftTransform.gameObject.GetComponent<Spacecraft>().DeconstructModules();
+		spacecraftTransform.gameObject.GetComponent<SpacecraftController>().DeconstructModules();
 
 		Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)

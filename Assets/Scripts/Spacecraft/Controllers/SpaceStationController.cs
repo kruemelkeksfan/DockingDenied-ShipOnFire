@@ -19,9 +19,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private static WaitForSeconds waitForStationUpdateInterval = null;
-	private static WaitForSeconds waitForDockingTimeout = null;
-
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[Tooltip("Distance up from which no more digital Digits will be displayed")]
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
@@ -29,6 +26,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private float maxApproachDistance = 1.0f;
 	[Tooltip("Maximum Time in Seconds before Docking Permission expires")]
 	[SerializeField] private float dockingTimeout = 600.0f;
+	[Tooltip("Delay before an unauthorized Docking Port is disconnected after Docking")]
+	[SerializeField] private float cancelDockingDelay = 0.5f;
 	[SerializeField] private float stationUpdateInterval = 600.0f;
 	[Tooltip("Determines the maximum Amount of this Good this Station will stockpile by itself, depending on the Consumption.")]
 	[SerializeField] private float maxGoodStockFactor = 12.0f;
@@ -41,17 +40,17 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private RectTransform tradingEntryPrefab = null;
 	[SerializeField] private ColorBlock questStationMarkerColors = new ColorBlock();
 	[SerializeField] private Color questStationTextColor = Color.red;
+	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private MenuController menuController = null;
 	private InfoController infoController = null;
-	private QuestFeedbackController questFeedbackController = null;
-	private Spacecraft spacecraft = null;
+	private SpacecraftController spacecraft = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
 	private InventoryController inventoryController = null;
 	private RectTransform uiTransform = null;
-	private Spacecraft localPlayerMainSpacecraft = null;
+	private SpacecraftController localPlayerMainSpacecraft = null;
 	private Transform localPlayerMainTransform = null;
 	private InventoryController localPlayerMainInventory = null;
 	private PlayerSpacecraftUIController playerSpacecraftController = null;
@@ -63,15 +62,15 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private Button mapMarkerButton = null;
 	private string stationName = null;
 	private DockingPort[] dockingPorts = null;
-	private IEnumerator dockingTimeoutCoroutine = null;
-	private Dictionary<DockingPort, Spacecraft> expectedDockings = null;
-	private HashSet<Spacecraft> dockedSpacecraft = null;
+	private TimeController.Coroutine dockingTimeoutCoroutine = null;
+	private Dictionary<DockingPort, SpacecraftController> expectedDockings = null;
+	private HashSet<SpacecraftController> dockedSpacecraft = null;
 	private QuestManager.TaskType[] firstTasks = null;
 	private QuestManager.TaskType[] secondaryTasks = null;
 	private QuestManager.TaskType[] allTasks = null;
 	private QuestManager.Quest[] questSelection = null;
 	private bool updateQuestSelection = true;
-	private float lastStationUpdate = 0.0f;
+	private double lastStationUpdate = 0.0;
 	private Dictionary<string, GoodTradingInfo> tradingInventory;
 	private List<string> goodNames = null;
 	private bool spawnProtection = true;
@@ -81,14 +80,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	private void Start()
 	{
-		if(waitForStationUpdateInterval == null || waitForDockingTimeout == null)
-		{
-			waitForStationUpdateInterval = new WaitForSeconds(stationUpdateInterval);
-			waitForDockingTimeout = new WaitForSeconds(dockingTimeout);
-		}
-
 		maxApproachDistance *= maxApproachDistance;
-		spacecraft = GetComponent<Spacecraft>();
+		spacecraft = GetComponent<SpacecraftController>();
 		transform = spacecraft.GetTransform();
 		rigidbody = GetComponent<Rigidbody2D>();
 		inventoryController = GetComponent<InventoryController>();
@@ -100,15 +93,14 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			port.AddDockingListener(this);
 		}
 
-		expectedDockings = new Dictionary<DockingPort, Spacecraft>();
-		dockedSpacecraft = new HashSet<Spacecraft>();
+		expectedDockings = new Dictionary<DockingPort, SpacecraftController>();
+		dockedSpacecraft = new HashSet<SpacecraftController>();
 		tradingInventory = new Dictionary<string, GoodTradingInfo>();
 		goodNames = new List<string>();
 
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		infoController = InfoController.GetInstance();
-		questFeedbackController = QuestFeedbackController.GetInstance();
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 
@@ -122,9 +114,10 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * maxGoodStockFactor));
 		}
 
-		spacecraft.AddUpdateListener(this);
+		timeController = TimeController.GetInstance();
+		timeController.AddUpdateListener(this);
 
-		StartCoroutine(UpdateStation());
+		timeController.StartCoroutine(UpdateStation(), false);
 	}
 
 	private void OnDestroy()
@@ -134,7 +127,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			GameObject.Destroy(mapMarker.gameObject);
 		}
 
-		spacecraft?.RemoveUpdateListener(this);
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()
@@ -148,11 +141,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			float distance = (transform.position - localPlayerMainTransform.position).magnitude;
 			if(distance > decimalDigitThreshold)
 			{
-				mapMarkerDistance.text = distance.ToString("F0") + "km";
+				mapMarkerDistance.text = (distance / 1000.0f).ToString("F0") + "km";
 			}
 			else
 			{
-				mapMarkerDistance.text = distance.ToString("F2") + "km";
+				mapMarkerDistance.text = (distance / 1000.0f).ToString("F2") + "km";
 			}
 		}
 		else
@@ -165,7 +158,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	{
 		if(expectedDockings.ContainsKey(port))
 		{
-			Spacecraft otherSpacecraft = otherPort.GetComponentInParent<Spacecraft>();
+			SpacecraftController otherSpacecraft = otherPort.GetComponentInParent<SpacecraftController>();
 			if(expectedDockings[port] == otherSpacecraft)
 			{
 				expectedDockings.Remove(port);
@@ -173,7 +166,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 				if(otherSpacecraft == localPlayerMainSpacecraft)
 				{
-					StopCoroutine(dockingTimeoutCoroutine);
+					timeController.StopCoroutine(dockingTimeoutCoroutine);
 					dockingTimeoutCoroutine = null;
 					infoController.SetDockingExpiryTime(-1.0f);
 				}
@@ -184,22 +177,31 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				{
 					infoController.AddMessage("You have no Docking Permission for this Docking Port!");
 				}
-				otherPort.HotkeyDown();
+				
+				timeController.StartCoroutine(CancelDocking(otherPort), false);
 			}
 		}
 
-		//StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));								// Used for Despawn Testing
+		// StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));								// Used for Despawn Testing
+	}
+
+	private IEnumerator<float> CancelDocking(DockingPort otherPort)
+	{
+		// Disconnect with Delay, so that the Joints have some time to adjust themselves, else the Physics freak out
+		yield return cancelDockingDelay;
+
+		otherPort.HotkeyDown();
 	}
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
 	{
-		dockedSpacecraft.Remove(otherPort.GetComponentInParent<Spacecraft>());
+		dockedSpacecraft.Remove(otherPort.GetComponentInParent<SpacecraftController>());
 
 		if(port.IsActive() && !expectedDockings.ContainsKey(port))
 		{
 			port.HotkeyDown();
 		}
-		if(otherPort.GetComponentInParent<Spacecraft>() == localPlayerMainSpacecraft)
+		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerMainSpacecraft)
 		{
 			menuController.CloseStationMenu(this);
 			infoController.AddMessage("Undocking successful, good Flight!");
@@ -216,11 +218,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public void ToggleStationMenu()
 	{
-		playerSpacecraftController.SetTarget(rigidbody);
+		playerSpacecraftController.SetTarget(spacecraft, transform, rigidbody);
 		menuController.ToggleStationMenu(this, stationName);
 	}
 
-	public void RequestDocking(Spacecraft requester)
+	public void RequestDocking(SpacecraftController requester)
 	{
 		// TODO: Check if Ship is on Fire etc.
 		if(!dockedSpacecraft.Contains(requester))
@@ -252,8 +254,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 						if(requester == localPlayerMainSpacecraft)
 						{
-							dockingTimeoutCoroutine = DockingTimeout(alignedPort, requester);
-							StartCoroutine(dockingTimeoutCoroutine);
+							dockingTimeoutCoroutine = timeController.StartCoroutine(DockingTimeout(alignedPort, requester), false);
 
 							infoController.AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetActionName() + "!");
 						}
@@ -288,7 +289,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	public void AbortDocking(Spacecraft requester)
+	public void AbortDocking(SpacecraftController requester)
 	{
 		foreach(DockingPort port in expectedDockings.Keys)
 		{
@@ -310,28 +311,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				if(newActiveQuest)
 				{
-					int i = 0;
-					foreach(QuestManager.Quest quest in questSelection)
-					{
-						if(quest != null && quest != activeQuest)
-						{
-							++i;
-						}
-					}
-					QuestManager.Quest[] rejectedQuests = new QuestManager.Quest[i];
-					i = 0;
-					foreach(QuestManager.Quest quest in questSelection)
-					{
-						if(quest != null && quest != activeQuest)
-						{
-							rejectedQuests[i] = quest;
-							++i;
-						}
-					}
-
-					questFeedbackController.RejectQuests(rejectedQuests, this);
-					// questFeedbackController.RequestFeedback(activeQuest);														// Used for Feedback Transmission Testing
-
 					for(int j = 0; j < questSelection.Length; ++j)
 					{
 						if(questSelection[j] == activeQuest)
@@ -410,42 +389,45 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			for(int i = 0; i < goodNames.Count; ++i)
 			{
 				RectTransform tradingEntryRectTransform = GameObject.Instantiate<RectTransform>(tradingEntryPrefab);
+				GoodManager.Good good = goodManager.GetGood(goodNames[i]);
 
 				tradingEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodNames[i];
 				tradingEntryRectTransform.GetChild(1).GetComponent<Text>().text = tradingInventory[goodNames[i]].playerAmount.ToString();
 				tradingEntryRectTransform.GetChild(2).GetComponent<Text>().text = tradingInventory[goodNames[i]].stationAmount.ToString();
 				tradingEntryRectTransform.GetChild(3).GetComponent<Text>().text = CalculateGoodPrice(goodNames[i], tradingInventory[goodNames[i]].stationAmount, -1) + "$";
 				tradingEntryRectTransform.GetChild(4).GetComponent<Text>().text = CalculateGoodPrice(goodNames[i], tradingInventory[goodNames[i]].stationAmount, 1) + "$";
-				tradingEntryRectTransform.GetChild(5).GetComponent<Text>().text = goodManager.GetGood(goodNames[i]).decription;
+				tradingEntryRectTransform.GetChild(5).GetComponent<Text>().text = good.volume + "/" + localPlayerMainInventory.GetFreeCapacity(good) + " m3";
+				tradingEntryRectTransform.GetChild(6).GetComponent<Text>().text = good.mass + " t";
+				tradingEntryRectTransform.GetChild(7).GetComponent<Text>().text = good.description;
 
 				if(dockedSpacecraft.Contains(localPlayerMainSpacecraft))
 				{
-					tradingEntryRectTransform.GetChild(6).gameObject.SetActive(true);
-					tradingEntryRectTransform.GetChild(7).gameObject.SetActive(true);
 					tradingEntryRectTransform.GetChild(8).gameObject.SetActive(true);
+					tradingEntryRectTransform.GetChild(9).gameObject.SetActive(true);
+					tradingEntryRectTransform.GetChild(10).gameObject.SetActive(true);
 
 					string localGoodName = goodNames[i];
-					InputField localAmountField = tradingEntryRectTransform.GetChild(6).GetComponent<InputField>();
+					InputField localAmountField = tradingEntryRectTransform.GetChild(8).GetComponent<InputField>();
 					InventoryController localPlayerInventory = localPlayerMainInventory;
 					InventoryController localStationInventory = inventoryController;
 					localAmountField.onEndEdit.AddListener(delegate
 					{
 						UpdateTrading();
 					});
-					tradingEntryRectTransform.GetChild(7).GetComponent<Button>().onClick.AddListener(delegate
+					tradingEntryRectTransform.GetChild(9).GetComponent<Button>().onClick.AddListener(delegate
 					{
 						Trade(localGoodName, 0, localPlayerInventory, localStationInventory, tradingInventory[localGoodName].stationAmount, localAmountField);
 					});
-					tradingEntryRectTransform.GetChild(8).GetComponent<Button>().onClick.AddListener(delegate
+					tradingEntryRectTransform.GetChild(10).GetComponent<Button>().onClick.AddListener(delegate
 					{
 						Trade(localGoodName, 0, localStationInventory, localPlayerInventory, tradingInventory[localGoodName].stationAmount, localAmountField);
 					});
 				}
 				else
 				{
-					tradingEntryRectTransform.GetChild(6).gameObject.SetActive(false);
-					tradingEntryRectTransform.GetChild(7).gameObject.SetActive(false);
 					tradingEntryRectTransform.GetChild(8).gameObject.SetActive(false);
+					tradingEntryRectTransform.GetChild(9).gameObject.SetActive(false);
+					tradingEntryRectTransform.GetChild(10).gameObject.SetActive(false);
 				}
 
 				tradingEntries[i] = tradingEntryRectTransform;
@@ -624,11 +606,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		return true;
 	}
 
-	private IEnumerator DockingTimeout(DockingPort port, Spacecraft requester)
+	private IEnumerator<float> DockingTimeout(DockingPort port, SpacecraftController requester)
 	{
-		infoController.SetDockingExpiryTime(Time.realtimeSinceStartup + (dockingTimeout / Time.timeScale));
+		infoController.SetDockingExpiryTime(timeController.GetTime() + dockingTimeout);
 
-		yield return waitForDockingTimeout;
+		yield return dockingTimeout;
 
 		if(port.IsActive() && port.IsFree())
 		{
@@ -639,11 +621,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	private IEnumerator UpdateStation()
+	private IEnumerator<float> UpdateStation()
 	{
 		while(true)
 		{
-			lastStationUpdate = Time.realtimeSinceStartup;
+			lastStationUpdate = timeController.GetTime();
 
 			updateQuestSelection = true;
 
@@ -668,7 +650,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 			UpdateTrading();
 
-			yield return waitForStationUpdateInterval;
+			yield return stationUpdateInterval;
 		}
 	}
 
@@ -706,6 +688,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	public InventoryController GetInventoryController()
 	{
 		return inventoryController;
+	}
+
+	public string GetStationName()
+	{
+		return stationName;
 	}
 
 	public void SetStationName(string stationName)

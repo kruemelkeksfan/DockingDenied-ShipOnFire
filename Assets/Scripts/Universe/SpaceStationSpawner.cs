@@ -10,7 +10,7 @@ public class SpaceStationSpawner : MonoBehaviour
 	[SerializeField] private List<string> namePrefixes = null;
 	[SerializeField] private List<string> nameSuffixes = null;
 	[SerializeField] private float numberSuffixChance = 0.1f;
-	[SerializeField] private Spacecraft spaceStationPrefab = null;
+	[SerializeField] private SpacecraftController spaceStationPrefab = null;
 	[SerializeField] private TextAsset[] stationBlueprints = { };
 	[SerializeField] private Vector2[] stationPositions = { };
 
@@ -26,9 +26,10 @@ public class SpaceStationSpawner : MonoBehaviour
 
 	private void Start()
 	{
+		GravityWellController gravityWellController = GravityWellController.GetInstance();
 		foreach(Vector2 position in stationPositions)
 		{
-			Spacecraft spaceStationSpacecraft = GameObject.Instantiate<Spacecraft>(spaceStationPrefab, position, Quaternion.identity);
+			SpacecraftController spaceStationSpacecraft = GameObject.Instantiate<SpacecraftController>(spaceStationPrefab, gravityWellController.GlobalToLocalPosition(position), Quaternion.identity);
 			SpacecraftBlueprintController.InstantiateModules(SpacecraftBlueprintController.LoadBlueprintModules(stationBlueprints[Random.Range(0, stationBlueprints.Length)]), spaceStationSpacecraft.GetTransform());
 			SpaceStationController spaceStation = spaceStationSpacecraft.GetComponent<SpaceStationController>();
 

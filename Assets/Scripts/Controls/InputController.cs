@@ -5,8 +5,9 @@ using UnityEngine;
 public class InputController : MonoBehaviour, IUpdateListener
 {
 	[SerializeField] protected int hotkeyCount = 10;
+	protected TimeController timeController = null;
 	protected Dictionary<int, HashSet<IHotkeyListener>> hotkeys = null;
-	protected Spacecraft spacecraft = null;
+	protected SpacecraftController spacecraft = null;
 	protected bool flightControls = true;
 
 	protected virtual void Awake()
@@ -20,8 +21,16 @@ public class InputController : MonoBehaviour, IUpdateListener
 
     protected virtual void Start()
 	{
-		spacecraft = GetComponent<Spacecraft>();
-		spacecraft.AddUpdateListener(this);
+		timeController = TimeController.GetInstance();
+
+		spacecraft = GetComponent<SpacecraftController>();
+
+		timeController.AddUpdateListener(this);
+	}
+
+	protected virtual void OnDestroy()
+	{
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public virtual void UpdateNotify()

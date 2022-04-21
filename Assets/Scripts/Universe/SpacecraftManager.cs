@@ -6,20 +6,22 @@ public class SpacecraftManager : MonoBehaviour
 {
 	private struct PlayerSpacecraftRecord
 	{
-		public Spacecraft mainSpacecraft;
-		public List<Spacecraft> spacecraft;
+		public SpacecraftController mainSpacecraft;
+		public List<SpacecraftController> spacecraft;
 
-		public PlayerSpacecraftRecord(Spacecraft mainSpacecraft)
+		public PlayerSpacecraftRecord(SpacecraftController mainSpacecraft)
 		{
 			this.mainSpacecraft = mainSpacecraft;
-			this.spacecraft = new List<Spacecraft>();
-			this.spacecraft.Add(mainSpacecraft);
+
+			spacecraft = new List<SpacecraftController>();
+			spacecraft.Add(mainSpacecraft);
 		}
 	}
 
 	public static SpacecraftManager instance = null;
 
-	[SerializeField] private Spacecraft localPlayerSpacecraft = null;		// Temporary Solution until multiple Ships and Multiplayer is implemented
+	[SerializeField] private SpacecraftController localPlayerSpacecraft = null;		// Temporary Solution until multiple Ships and Multiplayer is implemented
+	private GravityWellController gravityWellController = null;
 	private Dictionary<string, PlayerSpacecraftRecord> playerSpacecraft = null;
 	private List<Constructor> constructors = null;
 	// private List<SpaceStationController> aiSpacecraft = null;    // Enable if necessary
@@ -43,6 +45,11 @@ public class SpacecraftManager : MonoBehaviour
 		instance = this;
 	}
 
+	private void Start()
+	{
+		gravityWellController = GravityWellController.GetInstance();
+	}
+
 	public void AddConstructor(Constructor constructor)
 	{
 		constructors.Add(constructor);
@@ -63,7 +70,7 @@ public class SpacecraftManager : MonoBehaviour
 		spacecraftChangeListeners.Remove(listener);
 	}
 
-	public Spacecraft GetLocalPlayerMainSpacecraft()
+	public SpacecraftController GetLocalPlayerMainSpacecraft()
 	{
 		return playerSpacecraft["LocalPlayer"].mainSpacecraft;
 	}
@@ -86,5 +93,21 @@ public class SpacecraftManager : MonoBehaviour
 		}
 
 		return constructors;
+	}
+
+	public double GetMinPlayerDistance(Vector2Double globalPosition)
+	{
+		double minDistance = double.MaxValue;
+		foreach(PlayerSpacecraftRecord player in playerSpacecraft.Values)
+		{
+			double distance = (gravityWellController.LocalToGlobalPosition(player.mainSpacecraft.GetTransform().position) - globalPosition).Magnitude();
+
+			if(distance < minDistance)
+			{
+				minDistance = distance;
+			}
+		}
+
+		return minDistance;
 	}
 }

@@ -60,7 +60,8 @@ public class Container : Module
 
 			freeCapacity -= volume;
 
-			spacecraft.UpdateModuleMass(transform.localPosition, good.mass * amount);
+			mass += good.mass * amount;
+			spacecraft.UpdateMass();
 
 			return true;
 		}
@@ -90,7 +91,8 @@ public class Container : Module
 				loads.Remove(goodName);
 			}
 
-			spacecraft.UpdateModuleMass(transform.localPosition, -good.mass * amount);
+			mass -= good.mass * amount;
+			spacecraft.UpdateMass();
 
 			return true;
 		}

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -8,7 +9,6 @@ using UnityEngine.UI;
 public class MenuController : MonoBehaviour, IListener
 {
 	private static MenuController instance = null;
-	private static WaitForSecondsRealtime waitASecond = null;
 
 	[SerializeField] private RectTransform uiTransform = null;
 	[SerializeField] private RectTransform moduleMenu = null;
@@ -33,16 +33,19 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private BuildingMenu buildingMenu = null;
 	[SerializeField] private InventoryScreenController inventoryMenu = null;
 	[SerializeField] private Transform mapMarkerParent = null;
-	// TODO: Somehow control Flight Control bool with all of this
+	[SerializeField] private Transform orbitMarkerParent = null;
+	private TimeController timeController = null;
+	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private InfoController infoController = null;
 	private HotkeyModule activeModule = null;
 	private SpaceStationController activeStation = null;
 	private QuestVesselController activeQuestVessel = null;
 	private Dictionary<string, string> amountSettings = null;
-	private Spacecraft localPlayerMainSpacecraft = null;
+	private SpacecraftController localPlayerMainSpacecraft = null;
 	private InventoryController localPlayerMainInventory = null;
 	private InputController localPlayerMainInputController = null;
+	private TimeController.Coroutine nextUpdateFieldCoroutine = null;
 
 	public static MenuController GetInstance()
 	{
@@ -58,14 +61,11 @@ public class MenuController : MonoBehaviour, IListener
 
 	private void Start()
 	{
-		if(waitASecond == null)
-		{
-			waitASecond = new WaitForSecondsRealtime(1.0f);
-		}
-
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
 
+		timeController = TimeController.GetInstance();
+		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		infoController = InfoController.GetInstance();
 	}
@@ -118,11 +118,13 @@ public class MenuController : MonoBehaviour, IListener
 			else
 			{
 				mainMenu.SetActive(!mainMenu.activeSelf);
+				timeController.TogglePause(mainMenu.activeSelf);
 			}
 		}
 		else
 		{
 			mainMenu.SetActive(!mainMenu.activeSelf);
+			timeController.TogglePause(mainMenu.activeSelf);
 		}
 
 		UpdateFlightControls();
@@ -305,12 +307,16 @@ public class MenuController : MonoBehaviour, IListener
 		}
 	}
 
-	public void UpdateTrading(SpaceStationController requester, RectTransform[] tradingEntries, int stationMoney, float lastStationUpdate, float stationUpdateInterval)
+	public void UpdateTrading(SpaceStationController requester, RectTransform[] tradingEntries, int stationMoney, double lastStationUpdate, float stationUpdateInterval)
 	{
 		if(requester == activeStation)
 		{
-			StopAllCoroutines();
-			StartCoroutine(UpdateNextUpdateField(lastStationUpdate, stationUpdateInterval));
+			if(nextUpdateFieldCoroutine != null)
+			{
+				timeController.StopCoroutine(nextUpdateFieldCoroutine);
+				nextUpdateFieldCoroutine = null;
+			}
+			nextUpdateFieldCoroutine = timeController.StartCoroutine(UpdateNextUpdateField(lastStationUpdate, stationUpdateInterval), false);
 
 			playerMoneyField.text = localPlayerMainInventory.GetMoney() + "$";
 			stationMoneyField.text = stationMoney + "$";
@@ -319,7 +325,7 @@ public class MenuController : MonoBehaviour, IListener
 			for(int i = 1; i < tradingContentPane.childCount; ++i)
 			{
 				Transform child = tradingContentPane.GetChild(i);
-				amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(6).GetComponent<InputField>().text;
+				amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(8).GetComponent<InputField>().text;
 				GameObject.Destroy(child.gameObject);
 			}
 
@@ -330,13 +336,18 @@ public class MenuController : MonoBehaviour, IListener
 				string goodName = tradingEntry.GetChild(0).GetComponent<Text>().text;
 				if(amountSettings.ContainsKey(goodName))
 				{
-					tradingEntry.GetChild(3).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), -Mathf.Abs(int.Parse(amountSettings[goodName]))) + "$";
-					tradingEntry.GetChild(4).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), Mathf.Abs(int.Parse(amountSettings[goodName]))) + "$";
-					tradingEntry.GetChild(6).GetComponent<InputField>().text = amountSettings[goodName];
+					GoodManager.Good good = goodManager.GetGood(goodName);
+					int amount = Mathf.Abs(int.Parse(amountSettings[goodName]));
+
+					tradingEntry.GetChild(3).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), -amount) + "$";
+					tradingEntry.GetChild(4).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), amount) + "$";
+					tradingEntry.GetChild(5).GetComponent<Text>().text = (good.volume * amount) + "/" + localPlayerMainInventory.GetFreeCapacity(good) + " m3";
+					tradingEntry.GetChild(6).GetComponent<Text>().text = (good.mass * amount) + " t";
+					tradingEntry.GetChild(8).GetComponent<InputField>().text = amountSettings[goodName];
 				}
 				else
 				{
-					tradingEntry.GetChild(6).GetComponent<InputField>().text = "1";
+					tradingEntry.GetChild(8).GetComponent<InputField>().text = "1";
 				}
 			}
 
@@ -357,9 +368,9 @@ public class MenuController : MonoBehaviour, IListener
 
 	public void CloseStationMenu()
 	{
-		stationMainMenu.SetActive(false);
-		stationQuestMenu.SetActive(false);
-		stationTradingMenu.SetActive(false);
+		stationMainMenu?.SetActive(false);
+		stationQuestMenu?.SetActive(false);
+		stationTradingMenu?.SetActive(false);
 		activeStation = null;
 		UpdateFlightControls();
 	}
@@ -436,18 +447,24 @@ public class MenuController : MonoBehaviour, IListener
 	public void UpdateFlightControls()
 	{
 		bool flightControls = activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !inventoryMenu.gameObject.activeSelf && !mainMenu.activeSelf;
+		// TODO: Make a flightControl-Getter instead of pushing it from here
 		localPlayerMainInputController.SetFlightControls(flightControls);
 		infoController.SetFlightControls(flightControls);
 	}
 
-	private IEnumerator UpdateNextUpdateField(float lastStationUpdate, float stationUpdateInterval)
+	public void ResetTarget()
+	{
+		localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>().SetTarget(null, null, null);
+	}
+
+	private IEnumerator<float> UpdateNextUpdateField(double lastStationUpdate, float stationUpdateInterval)
 	{
 		int remainingTime = 0;
 		while(stationTradingMenu.activeSelf && remainingTime >= 0)
 		{
-			remainingTime = Mathf.FloorToInt((lastStationUpdate + (stationUpdateInterval / Time.timeScale)) - Time.realtimeSinceStartup);
-			nextUpdateField.text = remainingTime + " Seconds";
-			yield return waitASecond;
+			remainingTime = Math.Max((int)((lastStationUpdate + stationUpdateInterval) - timeController.GetTime()), 0);
+			nextUpdateField.text = remainingTime + " s";
+			yield return 1.0f;
 		}
 	}
 
@@ -459,6 +476,11 @@ public class MenuController : MonoBehaviour, IListener
 	public Transform GetMapMarkerParent()
 	{
 		return mapMarkerParent;
+	}
+
+	public Transform GetOrbitMarkerParent()
+	{
+		return orbitMarkerParent;
 	}
 
 	public bool StationIsQuesting(SpaceStationController requester)

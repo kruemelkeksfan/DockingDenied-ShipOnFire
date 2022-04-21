@@ -8,23 +8,24 @@ using UnityEngine.UI;
 
 public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingListener, IListener
 {
-	private static WaitForSeconds waitForDockingPortReactivationDelay = null;
-
 	[SerializeField] private TextAsset[] questVesselBlueprints = { };
 	[SerializeField] private RectTransform mapMarkerPrefab = null;
 	[Tooltip("Distance up from which no more digital Digits will be displayed")]
 	[SerializeField] private float decimalDigitThreshold = 100.0f;
 	[Tooltip("Distance the Player needs to be away for this Vessel to start Despawning when its Quest is completed")]
 	[SerializeField] private float playerDespawnDistance = 0.2f;
+	[Tooltip("Delay before a Towing Quest is completed after Docking to make sure that the Station did not cancel the Docking")]
+	[SerializeField] private float towingQuestCompleteDelay = 1.0f;
 	[Tooltip("Delay for Reactivation of the Docking Port, if it is disabled, for Example after docking to the wrong Port of a Station")]
 	[SerializeField] private float dockingPortReactivateDelay = 20.0f;
 	[SerializeField] private float despawnDelay = 300.0f;
+	private TimeController timeController = null;
 	private RectTransform uiTransform = null;
 	private MenuController menuController = null;
-	private Spacecraft spacecraft = null;
+	private SpacecraftController spacecraft = null;
 	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
-	private Spacecraft localPlayerSpacecraft = null;
+	private SpacecraftController localPlayerSpacecraft = null;
 	private Transform localPlayerSpacecraftTransform = null;
 	private InventoryController localPlayerMainInventory = null;
 	private PlayerSpacecraftUIController playerSpacecraftController = null;
@@ -42,16 +43,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	private QuestManager.Quest quest = null;
 	private bool interactable = false;
 	private bool playerDocked = false;
-	private float questCompleteTime = -1.0f;
+	private double questCompleteTime = -1.0f;
 
 	private void Start()
 	{
-		if(waitForDockingPortReactivationDelay == null)
-		{
-			waitForDockingPortReactivationDelay = new WaitForSeconds(dockingPortReactivateDelay);
-		}
-
-		spacecraft = GetComponent<Spacecraft>();
+		spacecraft = GetComponent<SpacecraftController>();
 		transform = spacecraft.GetTransform();
 		SpacecraftBlueprintController.InstantiateModules(SpacecraftBlueprintController.LoadBlueprintModules(questVesselBlueprints[UnityEngine.Random.Range(0, questVesselBlueprints.Length)]), transform);
 
@@ -74,7 +70,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		playerSpacecraftController = localPlayerSpacecraft.GetComponent<PlayerSpacecraftUIController>();
 		spacecraftManager.AddSpacecraftChangeListener(this);
 
-		spacecraft.AddUpdateListener(this);
+		timeController = TimeController.GetInstance();
+		timeController.AddUpdateListener(this);
 	}
 
 	private void OnDestroy()
@@ -83,6 +80,8 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			GameObject.Destroy(mapMarker.gameObject);
 		}
+
+		timeController?.RemoveUpdateListener(this);
 	}
 
 	public void UpdateNotify()
@@ -91,13 +90,12 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			if(questCompleteTime < 0.0f)
 			{
-				questCompleteTime = Time.time;
+				questCompleteTime = timeController.GetTime();
 				mapMarker.localScale = Vector3.zero;
-				quest.destination.AbortDocking(spacecraft);
 			}
-			else if(Time.time > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
+			else if(timeController.GetTime() > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
 			{
-				StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody));
+				timeController.StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody), false);
 			}
 		}
 		else
@@ -111,11 +109,11 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 				float distance = (transform.position - localPlayerSpacecraftTransform.position).magnitude;
 				if(distance > decimalDigitThreshold)
 				{
-					mapMarkerDistance.text = distance.ToString("F0") + "km";
+					mapMarkerDistance.text = (distance / 1000.0f).ToString("F0") + "km";
 				}
 				else
 				{
-					mapMarkerDistance.text = distance.ToString("F2") + "km";
+					mapMarkerDistance.text = (distance / 1000.0f).ToString("F2") + "km";
 				}
 			}
 			else
@@ -127,30 +125,53 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void Docked(DockingPort port, DockingPort otherPort)
 	{
-		if(otherPort.GetComponentInParent<Spacecraft>() == localPlayerSpacecraft)
+		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerSpacecraft)
 		{
 			playerDocked = true;
+
+			if(quest.taskType == QuestManager.TaskType.Tow)
+			{
+				hint = "Tow this Vessel to the Station!";
+			}
 		}
 
 		if(quest.taskType == QuestManager.TaskType.Tow && otherPort.GetComponentInParent<SpaceStationController>() == quest.destination)
 		{
-			quest.progress = 1.0f;
+			timeController.StartCoroutine(CompleteTowingQuest(port), false);
 		}
 
 		UpdateQuestVesselMenu();
 	}
 
+	private IEnumerator<float> CompleteTowingQuest(DockingPort port)
+	{
+		yield return towingQuestCompleteDelay;
+
+		// Still docked?
+		if(!port.IsFree())
+		{
+			quest.progress = 1.0f;
+			quest.destination.AbortDocking(spacecraft);
+		}
+	}
+
 	public void Undocked(DockingPort port, DockingPort otherPort)
 	{
-		if(otherPort.GetComponentInParent<Spacecraft>() == localPlayerSpacecraft)
+		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerSpacecraft)
 		{
 			playerDocked = false;
+
+			if(quest.taskType == QuestManager.TaskType.Tow)
+			{
+				hint = "Dock to start Towing!";
+			}
 		}
 
-		if(!port.IsActive())
+		// Check if Port and gameObject are still active, to avoid starting Coroutines when getting undocked due to Vessel Destruction
+		if(!port.IsActive() && port.gameObject.activeSelf && gameObject.activeSelf)
 		{
 			quest.progress = 0.0002f;
-			StartCoroutine(ReactivateDockingPort(port));
+			timeController.StartCoroutine(ReactivateDockingPort(port), false);
 		}
 
 		UpdateQuestVesselMenu();
@@ -166,7 +187,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 	public void ToggleQuestVesselMenu()
 	{
-		playerSpacecraftController.SetTarget(rigidbody);
+		playerSpacecraftController.SetTarget(spacecraft, transform, rigidbody);
 		menuController.ToggleQuestVesselMenu(this, vesselName, progress, hint, interactionLabel, (quest.progress < 1.0f && interactable && playerDocked) ? interaction : null);
 	}
 
@@ -179,6 +200,21 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		}
 
 		menuController.UpdateQuestVesselMenu(this, vesselName, progress, hint, interactionLabel, (quest.progress < 1.0f && interactable && playerDocked) ? interaction : null);
+	}
+
+	public IEnumerator<float> ReactivateDockingPort(DockingPort port)
+	{
+		yield return dockingPortReactivateDelay;
+
+		if(!port.IsActive())
+		{
+			port.HotkeyDown();
+		}
+	}
+
+	public QuestManager.Quest GetQuest()
+	{
+		return quest;
 	}
 
 	public void SetQuest(QuestManager.Quest quest)
@@ -275,19 +311,9 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			hint = "Dock to start Towing!";
 			interactable = false;
-			quest.destination.RequestDocking(GetComponentInParent<Spacecraft>());
+			quest.destination.RequestDocking(GetComponentInParent<SpacecraftController>());
 		}
 
 		UpdateQuestVesselMenu();
-	}
-
-	public IEnumerator ReactivateDockingPort(DockingPort port)
-	{
-		yield return waitForDockingPortReactivationDelay;
-
-		if(!port.IsActive())
-		{
-			port.HotkeyDown();
-		}
 	}
 }

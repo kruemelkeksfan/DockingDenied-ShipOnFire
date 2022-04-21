@@ -46,25 +46,26 @@ public class Constructor : Module
 
 	public bool PositionInRange(Vector2 position)
 	{
+		// TODO: Why InverseTransformPosition in the 1st Part instead of using transform.position in the 2nd Part?
 		Vector2 direction = (Vector2)transform.InverseTransformPoint(position) - (Vector2)transform.localPosition;
 		return direction.x >= -constructionRange && direction.x <= constructionRange && direction.y >= -constructionRange && direction.y <= constructionRange;
 	}
 
 	public void StartConstruction(Vector2 position)
 	{
-		StartCoroutine(Construction(position));
+		timeController.StartCoroutine(Construction(position), false);
 	}
 
-	private IEnumerator Construction(Vector3 position)
+	private IEnumerator<float> Construction(Vector3 position)
 	{
 		// TODO: Object Pooling
 		LineRenderer constructionBeam = GameObject.Instantiate<LineRenderer>(constructionBeamPrefab, beamOrigin.position, Quaternion.identity, transform);
 		constructionBeam.SetPositions(new Vector3[]{Vector3.zero, transform.InverseTransformPoint(position)});
 
-		float startTime = Time.time;
-		while(Time.time < startTime + constructionBeamDuration)
+		double startTime = timeController.GetTime();
+		while(timeController.GetTime() < startTime + constructionBeamDuration)
 		{
-			float progress = ((Time.time - startTime) / constructionBeamDuration) * 2.0f;
+			float progress = (float)((timeController.GetTime() - startTime) / constructionBeamDuration) * 2.0f;
 			if(progress > 1.0f)
 			{
 				progress = 2.0f - progress;
@@ -72,7 +73,7 @@ public class Constructor : Module
 			constructionBeam.startColor = new Color(startColor.r, startColor.g, startColor.b, startColor.a * progress);
 			constructionBeam.endColor = new Color(endColor.r, endColor.g, endColor.b, endColor.a * progress);
 
-			yield return waitForEndOfFrame;
+			yield return -1.0f;
 		}
 		
 		GameObject.Destroy(constructionBeam.gameObject);

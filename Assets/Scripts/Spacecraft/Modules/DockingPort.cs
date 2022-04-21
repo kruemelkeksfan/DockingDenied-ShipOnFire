@@ -5,17 +5,14 @@ using UnityEngine.UI;
 
 public class DockingPort : HotkeyModule
 {
-	private static readonly WaitForFixedUpdate WAIT_FOR_FIXED_UPDATE = new WaitForFixedUpdate();
-
 	[SerializeField] private Transform dockingLocation = null;
-	[SerializeField] private float dockingSpeed = 2.0f;
-	[SerializeField] private float dockingRotationSpeed = 0.8f;
-	[SerializeField] private float dockingPositionThreshold = 0.00002f;
-	[SerializeField] private float dockingRotationThreshold = 0.2f;
+	[SerializeField] private float dockingRotationThreshold = 10.0f;
 	[SerializeField] private Text portNameField = null;
+	[SerializeField] private float jointFrequency = 2.0f;
+	[SerializeField] private float jointDamping = 1.0f;
+	private Transform spacecraftTransform = null;
 	private ParticleSystem magnetParticles = null;
 	private bool active = false;
-	private bool docking = false;
 	private DockingPort connectedPort = null;
 	private FixedJoint2D joint = null;
 	private List<IDockingListener> dockingListeners = null;
@@ -45,6 +42,7 @@ public class DockingPort : HotkeyModule
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
+		spacecraftTransform = spacecraft.GetTransform();
 		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
 		portNameField.text = GetActionName();
 		AddDockingListener(spacecraft);
@@ -52,18 +50,12 @@ public class DockingPort : HotkeyModule
 
 	private void OnTriggerEnter2D(Collider2D other)
 	{
-		if(active && !docking && connectedPort == null && other.isTrigger)
-		{
-			StartCoroutine(Dock(other));
-		}
+		Dock(other);
 	}
 
 	private void OnTriggerStay2D(Collider2D other)
 	{
-		if(active && !docking && connectedPort == null && other.isTrigger)
-		{
-			StartCoroutine(Dock(other));
-		}
+		Dock(other);
 	}
 
 	public override void HotkeyDown()
@@ -115,50 +107,35 @@ public class DockingPort : HotkeyModule
 		}
 	}
 
-	private IEnumerator Dock(Collider2D other)
+	private void Dock(Collider2D other)
 	{
-		DockingPort otherPort = other.GetComponent<DockingPort>();
-		if(otherPort != null && !otherPort.docking)
+		if(active && connectedPort == null && other.isTrigger)
 		{
-			Rigidbody2D otherRigidbody = other.GetComponentInParent<Rigidbody2D>();
-			if(rigidbody.mass <= otherRigidbody.mass)
+			DockingPort otherPort = other.GetComponent<DockingPort>();
+			if(otherPort != null && otherPort.active && otherPort.connectedPort == null)
 			{
-				while(active && connectedPort == null && otherPort.active && otherPort.connectedPort == null)
+				Rigidbody2D otherRigidbody = other.GetComponentInParent<Rigidbody2D>();
+				if(rigidbody.mass <= otherRigidbody.mass)
 				{
-					docking = true;
-
-					yield return WAIT_FOR_FIXED_UPDATE;
-
-					Vector2 dPosition = otherPort.dockingLocation.position - dockingLocation.position;
-					float dRotation = ((otherPort.dockingLocation.rotation.eulerAngles.z + 180.0f) - dockingLocation.rotation.eulerAngles.z) % 360.0f;
-					if(dRotation < 0.0f)
+					float dRotation = Mathf.DeltaAngle(otherPort.dockingLocation.rotation.eulerAngles.z, (dockingLocation.rotation.eulerAngles.z + 180.0f));
+					if(dRotation < dockingRotationThreshold)
 					{
-						dRotation += 360.0f;
-					}
-					if(dRotation > 180.0f)
-					{
-						dRotation -= 360.0f;
-					}
-
-					rigidbody.velocity = otherRigidbody.velocity;
-					rigidbody.angularVelocity = otherRigidbody.angularVelocity;
-
-					if(dPosition.sqrMagnitude < dockingPositionThreshold && Mathf.Abs(dRotation) < dockingRotationThreshold)
-					{
-						rigidbody.position += dPosition;
-						rigidbody.rotation += dRotation;
+						// Use rigidbody.rotation instead of transform.rotation, because else the Physics System is not flushed and will fuck up the Joint
+						rigidbody.rotation += otherPort.dockingLocation.rotation.eulerAngles.z - (dockingLocation.rotation.eulerAngles.z + 180.0f);
 
 						joint = spacecraft.gameObject.AddComponent<FixedJoint2D>();
+						joint.frequency = jointFrequency;
+						joint.dampingRatio = jointDamping;
 						joint.connectedBody = otherRigidbody;
 						joint.autoConfigureConnectedAnchor = false;
-						joint.anchor = spacecraft.GetTransform().InverseTransformPoint(dockingLocation.position);
-						joint.connectedAnchor = otherPort.spacecraft.GetTransform().InverseTransformPoint(otherPort.dockingLocation.position);
+						joint.anchor = spacecraftTransform.InverseTransformPoint(dockingLocation.position);
+						joint.connectedAnchor = otherPort.spacecraftTransform.InverseTransformPoint(otherPort.dockingLocation.position);
 						joint.enableCollision = false;
 
 						connectedPort = otherPort;
 						otherPort.connectedPort = this;
 						otherPort.joint = joint;
-						
+
 						foreach(IDockingListener listener in dockingListeners)
 						{
 							listener.Docked(this, otherPort);
@@ -169,17 +146,8 @@ public class DockingPort : HotkeyModule
 						}
 						ToggleParticles();
 						otherPort.ToggleParticles();
-
-						break;                                                                                                                                  // Break in case the Connection gets seperated again by a DockingListener
-					}
-					else
-					{
-						rigidbody.position += dPosition * dockingSpeed * Time.fixedDeltaTime;
-						rigidbody.rotation += dRotation * dockingRotationSpeed * Time.fixedDeltaTime;
 					}
 				}
-
-				docking = false;
 			}
 		}
 	}
@@ -196,6 +164,6 @@ public class DockingPort : HotkeyModule
 
 	public bool IsFree()
 	{
-		return !docking && connectedPort == null;
+		return connectedPort == null;
 	}
 }
