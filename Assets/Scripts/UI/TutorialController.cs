@@ -8,17 +8,16 @@ public class TutorialController : MonoBehaviour
 	private static bool skipped = false;
 
 	[SerializeField] private float tutorialUpdateInterval = 1.0f;
+	[SerializeField] private GameObject tutorialPanel = null;
 	[SerializeField] private Text tutorialMessageField = null;
 	[SerializeField] private GameObject buildingMenu = null;
 	[SerializeField] private Text moduleControlDisplay = null;
 	[SerializeField] private Text keyBindingDisplay = null;
 	[SerializeField] private Button buildButton = null;
-	[SerializeField] private Button buildAreaButton = null;
 	[SerializeField] private Transform blueprintScrollPane = null;
-	[SerializeField] private Button velocityButton = null;
+	[SerializeField] private Button overlaysButton = null;
 	[SerializeField] private Color highlightColor = Color.red;
 	[SerializeField] private GameObject nextButton = null;
-	[SerializeField] private GameObject skipButton = null;
 	private TimeController timeController = null;
 	private SpacecraftManager spacecraftManager = null;
 	private QuestManager questManager = null;
@@ -49,13 +48,16 @@ public class TutorialController : MonoBehaviour
 
 	private IEnumerator<float> UpdateTutorial()
 	{
+		tutorialPanel.SetActive(false);
+
 		yield return tutorialUpdateInterval * 4.0f;
 
-		tutorialMessageField.gameObject.SetActive(true);
-		skipButton.SetActive(true);
+		tutorialPanel.SetActive(true);
+
+		nextButton.SetActive(false);
 
 		HighlightButton(buildButton);
-		tutorialMessageField.text = "Welcome to Space!\nIf you get stuck or go full retard, restart through the Main Menu\nStart by clicking 'Build'";
+		tutorialMessageField.text = "Welcome to Space!\nIf you get stuck, you can always restart through the Main Menu\nStart by clicking 'Build'";
 		do
 		{
 			yield return tutorialUpdateInterval;
@@ -65,15 +67,13 @@ public class TutorialController : MonoBehaviour
 
 		nextButton.SetActive(true);
 
-		HighlightButton(buildAreaButton);
-		tutorialMessageField.text = "For now you can only build in the Vicinity of Stations\nClick 'Show Build Area' to see the Range";
+		tutorialMessageField.text = "For now you can only build in the Vicinity of Stations";
 		do
 		{
 			yield return tutorialUpdateInterval;
 		}
 		while(!next);
 		next = false;
-		UnHighlightButton(buildAreaButton);
 
 		nextButton.SetActive(false);
 
@@ -111,7 +111,7 @@ public class TutorialController : MonoBehaviour
 		oldKeyBindingColor = moduleControlDisplay.color;
 		moduleControlHighlighted = true;
 		moduleControlDisplay.color = highlightColor;
-		tutorialMessageField.text = "Zoom out [Scroll Wheel] and click the Name of the Station near you\nThen click 'Request Docking'\nDocking Permissions are shown by yellow Light from the affected Port\nClose the Station Menu and activate your own Port by pressing the Number Key displayed in the top left Corner of your Screen";
+		tutorialMessageField.text = "Zoom out [Scroll Wheel] and click the Name of the Station near you\nThen click 'Request Docking'\nDocking Permissions are shown by yellow Light from the affected Port\nClose the Station Menu and activate your own Port by pressing the Number Key displayed in the top left Corner";
 		complete = false;
 		do
 		{
@@ -167,17 +167,17 @@ public class TutorialController : MonoBehaviour
 		while(!next);
 		next = false;
 		
-		HighlightButton(velocityButton);
-		tutorialMessageField.text = "You can toggle Velocity Markers in the Top Bar\nThe orange Line shows your Velocity in Relation to the last clicked Target\nThe green Line shows the Difference between your Velocity and perfect Orbiting Velocity";
+		HighlightButton(overlaysButton);
+		tutorialMessageField.text = "The orange Line shows your Velocity in Relation to the last clicked Target\nYou can toggle many other helpful Indicators under 'Overlays'";
 		do
 		{
 			yield return tutorialUpdateInterval;
 		}
 		while(!next);
 		next = false;
-		UnHighlightButton(velocityButton);
+		UnHighlightButton(overlaysButton);
 
-		tutorialMessageField.text = "Quests usually reward you with Money and Materials which you can use for Trade or to expand your Spacecraft";
+		tutorialMessageField.text = "Quests usually reward you with Money and Materials\nwhich you can use for Trade or to expand your Spacecraft";
 		do
 		{
 			yield return tutorialUpdateInterval;
@@ -186,8 +186,7 @@ public class TutorialController : MonoBehaviour
 		next = false;
 
 		nextButton.SetActive(false);
-		tutorialMessageField.gameObject.SetActive(false);
-		skipButton.SetActive(false);
+		tutorialPanel.gameObject.SetActive(false);
 	}
 
 	public void NextMessage()
@@ -204,8 +203,7 @@ public class TutorialController : MonoBehaviour
 		}
 
 		nextButton.SetActive(false);
-		tutorialMessageField.gameObject.SetActive(false);
-		skipButton.SetActive(false);
+		tutorialPanel.SetActive(false);
 
 		if(highlightedButton != null)
 		{
