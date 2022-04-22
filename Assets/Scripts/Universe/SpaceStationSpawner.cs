@@ -55,9 +55,7 @@ public class SpaceStationSpawner : MonoBehaviour
 			}
 			else
 			{
-				int suffixIndex = Random.Range(0, nameSuffixes.Count);
-				spaceStation.SetStationName(namePrefixes[prefixIndex] + " " + nameSuffixes[suffixIndex]);
-				nameSuffixes.RemoveAt(suffixIndex);
+				spaceStation.SetStationName(namePrefixes[prefixIndex] + " " + nameSuffixes[Random.Range(0, nameSuffixes.Count)]);
 			}
 			namePrefixes.RemoveAt(prefixIndex);
 		}
