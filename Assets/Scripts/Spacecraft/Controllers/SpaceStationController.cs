@@ -328,6 +328,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				mapMarkerButton.colors = questStationMarkerColors;
 				mapMarkerName.color = questStationTextColor;
 				mapMarkerDistance.color = questStationTextColor;
+
+				mapMarkerName.text = stationName + " [!]";
 			}
 			else
 			{
@@ -358,6 +360,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				mapMarkerButton.colors = originalMarkerColors;
 				mapMarkerName.color = originalTextColor;
 				mapMarkerDistance.color = originalTextColor;
+
+				mapMarkerName.text = stationName;
 			}
 		}
 	}
