@@ -6398,7 +6398,7 @@ MonoBehaviour:
   monetaryRewardChance: 0.4
   questVesselSpawnRange:
     min: 4000
-    max: 12000
+    max: 6000
   questVesselPrefab: {fileID: 6497912318156362320, guid: c347a9d1101a45e41aac3af9b415db46,
     type: 3}
 --- !u!4 &938566358

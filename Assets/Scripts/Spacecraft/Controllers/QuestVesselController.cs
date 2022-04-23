@@ -44,6 +44,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 	private bool interactable = false;
 	private bool playerDocked = false;
 	private double questCompleteTime = -1.0f;
+	private float spawnDistance = 0.0f;
 
 	private void Start()
 	{
@@ -119,6 +120,14 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			else
 			{
 				mapMarker.localScale = Vector3.zero;
+			}
+
+			if(quest.taskType == QuestManager.TaskType.Tow)
+			{
+				float stationDistance = ((Vector2)(transform.position - quest.destination.GetTransform().position)).magnitude;
+				quest.progress = (1.0f - Mathf.Clamp01(stationDistance / spawnDistance)) * 0.95f;
+
+				UpdateQuestVesselMenu();
 			}
 		}
 	}
@@ -233,6 +242,13 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 
 		mapMarkerName.text = quest.vesselType.ToString() + " Vessel";
 		vesselName = mapMarkerName.text;
+
+		if(spacecraft == null || transform == null)
+		{
+			spacecraft = GetComponent<SpacecraftController>();
+			transform = spacecraft.GetTransform();
+		}
+		spawnDistance = ((Vector2)(transform.position - quest.destination.GetTransform().position)).magnitude;
 
 		/* TODO: if(quest.taskType == QuestManager.TaskType.Destroy)
 		{
