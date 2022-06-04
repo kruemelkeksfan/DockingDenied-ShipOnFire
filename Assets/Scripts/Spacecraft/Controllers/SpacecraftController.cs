@@ -205,6 +205,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	}
 
 	// TODO: Unity.Rigidbody Max Mass is 1000000, so assure that this is not exceeded (e.g. let Spacestations deny docking/undock after surpassing a Threshold to force the Player to dump Goods/deconstruct Modules)
+	// TODO: Optimize by just doing the Weight Check and setting a Flag here and calculating the heavy Stuff at the End of the Frame/Beginning of the next Frame
 	public void UpdateMass()
 	{
 		if(buildingMenu == null)
@@ -460,7 +461,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		// M - Torque
 		// r - Lever
 		// F - Thrust
-		Vector2 lever = (Vector2)thruster.transform.localPosition - foreignCenterOfMass;
+		Vector2 lever = (Vector2)thruster.transform.localPosition - rigidbody.centerOfMass;
 		Vector2 thrust = thruster.GetThrustVector();
 		float torque = Vector3.Cross(lever, thrust).z;
 		// To find the Fraction of Thrust used for Rotation, Project thrust on lever, normalize by dividing by thrust.magnitude and subtract the Result from 100%
