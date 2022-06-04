@@ -5280,6 +5280,7 @@ MonoBehaviour:
   portNameField: {fileID: 8706953334418805248}
   jointFrequency: 2
   jointDamping: 1
+  dockingTriggerCollider: {fileID: 147090888474923400}
 --- !u!1001 &76089906107145030
 PrefabInstance:
   m_ObjectHideFlags: 0

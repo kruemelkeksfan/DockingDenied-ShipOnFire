@@ -10,6 +10,7 @@ public class DockingPort : HotkeyModule
 	[SerializeField] private Text portNameField = null;
 	[SerializeField] private float jointFrequency = 2.0f;
 	[SerializeField] private float jointDamping = 1.0f;
+	[SerializeField] private Collider2D dockingTriggerCollider = null;
 	private Transform spacecraftTransform = null;
 	private ParticleSystem magnetParticles = null;
 	private bool active = false;
@@ -66,6 +67,9 @@ public class DockingPort : HotkeyModule
 		{
 			DockingPort otherPort = connectedPort;
 
+			dockingTriggerCollider.enabled = true;
+			connectedPort.dockingTriggerCollider.enabled = true;
+
 			connectedPort = null;
 			otherPort.connectedPort = null;
 
@@ -121,7 +125,8 @@ public class DockingPort : HotkeyModule
 					if(dRotation < dockingRotationThreshold)
 					{
 						// Use rigidbody.rotation instead of transform.rotation, because else the Physics System is not flushed and will fuck up the Joint
-						rigidbody.rotation += otherPort.dockingLocation.rotation.eulerAngles.z - (dockingLocation.rotation.eulerAngles.z + 180.0f);
+						rigidbody.rotation += (float) System.Math.IEEERemainder(
+							otherPort.dockingLocation.rotation.eulerAngles.z - (dockingLocation.rotation.eulerAngles.z + 180.0f), 360.0f);
 
 						joint = spacecraft.gameObject.AddComponent<FixedJoint2D>();
 						joint.frequency = jointFrequency;
@@ -135,6 +140,9 @@ public class DockingPort : HotkeyModule
 						connectedPort = otherPort;
 						otherPort.connectedPort = this;
 						otherPort.joint = joint;
+
+						dockingTriggerCollider.enabled = false;
+						connectedPort.dockingTriggerCollider.enabled = false;
 
 						foreach(IDockingListener listener in dockingListeners)
 						{
