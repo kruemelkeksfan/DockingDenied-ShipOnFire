@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AudioController : MonoBehaviour, IListener
 {
@@ -21,8 +22,14 @@ public class AudioController : MonoBehaviour, IListener
 	[SerializeField] private float rampUpDuration = 2.0f;
 	[SerializeField] private float maximumPauseDuration = 30.0f;
 	[SerializeField] private float audioLoopOverlapFactor = 0.5f;
+	[SerializeField] private Slider musicSlider = null;
+	[SerializeField] private InputField musicInputField = null;
+	[SerializeField] private Slider sfxSlider = null;
+	[SerializeField] private InputField sfxInputField = null;
+	[SerializeField] private string creditUrl = "https://freepd.com/artists.php";
 	private TimeController timeController = null;
 	private SpacecraftManager spacecraftManager = null;
+	private TimeController.Coroutine rampUpCoroutine = null;
 	private HashSet<AudioClip> oneShotAudios = null;
 	private Dictionary<AudioClip, AudioData> loopedAudios = null;
 	private GameObject localPlayerMainObject = null;
@@ -48,6 +55,13 @@ public class AudioController : MonoBehaviour, IListener
 		spacecraftManager = SpacecraftManager.GetInstance();
 		spacecraftManager.AddSpacecraftChangeListener(this);
 		Notify();
+
+		float volume = musicSource.volume;
+		musicSlider.value = volume;
+		musicInputField.text = volume.ToString();
+		volume = sfxSource.volume;
+		sfxSlider.value = volume;
+		sfxInputField.text = volume.ToString();
 	}
 
 	public void Notify()
@@ -83,7 +97,7 @@ public class AudioController : MonoBehaviour, IListener
 				pauseUntil = music[currentTitle].length + Random.Range(0.0f, maximumPauseDuration);
 
 				// Play Title
-				timeController.StartCoroutine(RampUp(), true);
+				rampUpCoroutine = timeController.StartCoroutine(RampUp(), true);
 				musicSource.PlayOneShot(music[currentTitle]);
 			}
 
@@ -117,6 +131,7 @@ public class AudioController : MonoBehaviour, IListener
 		}
 
 		musicSource.volume = volume;
+		rampUpCoroutine = null;
 	}
 
 	public void PlayAudio(AudioClip audio, GameObject triggeringObject)
@@ -136,19 +151,19 @@ public class AudioController : MonoBehaviour, IListener
 	{
 		if(triggeringObject == null || triggeringObject == localPlayerMainObject)
 		{
-		AudioData audioData;
-		if(loopedAudios.TryGetValue(audio, out audioData))
-		{
-			++audioData.playCounter;
-		}
-		else
-		{
-			audioData = new AudioData();
-			audioData.nextPlaytime = timeController.GetTime();
-			audioData.loopTime = audio.length * audioLoopOverlapFactor;
-			audioData.playCounter = 1;
-			loopedAudios.Add(audio, audioData);
-		}
+			AudioData audioData;
+			if(loopedAudios.TryGetValue(audio, out audioData))
+			{
+				++audioData.playCounter;
+			}
+			else
+			{
+				audioData = new AudioData();
+				audioData.nextPlaytime = timeController.GetTime();
+				audioData.loopTime = audio.length * audioLoopOverlapFactor;
+				audioData.playCounter = 1;
+				loopedAudios.Add(audio, audioData);
+			}
 		}
 	}
 
@@ -156,28 +171,75 @@ public class AudioController : MonoBehaviour, IListener
 	{
 		if(triggeringObject == null || triggeringObject == localPlayerMainObject)
 		{
-		AudioData audioData;
+			AudioData audioData;
 
-		try
-		{
-			audioData = loopedAudios[audio];
-		}
-		catch(KeyNotFoundException)
-		{
-			Debug.LogWarning(audio + " has already been stopped when LoopAudioStop() was called in AudioController!");
-			return;
-		}
+			try
+			{
+				audioData = loopedAudios[audio];
+			}
+			catch(KeyNotFoundException)
+			{
+				Debug.LogWarning(audio + " has already been stopped when LoopAudioStop() was called in AudioController!");
+				return;
+			}
 
-		--audioData.playCounter;
-		if(audioData.playCounter <= 0)
-		{
-			loopedAudios.Remove(audio);
-		}
+			--audioData.playCounter;
+			if(audioData.playCounter <= 0)
+			{
+				loopedAudios.Remove(audio);
+			}
 		}
 	}
 
 	public void PlayClickAudio()
 	{
 		PlayAudio(clickAudio, null);
+	}
+
+	public void MusicSliderChanged()
+	{
+		// Volume Control bugs out when both RampUp-Coroutine and Volume Settings change the Volume at the same Time
+		if(rampUpCoroutine != null)
+		{
+			timeController.StopCoroutine(rampUpCoroutine);
+		}
+
+		float volume = musicSlider.value;
+		musicInputField.text = volume.ToString();
+		musicSource.volume = volume;
+	}
+
+	public void MusicInputFieldChanged()
+	{
+		// Volume Control bugs out when both RampUp-Coroutine and Volume Settings change the Volume at the same Time
+		if(rampUpCoroutine != null)
+		{
+			timeController.StopCoroutine(rampUpCoroutine);
+		}
+
+		float volume = Mathf.Clamp01(float.Parse(musicInputField.text));
+		musicSlider.value = volume;
+		musicInputField.text = volume.ToString();
+		musicSource.volume = volume;
+	}
+
+	public void SFXSliderChanged()
+	{
+		float volume = sfxSlider.value;
+		sfxInputField.text = volume.ToString();
+		sfxSource.volume = volume;
+	}
+
+	public void SFXInputFieldChanged()
+	{
+		float volume = Mathf.Clamp01(float.Parse(sfxInputField.text));
+		sfxSlider.value = volume;
+		sfxInputField.text = volume.ToString();
+		sfxSource.volume = volume;
+	}
+
+	public void OpenCreditLink()
+	{
+		Application.OpenURL(creditUrl);
 	}
 }
