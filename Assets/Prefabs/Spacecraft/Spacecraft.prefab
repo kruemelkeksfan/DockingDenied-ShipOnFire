@@ -140,6 +140,7 @@ MonoBehaviour:
   directionalForceThreshold: 0.1
   minAngularVelocity: 1
   rotationStopTime: 2
+  thrusterAudio: {fileID: 8300000, guid: b593acb8065472b45a34825d69cbdb49, type: 3}
 --- !u!114 &6188606278163628312
 MonoBehaviour:
   m_ObjectHideFlags: 0

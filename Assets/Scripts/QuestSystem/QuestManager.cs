@@ -472,7 +472,7 @@ public class QuestManager : MonoBehaviour, IListener
 		}
 		if(!success)
 		{
-			InfoController.GetInstance().AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!");
+			InfoController.GetInstance().AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!", true);
 			return false;
 		}
 

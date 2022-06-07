@@ -83,7 +83,7 @@ public class GravityObjectController : MonoBehaviour
 
 		if(timeController.IsScaled())
 		{
-			InfoController.GetInstance().AddMessage("An Object needs to be simulated, stopping Time Speedup");
+			InfoController.GetInstance().AddMessage("An Object needs to be simulated, stopping Time Speedup", true);
 			timeController.SetTimeScale(0);
 		}
 

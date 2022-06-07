@@ -4,13 +4,12 @@ using UnityEngine;
 
 public class Constructor : Module
 {
-	private static readonly WaitForEndOfFrame waitForEndOfFrame = new WaitForEndOfFrame();
-
 	[SerializeField] private float constructionRange = 0.4f;
 	[SerializeField] private LineRenderer constructionBeamPrefab = null;
 	[SerializeField] private float constructionBeamDuration = 5.0f;
 	[SerializeField] private Transform constructionAreaIndicator = null;
 	[SerializeField] private Transform beamOrigin = null;
+	[SerializeField] private AudioClip constructionAudio = null;
 	private InventoryController inventoryController = null;
 	private SpaceStationController spaceStationController = null;
 	private Color startColor = Color.white;
@@ -39,7 +38,7 @@ public class Constructor : Module
 	public override void Deconstruct()
 	{
 		ToggleController.GetInstance().RemoveToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
-		SpacecraftManager.GetInstance().AddConstructor(this);
+		SpacecraftManager.GetInstance().RemoveConstructor(this);
 
 		base.Deconstruct();
 	}
@@ -54,12 +53,13 @@ public class Constructor : Module
 	public void StartConstruction(Vector2 position)
 	{
 		timeController.StartCoroutine(Construction(position), false);
+		audioController.PlayAudio(constructionAudio, spacecraft.gameObject);
 	}
 
 	private IEnumerator<float> Construction(Vector3 position)
 	{
 		// TODO: Object Pooling
-		LineRenderer constructionBeam = GameObject.Instantiate<LineRenderer>(constructionBeamPrefab, beamOrigin.position, Quaternion.identity, transform);
+		LineRenderer constructionBeam = GameObject.Instantiate<LineRenderer>(constructionBeamPrefab, beamOrigin.position, beamOrigin.rotation, transform);
 		constructionBeam.SetPositions(new Vector3[]{Vector3.zero, transform.InverseTransformPoint(position)});
 
 		double startTime = timeController.GetTime();

@@ -269,7 +269,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 						}
 						else
 						{
-							InfoController.GetInstance().AddMessage("This Guy couldn't even buy a Beer of the lousy Cash you have at Hand!");
+							InfoController.GetInstance().AddMessage("This Guy couldn't even buy a Beer of the lousy Cash you have at Hand!", true);
 						}
 						UpdateQuestVesselMenu();
 					};
@@ -287,7 +287,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 						}
 						else
 						{
-							InfoController.GetInstance().AddMessage("Energy could not be supplied, your Batteries are charged with " + localPlayerMainInventory.GetEnergyKWH() + "!");
+							InfoController.GetInstance().AddMessage("Energy could not be supplied, your Batteries are charged with " + localPlayerMainInventory.GetEnergyKWH() + "!", true);
 						}
 						UpdateQuestVesselMenu();
 					};

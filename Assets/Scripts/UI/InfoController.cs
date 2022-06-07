@@ -27,7 +27,9 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 	[SerializeField] private Text autoThrottleDisplay = null;
 	[SerializeField] private GameObject keyBindingDisplay = null;
 	[SerializeField] private Text showFlightInfoButtonText = null;
+	[SerializeField] private AudioClip warningAudio = null;
 	private TimeController timeController = null;
+	private AudioController audioController = null;
 	private GravityWellController gravityWellController = null;
 	private Queue<Message> messages = null;
 	private float lastDequeue = 0.0f;
@@ -62,6 +64,7 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 
 	private void Start()
 	{
+		audioController = AudioController.GetInstance();
 		gravityWellController = GravityWellController.GetInstance();
 
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
@@ -303,13 +306,18 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 		}
 	}
 
-	public void AddMessage(string message)
+	public void AddMessage(string message, bool warning)
 	{
 		Message messageRecord = new Message();
 		messageRecord.message = message;
 		messageRecord.timestamp = Time.realtimeSinceStartup;
 
 		messages.Enqueue(messageRecord);
+
+		if(warning)
+		{
+			audioController.PlayAudio(warningAudio, null);
+		}
 	}
 
 	public int GetMessageCount()

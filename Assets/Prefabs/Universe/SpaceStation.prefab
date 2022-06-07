@@ -1,51 +1,5 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!114 &1534019684664981262
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6657367023772112435}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bf04d9df136da81438964f75cca8ecb0, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  mapMarkerPrefab: {fileID: 3653227749583949900, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
-    type: 3}
-  decimalDigitThreshold: 100000
-  maxApproachDistance: 2000
-  dockingTimeout: 120
-  stationUpdateInterval: 120
-  maxGoodStockFactor: 12
-  targetGoodStockFactor: 6
-  minProfit: -100
-  maxProfit: 200
-  tradingEntryPrefab: {fileID: 1009032507462002704, guid: 0f67ddc186ff7cb499fb57c610d0eee1,
-    type: 3}
-  questStationMarkerColors:
-    m_NormalColor: {r: 1, g: 0.3764706, b: 0.1254902, a: 1}
-    m_HighlightedColor: {r: 1, g: 0.627451, b: 0.2509804, a: 1}
-    m_PressedColor: {r: 0.8784314, g: 0.3764706, b: 0.1254902, a: 1}
-    m_SelectedColor: {r: 1, g: 0.5019608, b: 0.1254902, a: 1}
-    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
-    m_ColorMultiplier: 1
-    m_FadeDuration: 0.1
-  questStationTextColor: {r: 1, g: 0.5019608, b: 0.1254902, a: 1}
---- !u!114 &9196285693668071936
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6657367023772112435}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 3c401a0a18a1baf49a5ef24bc19bb26f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  hotkeyCount: 10
 --- !u!1001 &1421296786708548335
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -126,3 +80,51 @@ GameObject:
     type: 3}
   m_PrefabInstance: {fileID: 1421296786708548335}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &1534019684664981262
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6657367023772112435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bf04d9df136da81438964f75cca8ecb0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  mapMarkerPrefab: {fileID: 3653227749583949900, guid: 7a25f32f43024f843b1a1b6bdd7896ea,
+    type: 3}
+  decimalDigitThreshold: 100000
+  maxApproachDistance: 2000
+  dockingTimeout: 120
+  cancelDockingDelay: 0.5
+  stationUpdateInterval: 120
+  maxGoodStockFactor: 12
+  targetGoodStockFactor: 6
+  minProfit: -100
+  maxProfit: 200
+  tradingEntryPrefab: {fileID: 1009032507462002704, guid: 0f67ddc186ff7cb499fb57c610d0eee1,
+    type: 3}
+  questStationMarkerColors:
+    m_NormalColor: {r: 1, g: 0.3764706, b: 0.1254902, a: 1}
+    m_HighlightedColor: {r: 1, g: 0.627451, b: 0.2509804, a: 1}
+    m_PressedColor: {r: 0.8784314, g: 0.3764706, b: 0.1254902, a: 1}
+    m_SelectedColor: {r: 1, g: 0.5019608, b: 0.1254902, a: 1}
+    m_DisabledColor: {r: 0.78431374, g: 0.78431374, b: 0.78431374, a: 0.5019608}
+    m_ColorMultiplier: 1
+    m_FadeDuration: 0.1
+  questStationTextColor: {r: 1, g: 0.5019608, b: 0.1254902, a: 1}
+  tradeAudio: {fileID: 8300000, guid: 0aa87cbae31ce074eb3431de5f4b5496, type: 3}
+--- !u!114 &9196285693668071936
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6657367023772112435}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c401a0a18a1baf49a5ef24bc19bb26f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hotkeyCount: 10

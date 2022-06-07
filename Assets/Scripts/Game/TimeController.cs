@@ -248,7 +248,7 @@ public class TimeController : MonoBehaviour
 			{
 				if(gravityWellController.AreCollisionsNearby(timeScales[timeScaleIndex]) || !gravityWellController.OnRailAll())
 				{
-					infoController.AddMessage("Can not speed up Time");
+					infoController.AddMessage("Can not speed up Time", true);
 					return;
 				}
 			}
@@ -256,11 +256,11 @@ public class TimeController : MonoBehaviour
 			currentTimeScaleIndex = timeScaleIndex;
 			timeScale = timeScales[timeScaleIndex];
 
-			infoController.AddMessage("Set Time Speedup to " + timeScales[timeScaleIndex].ToString("F0") + "x");
+			infoController.AddMessage("Set Time Speedup to " + timeScales[timeScaleIndex].ToString("F0") + "x", false);
 		}
 		else
 		{
-			infoController.AddMessage("Game is paused and can not be sped up or slowed down");
+			infoController.AddMessage("Game is paused and can not be sped up or slowed down", true);
 		}
 	}
 

@@ -101,7 +101,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 		timeController.AddFixedUpdateListener(this);
 
-		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
+		spacecraftManager.AddSpacecraftChangeListener(this);
 		Notify();
 
 		timeController.StartCoroutine(CheckGravityObjectPositions(), true);
@@ -155,7 +155,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				{
 					if(timeController.IsScaled())
 					{
-						infoController.AddMessage("Somebody fired Thrusters");
+						infoController.AddMessage("Somebody fired Thrusters", true);
 					}
 
 					// This also sets Position and Velocity
@@ -237,7 +237,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				// TODO: Determine "Main" Docking Object (preferably the heaviest one) and disable Orbit Calculations and Rotation Updates for the Rest and isntead update them by aligning them correctly with the Main Object every Frame
 
 				// Error Message
-				infoController.AddMessage("Time Speedup while Spacecraft are docked is currently not supported");
+				infoController.AddMessage("Time Speedup while Spacecraft are docked is currently not supported", true);
 
 				// Rollback
 				foreach(GravityObjectController onRailedObject in onRailedObjects)
@@ -256,11 +256,11 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				// Error Messages
 				if(objectRecord.IsDecaying())
 				{
-					infoController.AddMessage("An Object is currently burning in the Atmosphere");
+					infoController.AddMessage("An Object is currently burning in the Atmosphere", false);
 				}
 				else if(spacecraft != null && spacecraft.IsThrusting())
 				{
-					infoController.AddMessage("Somebody is firing Thrusters");
+					infoController.AddMessage("Somebody is firing Thrusters", false);
 				}
 
 				// Rollback
@@ -368,15 +368,15 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				double apoapsis = localPlayerMainSpacecraft.CalculateApoapsisAltitude();
 				if(periapsis * periapsis <= atmosphereEntryAltitude && sqrPlayerAltitude <= tooLowWarningAltitude && sqrPlayerAltitude > atmosphereEntryAltitude)
 				{
-					infoController.AddMessage("Dangerously low, increase Speed!");
+					infoController.AddMessage("Dangerously low, increase Speed!", true);
 				}
 				else if((apoapsis == 0 || apoapsis * apoapsis >= maximumAltitude) && sqrPlayerAltitude >= tooHighWarningAltitude)
 				{
-					infoController.AddMessage("Leaving Signal Range, get back to the Planet!");
+					infoController.AddMessage("Leaving Signal Range, get back to the Planet!", true);
 				}
 				else if(periapsis == 0 && apoapsis == 0)
 				{
-					infoController.AddMessage("Unstable Orbit!");
+					infoController.AddMessage("Unstable Orbit!", true);
 				}
 			}
 		}
@@ -421,11 +421,11 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 				{
 					if(sqrOrbitalAltitude < destructionAltitude + 2000.0f)
 					{
-						infoController.AddMessage("Brace Position!");
+						infoController.AddMessage("Brace Position!", true);
 					}
 					else if(sqrOrbitalAltitude < atmosphereEntryAltitude)
 					{
-						infoController.AddMessage("Atmosphere detected, pull up!");
+						infoController.AddMessage("Atmosphere detected, pull up!", true);
 					}
 				}
 
@@ -607,7 +607,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 							}
 						}
 
-						infoController.AddMessage(collisionMessage.ToString());
+						infoController.AddMessage(collisionMessage.ToString(), false);
 
 						return true;
 					}

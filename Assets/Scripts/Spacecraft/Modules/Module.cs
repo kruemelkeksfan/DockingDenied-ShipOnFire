@@ -16,6 +16,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
 	protected TimeController timeController = null;
+	protected AudioController audioController = null;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
@@ -25,13 +26,13 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	protected virtual void Awake()
 	{
-		timeController = TimeController.GetInstance();
 		transform = gameObject.GetComponent<Transform>();
 	}
 
 	protected virtual void Start()
 	{
-		
+		timeController = TimeController.GetInstance();
+		audioController = AudioController.GetInstance();
 	}
 
 	protected virtual void OnDestroy()
@@ -58,6 +59,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			TryCalculateMass();
 		}
 		spacecraft.UpdateMass();
+
+		if(timeController == null)
+		{
+			timeController = TimeController.GetInstance();
+		}
 
 		if(listenUpdates)
 		{

@@ -173,7 +173,7 @@ public class InventoryController : MonoBehaviour, IListener
 		}
 		if(sum > GetFreeCapacity(goodManager.GetGood(goods[0].goodName)))
 		{
-			InfoController.GetInstance().AddMessage("Not enough Storage Capacity available in this Spacecrafts Inventory!");
+			InfoController.GetInstance().AddMessage("Not enough Storage Capacity available in this Spacecrafts Inventory!", true);
 			return false;
 		}
 
@@ -251,7 +251,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			if(GetGoodAmount(good.goodName) < good.amount)
 			{
-				InfoController.GetInstance().AddMessage("Not enough " + good.goodName + " available in this Spacecrafts Inventory!");
+				InfoController.GetInstance().AddMessage("Not enough " + good.goodName + " available in this Spacecrafts Inventory!", false);
 				return false;
 			}
 		}

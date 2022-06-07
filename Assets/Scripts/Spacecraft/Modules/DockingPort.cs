@@ -11,6 +11,8 @@ public class DockingPort : HotkeyModule
 	[SerializeField] private float jointFrequency = 2.0f;
 	[SerializeField] private float jointDamping = 1.0f;
 	[SerializeField] private Collider2D dockingTriggerCollider = null;
+	[SerializeField] private AudioClip dockingAudio = null;
+	[SerializeField] private AudioClip dockingSuccessAudio = null;
 	private Transform spacecraftTransform = null;
 	private ParticleSystem magnetParticles = null;
 	private bool active = false;
@@ -61,6 +63,14 @@ public class DockingPort : HotkeyModule
 
 	public override void HotkeyDown()
 	{
+		if(!active)
+		{
+			audioController.LoopAudioStart(dockingAudio, spacecraft.gameObject);
+		}
+		else if(connectedPort == null)
+		{
+			audioController.LoopAudioStop(dockingAudio, spacecraft.gameObject);
+		}
 		active = !active;
 
 		if(connectedPort != null)
@@ -154,6 +164,11 @@ public class DockingPort : HotkeyModule
 						}
 						ToggleParticles();
 						otherPort.ToggleParticles();
+
+						audioController.LoopAudioStop(dockingAudio, spacecraft.gameObject);
+						otherPort.audioController.LoopAudioStop(dockingAudio, otherRigidbody.gameObject);
+						audioController.PlayAudio(dockingSuccessAudio, spacecraft.gameObject);
+						otherPort.audioController.PlayAudio(dockingSuccessAudio, otherRigidbody.gameObject);
 					}
 				}
 			}

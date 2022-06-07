@@ -27,6 +27,8 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	[SerializeField] private float minAngularVelocity = 1.0f;
 	[Tooltip("Time until a slow Rotation will be stopped, if the angularVelocity stays too low")]
 	[SerializeField] private float rotationStopTime = 2.0f;
+	[SerializeField] private AudioClip thrusterAudio = null;
+	private AudioController audioController = null;
 	private Dictionary<Vector2Int, Module> modules = null;
 	private BuildingMenu buildingMenu = null;
 	private InventoryController inventoryController = null;
@@ -65,6 +67,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	{
 		base.Start();
 
+		audioController = AudioController.GetInstance();
 		buildingMenu = BuildingMenu.GetInstance();
 		halfGridSize = buildingMenu.GetGridSize() * 0.5f;
 		spacecraftCollider = GetComponent<PolygonCollider2D>();
@@ -160,10 +163,20 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	{
 		if(!Mathf.Approximately(horizontal, 0.0f) || !Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(rotationSpeed, 0.0f))
 		{
+			if(thrusting == false)
+			{
+				audioController.LoopAudioStart(thrusterAudio, gameObject);
+			}
+
 			thrusting = true;
 		}
 		else
 		{
+			if(thrusting == true)
+			{
+				audioController.LoopAudioStop(thrusterAudio, gameObject);
+			}
+
 			thrusting = false;
 		}
 

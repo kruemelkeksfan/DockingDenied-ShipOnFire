@@ -213,7 +213,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 				}
 				else
 				{
-					infoController.AddMessage("Can't deconstruct Command Module, surely nobody wants to see the Crews Bodies bust open like Piñatas in Space!");
+					infoController.AddMessage("Can't deconstruct Command Module, surely nobody wants to see the Crews Bodies bust open like Piñatas in Space!", true);
 				}
 			}
 		}
@@ -291,7 +291,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			erase = false;
 			SpawnModule(moduleIndex);
 			infoController.SetBuildingCosts(currentModule.module);
-			infoController.AddMessage(currentModule.module.GetDescription());
+			infoController.AddMessage(currentModule.module.GetDescription(), false);
 		}
 		else
 		{
@@ -435,20 +435,23 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			{
 				if(!CheckBuildingSpaceFree(reservedZones, modulePrefabDictionary[moduleData.type], localPlayerMainSpacecraftTransform.rotation, true, true))
 				{
-					InfoController.GetInstance().AddMessage("Not enough free Building Space to construct Blueprint!");
+					InfoController.GetInstance().AddMessage("Not enough free Building Space to construct Blueprint!", true);
 					return;
 				}
 			}
 
-			if(cheaterMode || FindBuildingConstructor(localPlayerMainSpacecraftTransform.position, selectedBlueprintCosts) != null)
+			Constructor constructor = null;
+			if(cheaterMode || (constructor = FindBuildingConstructor(localPlayerMainSpacecraftTransform.position, selectedBlueprintCosts)) != null)
 			{
+				constructor?.StartConstruction(localPlayerMainSpacecraftTransform.position);
+
 				SpacecraftBlueprintController.InstantiateModules(selectedBlueprintData, localPlayerMainSpacecraftTransform);
 				DeselectBlueprint();
 			}
 		}
 		else
 		{
-			InfoController.GetInstance().AddMessage("Unable to instantiate Blueprint, deconstruct old Modules first!");
+			InfoController.GetInstance().AddMessage("Unable to instantiate Blueprint, deconstruct old Modules first!", true);
 		}
 	}
 
@@ -579,7 +582,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			}
 		}
 
-		infoController.AddMessage("Either there is no Constructor in Range or no Construction Materials could be provided!");
+		infoController.AddMessage("Either there is no Constructor in Range or no Construction Materials could be provided!", true);
 
 		return null;
 	}
@@ -605,7 +608,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			}
 		}
 
-		infoController.AddMessage("Either there is no Constructor in Range or the Materials could not be sold or stored! Ships may not disassemble themselves!");
+		infoController.AddMessage("Either there is no Constructor in Range or the Materials could not be sold or stored! Ships may not disassemble themselves!", true);
 
 		return null;
 	}

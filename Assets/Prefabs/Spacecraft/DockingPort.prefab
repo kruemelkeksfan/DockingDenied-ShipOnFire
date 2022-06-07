@@ -5281,6 +5281,8 @@ MonoBehaviour:
   jointFrequency: 2
   jointDamping: 1
   dockingTriggerCollider: {fileID: 147090888474923400}
+  dockingAudio: {fileID: 8300000, guid: 2ee4ed6da85579e4d876986876ac30ce, type: 3}
+  dockingSuccessAudio: {fileID: 8300000, guid: 0654bc004e06bce47bffc347d2c36dda, type: 3}
 --- !u!1001 &76089906107145030
 PrefabInstance:
   m_ObjectHideFlags: 0

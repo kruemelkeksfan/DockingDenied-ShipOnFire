@@ -155,6 +155,7 @@ MonoBehaviour:
   constructionBeamDuration: 1
   constructionAreaIndicator: {fileID: 6883182764642151313}
   beamOrigin: {fileID: 5610044585691324234}
+  constructionAudio: {fileID: 8300000, guid: 49c9b4e2875b6774fa144a39c9628b96, type: 3}
 --- !u!1 &3661901279012120677
 GameObject:
   m_ObjectHideFlags: 0

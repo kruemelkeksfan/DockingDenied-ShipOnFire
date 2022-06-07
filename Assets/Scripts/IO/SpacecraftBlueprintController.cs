@@ -127,7 +127,7 @@ public class SpacecraftBlueprintController
 		}
 		catch(Exception exc)
 		{
-			InfoController.GetInstance().AddMessage("This Blueprint File does not contain a valid Spacecraft Definition");
+			InfoController.GetInstance().AddMessage("This Blueprint File does not contain a valid Spacecraft Definition", true);
 			Debug.LogWarning("Somebody tried to load an invalid Blueprint File");
 			Debug.LogWarning(exc.ToString());
 

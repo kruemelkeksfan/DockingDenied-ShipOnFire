@@ -40,7 +40,9 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	[SerializeField] private RectTransform tradingEntryPrefab = null;
 	[SerializeField] private ColorBlock questStationMarkerColors = new ColorBlock();
 	[SerializeField] private Color questStationTextColor = Color.red;
+	[SerializeField] private AudioClip tradeAudio = null;
 	private TimeController timeController = null;
+	private AudioController audioController = null;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private MenuController menuController = null;
@@ -98,6 +100,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		tradingInventory = new Dictionary<string, GoodTradingInfo>();
 		goodNames = new List<string>();
 
+		audioController = AudioController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		infoController = InfoController.GetInstance();
@@ -175,7 +178,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				if(otherSpacecraft == localPlayerMainSpacecraft)
 				{
-					infoController.AddMessage("You have no Docking Permission for this Docking Port!");
+					infoController.AddMessage("You have no Docking Permission for this Docking Port!", true);
 				}
 				
 				timeController.StartCoroutine(CancelDocking(otherPort), false);
@@ -204,7 +207,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		if(otherPort.GetComponentInParent<SpacecraftController>() == localPlayerMainSpacecraft)
 		{
 			menuController.CloseStationMenu(this);
-			infoController.AddMessage("Undocking successful, good Flight!");
+			infoController.AddMessage("Undocking successful, good Flight!", false);
 		}
 	}
 
@@ -256,17 +259,17 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 						{
 							dockingTimeoutCoroutine = timeController.StartCoroutine(DockingTimeout(alignedPort, requester), false);
 
-							infoController.AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetActionName() + "!");
+							infoController.AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetActionName() + "!", false);
 						}
 					}
 					else if(requester == localPlayerMainSpacecraft)
 					{
-						infoController.AddMessage("No free Docking Ports available!");
+						infoController.AddMessage("No free Docking Ports available!", true);
 					}
 				}
 				else if(requester == localPlayerMainSpacecraft)
 				{
-					infoController.AddMessage("You are too far away to request Docking Permission!");
+					infoController.AddMessage("You are too far away to request Docking Permission!", true);
 				}
 			}
 			else if(requester == localPlayerMainSpacecraft)
@@ -280,12 +283,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 						break;
 					}
 				}
-				infoController.AddMessage("You already have an active Docking Permission for Port " + portName + "!");
+				infoController.AddMessage("You already have an active Docking Permission for Port " + portName + "!", true);
 			}
 		}
 		else if(requester == localPlayerMainSpacecraft)
 		{
-			infoController.AddMessage("You are already docked at this Station!");
+			infoController.AddMessage("You are already docked at this Station!", true);
 		}
 	}
 
@@ -480,17 +483,22 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 					UpdateTrading();
 
+					if(buyer == localPlayerMainInventory || seller == localPlayerMainInventory)
+					{
+						audioController.PlayAudio(tradeAudio, null);
+					}
+
 					return true;
 				}
 				else
 				{
 					if(buyer == localPlayerMainInventory)
 					{
-						infoController.AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!");
+						infoController.AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!", true);
 					}
-					else
+					else if(seller == localPlayerMainInventory)
 					{
-						infoController.AddMessage("Not enough Storage Capacity on their tiny Station!");
+						infoController.AddMessage("Not enough Storage Capacity on their tiny Station!", true);
 					}
 				}
 			}
@@ -498,11 +506,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				if(buyer == localPlayerMainInventory)
 				{
-					infoController.AddMessage("Don't get greedy, they don't have that much!");
+					infoController.AddMessage("Don't get greedy, they don't have that much!", true);
 				}
-				else
+				else if(seller == localPlayerMainInventory)
 				{
-					infoController.AddMessage("They don't fall for your Trick of selling Stuff you don't possess!");
+					infoController.AddMessage("They don't fall for your Trick of selling Stuff you don't possess!", true);
 				}
 			}
 		}
@@ -510,11 +518,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		{
 			if(buyer == localPlayerMainInventory)
 			{
-				infoController.AddMessage("Not enough Cash and they refuse your Credit Cards!");
+				infoController.AddMessage("Not enough Cash and they refuse your Credit Cards!", true);
 			}
-			else
+			else if(seller == localPlayerMainInventory)
 			{
-				infoController.AddMessage("You successfully decapitalized this Station and they can not afford to buy more!");
+				infoController.AddMessage("You successfully decapitalized this Station and they can not afford to buy more!", true);
 			}
 		}
 
@@ -535,7 +543,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			supplyAmounts[i] = inventoryController.GetGoodAmount(materials[i].goodName);
 			if(supplyAmounts[i] < materials[i].amount)
 			{
-				infoController.AddMessage("Not enough " + materials[i].goodName + " available at this Station!");
+				infoController.AddMessage("Not enough " + materials[i].goodName + " available at this Station!", false);
 				return false;
 			}
 
@@ -544,7 +552,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		if(totalPrice > localPlayerMainInventory.GetMoney())
 		{
-			infoController.AddMessage("You are too poor to buy the Construction Materials!");
+			infoController.AddMessage("You are too poor to buy the Construction Materials!", false);
 			return false;
 		}
 
@@ -588,13 +596,13 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		if(sum > inventoryController.GetFreeCapacity(goodManager.GetGood(materials[0].goodName)))
 		{
-			infoController.AddMessage("Not enough Storage Capacity available in this Station!");
+			infoController.AddMessage("Not enough Storage Capacity available in this Station!", false);
 			return false;
 		}
 
 		if(totalPrice > inventoryController.GetMoney())
 		{
-			infoController.AddMessage("The Station is too poor to buy the Deconstruction Materials!");
+			infoController.AddMessage("The Station is too poor to buy the Deconstruction Materials!", false);
 			return false;
 		}
 
@@ -621,7 +629,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			port.HotkeyDown();
 			expectedDockings.Remove(port);
 
-			infoController.AddMessage("Docking Permission expired!");
+			infoController.AddMessage("Docking Permission expired!", true);
 		}
 	}
 

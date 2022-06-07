@@ -58,7 +58,7 @@ public class CameraController : MonoBehaviour, IUpdateListener, IListener
 		{
 			fixedCamera = !fixedCamera;
 
-			InfoController.GetInstance().AddMessage("Camera " + (fixedCamera ? "now" : "no longer") + " rotates with Spacecraft");
+			InfoController.GetInstance().AddMessage("Camera " + (fixedCamera ? "now" : "no longer") + " rotates with Spacecraft", false);
 		}
 
 		if(Input.GetButton("Rotate Camera"))

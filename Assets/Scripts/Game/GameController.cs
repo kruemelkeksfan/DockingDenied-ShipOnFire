@@ -62,7 +62,7 @@ public class GameController : MonoBehaviour, IUpdateListener
 	{
 		if(deathMessage != null)
 		{
-			InfoController.GetInstance().AddMessage(deathMessage);
+			InfoController.GetInstance().AddMessage(deathMessage, false);
 			deathMessage = null;
 		}
 	}
