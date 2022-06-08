@@ -29,7 +29,6 @@ public class AudioController : MonoBehaviour, IListener
 	[SerializeField] private string creditUrl = "https://freepd.com/artists.php";
 	private TimeController timeController = null;
 	private SpacecraftManager spacecraftManager = null;
-	private TimeController.Coroutine rampUpCoroutine = null;
 	private HashSet<AudioClip> oneShotAudios = null;
 	private Dictionary<AudioClip, AudioData> loopedAudios = null;
 	private GameObject localPlayerMainObject = null;
@@ -97,7 +96,6 @@ public class AudioController : MonoBehaviour, IListener
 				pauseUntil = music[currentTitle].length + Random.Range(0.0f, maximumPauseDuration);
 
 				// Play Title
-				rampUpCoroutine = timeController.StartCoroutine(RampUp(), true);
 				musicSource.PlayOneShot(music[currentTitle]);
 			}
 
@@ -116,22 +114,6 @@ public class AudioController : MonoBehaviour, IListener
 			// Wait
 			yield return audioUpdateInterval;
 		}
-	}
-
-	private IEnumerator<float> RampUp()
-	{
-		double startTime = Time.realtimeSinceStartupAsDouble;
-		float volume = musicSource.volume;
-		musicSource.volume = 0.0f;
-
-		while((Time.realtimeSinceStartupAsDouble - startTime) < rampUpDuration)
-		{
-			musicSource.volume = volume * ((float)(Time.realtimeSinceStartupAsDouble - startTime) / rampUpDuration);
-			yield return -1.0f;
-		}
-
-		musicSource.volume = volume;
-		rampUpCoroutine = null;
 	}
 
 	public void PlayAudio(AudioClip audio, GameObject triggeringObject)
@@ -198,12 +180,6 @@ public class AudioController : MonoBehaviour, IListener
 
 	public void MusicSliderChanged()
 	{
-		// Volume Control bugs out when both RampUp-Coroutine and Volume Settings change the Volume at the same Time
-		if(rampUpCoroutine != null)
-		{
-			timeController.StopCoroutine(rampUpCoroutine);
-		}
-
 		float volume = musicSlider.value;
 		musicInputField.text = volume.ToString();
 		musicSource.volume = volume;
@@ -211,12 +187,6 @@ public class AudioController : MonoBehaviour, IListener
 
 	public void MusicInputFieldChanged()
 	{
-		// Volume Control bugs out when both RampUp-Coroutine and Volume Settings change the Volume at the same Time
-		if(rampUpCoroutine != null)
-		{
-			timeController.StopCoroutine(rampUpCoroutine);
-		}
-
 		float volume = Mathf.Clamp01(float.Parse(musicInputField.text));
 		musicSlider.value = volume;
 		musicInputField.text = volume.ToString();
