@@ -49,19 +49,19 @@ public class AudioController : MonoBehaviour, IListener
 		oneShotAudios = new HashSet<AudioClip>();
 		loopedAudios = new Dictionary<AudioClip, AudioData>();
 
-		timeController = TimeController.GetInstance();
-		timeController.StartCoroutine(AudioUpdate(), true);
-
-		spacecraftManager = SpacecraftManager.GetInstance();
-		spacecraftManager.AddSpacecraftChangeListener(this);
-		Notify();
-
 		float volume = musicSource.volume;
 		musicSlider.value = volume;
 		musicInputField.text = volume.ToString();
 		volume = sfxSource.volume;
 		sfxSlider.value = volume;
 		sfxInputField.text = volume.ToString();
+
+		timeController = TimeController.GetInstance();
+		timeController.StartCoroutine(AudioUpdate(), true);
+
+		spacecraftManager = SpacecraftManager.GetInstance();
+		spacecraftManager.AddSpacecraftChangeListener(this);
+		Notify();
 	}
 
 	public void Notify()
@@ -81,7 +81,7 @@ public class AudioController : MonoBehaviour, IListener
 		while(true)
 		{
 			// Get current Time
-			double time = timeController.GetTime();
+			double time = Time.realtimeSinceStartupAsDouble;
 
 			// Music
 			if(time > pauseUntil)
@@ -120,13 +120,13 @@ public class AudioController : MonoBehaviour, IListener
 
 	private IEnumerator<float> RampUp()
 	{
-		double startTime = timeController.GetTime();
+		double startTime = Time.realtimeSinceStartupAsDouble;
 		float volume = musicSource.volume;
 		musicSource.volume = 0.0f;
 
-		while((timeController.GetTime() - startTime) < rampUpDuration)
+		while((Time.realtimeSinceStartupAsDouble - startTime) < rampUpDuration)
 		{
-			musicSource.volume = volume * ((float)(timeController.GetTime() - startTime) / rampUpDuration);
+			musicSource.volume = volume * ((float)(Time.realtimeSinceStartupAsDouble - startTime) / rampUpDuration);
 			yield return -1.0f;
 		}
 
@@ -159,7 +159,7 @@ public class AudioController : MonoBehaviour, IListener
 			else
 			{
 				audioData = new AudioData();
-				audioData.nextPlaytime = timeController.GetTime();
+				audioData.nextPlaytime = Time.realtimeSinceStartupAsDouble;
 				audioData.loopTime = audio.length * audioLoopOverlapFactor;
 				audioData.playCounter = 1;
 				loopedAudios.Add(audio, audioData);
