@@ -43,6 +43,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	private bool thrusting = false;
 	private bool stoppingRotation = false;
 	private bool rendererActive = true;
+	private bool thrustAudioActive = false;
 
 	protected override void Awake()
 	{
@@ -163,18 +164,26 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	{
 		if(!Mathf.Approximately(horizontal, 0.0f) || !Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(rotationSpeed, 0.0f))
 		{
-			if(thrusting == false)
+			if(thrusting == false
+				&& ((horizontal < 0.0f && thrusters[(int) ThrusterGroup.left].Count > 0)
+				|| (horizontal > 0.0f && thrusters[(int) ThrusterGroup.right].Count > 0)
+				|| (vertical < 0.0f && thrusters[(int) ThrusterGroup.down].Count > 0)
+				|| (vertical > 0.0f && thrusters[(int) ThrusterGroup.up].Count > 0)
+				|| (rotationSpeed < 0.0f && thrusters[(int) ThrusterGroup.turnLeft].Count > 0)
+				|| (rotationSpeed > 0.0f && thrusters[(int) ThrusterGroup.turnRight].Count > 0)))
 			{
 				audioController.LoopAudioStart(thrusterAudio, gameObject);
+				thrustAudioActive = true;
 			}
 
 			thrusting = true;
 		}
 		else
 		{
-			if(thrusting == true)
+			if(thrustAudioActive)
 			{
 				audioController.LoopAudioStop(thrusterAudio, gameObject);
+				thrustAudioActive = false;
 			}
 
 			thrusting = false;
@@ -556,7 +565,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 			}
 		}
 
-		// ...if nobody is thrusting, return false
+		// ...or if nobody is thrusting, return false
 		return false;
 	}
 
