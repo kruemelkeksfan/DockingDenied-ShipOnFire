@@ -1,12 +1,3 @@
-Physics 2.0
-	Subscenes + Rails
-	Analytic Orbits for on-railed Objects
-	1 Unit = 1m for un-railed Objects
-	Flickering Fix
-	Draw Orbits
-	Pausing and Time Scale
-	Moment of Inertia for Ships (http://dmorris.net/projects/tutorials/inertia.tensor.summary.pdf)
-Feedback Fixes
 Component System
 	Radiators
  		Components for Reactors, Weapons, Thrusters, Shields, etc.
@@ -131,14 +122,16 @@ Combat
 New Quest System
 	Abandon JSON and generate Quests from pure Code
 	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
-	only generate Quests for which the Requirements are met by the current Ship
+	Only generate Quests for which the Requirements are met by the current Ship
 	Task Types
 		Destroy
 		Jump-Start
 		Supply (Reward must be larger than Investment)
 		Tow
 		(Plunder)
-	various Tiers: later Quests require bigger Ships and spawn further away from Stations
+		(Build)
+		No Buy/Sell Quests
+	Various Tiers: later Quests require bigger Ships and spawn further away from Stations
 	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Task Type, Difficulty and Spawn Distance)
 	Difficult Tasks/Boss Fights in Story Quests as memorable Milestones
 	Rework Tutorial

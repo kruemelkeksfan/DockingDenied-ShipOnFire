@@ -72,7 +72,7 @@
 0.7
 -Display Bulk Price in Trading Menu
 -Buff Station Good Stock Renewal
--Display Pull Up Warning before Entering the Atmossphere
+-Display Pull Up Warning before Entering the Atmosphere
 
 0.8
 -Selling Quests still allow to buy Stuff before Accepting the Quest and selling it after Accepting, don't fix, Sell Quests get removed anyways
@@ -81,13 +81,13 @@
 -Rotation Cutoff (reduce Rotation Speed to 0 when it is very small)
 -Display Apoapsis/Periapsis
 -Display Ship Mass
--Add Text Outlines (Add Component -> UI -> Effects -> Outline) to all Texts (don't forget to set Alpha to 255)
--Tutorial Panel for more Contrast and Highlighting
--More Stations (8 in lower Orbit)
--Scale Towing Quest Progress with Distance to Station
--Rework "Full Retard Sentence in Tutorial"
--Reduce Quest Vessel Spawn Range to ease flying back to the Station even if the Quest takes longer
 -Different Widths for Navigation Lines and Velocity Vectors (Color-Blind-Improvement)
 -Different Button Pane for Quest Vessels (Color-Blind-Improvement)
 -Mark Stations with active Quests with (!) behind Station Name (Color-Blind-Improvement)
--Sound!
+-Add Text Outlines (Add Component -> UI -> Effects -> Outline) to all Texts (don't forget to set Alpha to 255)
+-Tutorial Panel for more Contrast and Highlighting
+-Rework "Full Retard Sentence in Tutorial"
+-More Stations (8 in lower Orbit)
+-Scale Towing Quest Progress with Distance to Station
+-Reduce Quest Vessel Spawn Range to ease flying back to the Station even if the Quest takes longer
+-Sound
