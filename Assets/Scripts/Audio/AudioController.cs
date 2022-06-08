@@ -93,7 +93,7 @@ public class AudioController : MonoBehaviour, IListener
 				}
 
 				// Random Pause after Title
-				pauseUntil = music[currentTitle].length + Random.Range(0.0f, maximumPauseDuration);
+				pauseUntil = time + music[currentTitle].length + Random.Range(0.0f, maximumPauseDuration);
 
 				// Play Title
 				musicSource.PlayOneShot(music[currentTitle]);
