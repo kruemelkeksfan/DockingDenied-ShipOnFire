@@ -27,12 +27,19 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected virtual void Awake()
 	{
 		transform = gameObject.GetComponent<Transform>();
+
+		// Needs to be retrieved in Awake(), because e.g. Quest Vessels need those Controllers during Spawn
+		timeController = TimeController.GetInstance();
+		audioController = AudioController.GetInstance();
 	}
 
 	protected virtual void Start()
 	{
-		timeController = TimeController.GetInstance();
-		audioController = AudioController.GetInstance();
+		if(timeController == null || audioController == null)
+		{
+			timeController = TimeController.GetInstance();
+			audioController = AudioController.GetInstance();
+		}
 	}
 
 	protected virtual void OnDestroy()
