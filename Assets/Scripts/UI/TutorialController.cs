@@ -57,7 +57,7 @@ public class TutorialController : MonoBehaviour
 		nextButton.SetActive(false);
 
 		HighlightButton(buildButton);
-		tutorialMessageField.text = "Welcome to Space!\nIf you get stuck, you can always restart through the Main Menu\nStart by clicking 'Build'";
+		tutorialMessageField.text = "Welcome to Space!\nIf you get stuck, you can always restart through the Main Menu\nStart by clicking 'Build' in the Top Left Corner";
 		do
 		{
 			yield return tutorialUpdateInterval;
@@ -110,7 +110,7 @@ public class TutorialController : MonoBehaviour
 
 		nextButton.SetActive(true);
 
-		tutorialMessageField.text = "Zoom out [Scroll Wheel] and click the Name of the Station near you\nThen click 'Request Docking'\nDocking Permissions are shown by yellow Light from the affected Port";
+		tutorialMessageField.text = "Zoom out [Scroll Wheel] and click the Name of the Station near you\nThen click 'Request Docking'\nDocking Permissions are inidcated by yellow Light at the affected Port";
 		do
 		{
 			yield return tutorialUpdateInterval;
@@ -196,6 +196,8 @@ public class TutorialController : MonoBehaviour
 		}
 		while(!next);
 		next = false;
+
+		nextButton.GetComponentInChildren<Text>().text = "Thanks for nothing!";
 
 		tutorialMessageField.text = "This should be all you need to know right now\nRocket Science itself is trivial and left as an Exercise to the Reader\nGood Luck!";
 		do
