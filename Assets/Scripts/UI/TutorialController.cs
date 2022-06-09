@@ -86,7 +86,7 @@ public class TutorialController : MonoBehaviour
 				break;
 			}
 		}
-		tutorialMessageField.text = "Load a basic Ship by selecting it from the Left\nAdd or remove Modules with the Buttons on the Right\nRotate Modules with [Q/E]\nBuilding Materials are automatically bought from the Station as long as their Stocks last";
+		tutorialMessageField.text = "Load the 'StarterShip' by selecting it from the Panel on the Left\nYou can add or remove Modules with the Buttons on the Right and rotate Modules with [Q/E]\nBuilding Materials are automatically bought from the Station as long as their Stock lasts";
 		SpacecraftController playerSpacecraft = spacecraftManager.GetLocalPlayerMainSpacecraft();
 		complete = false;
 		do
@@ -108,10 +108,22 @@ public class TutorialController : MonoBehaviour
 		while(buildingMenu.activeSelf);
 		UnHighlightButton(buildButton);
 
+		nextButton.SetActive(true);
+
+		tutorialMessageField.text = "Zoom out [Scroll Wheel] and click the Name of the Station near you\nThen click 'Request Docking'\nDocking Permissions are shown by yellow Light from the affected Port";
+		do
+		{
+			yield return tutorialUpdateInterval;
+		}
+		while(!next);
+		next = false;
+
+		nextButton.SetActive(false);
+
 		oldKeyBindingColor = moduleControlDisplay.color;
 		moduleControlHighlighted = true;
 		moduleControlDisplay.color = highlightColor;
-		tutorialMessageField.text = "Zoom out [Scroll Wheel] and click the Name of the Station near you\nThen click 'Request Docking'\nDocking Permissions are shown by yellow Light from the affected Port\nClose the Station Menu and activate your own Port by pressing the Number Key displayed in the top left Corner";
+		tutorialMessageField.text = "Close the Station Menu\nThen activate your own Port by pressing the Number Key displayed in the Top Left Corner";
 		complete = false;
 		do
 		{
@@ -168,7 +180,7 @@ public class TutorialController : MonoBehaviour
 		next = false;
 		
 		HighlightButton(overlaysButton);
-		tutorialMessageField.text = "The orange Line shows your Velocity in Relation to the last clicked Target\nYou can toggle many other helpful Indicators under 'Overlays'";
+		tutorialMessageField.text = "The red Line shows your Velocity in Relation to the last clicked Target\nYou can toggle many other helpful Indicators under 'Overlays'";
 		do
 		{
 			yield return tutorialUpdateInterval;
@@ -178,6 +190,14 @@ public class TutorialController : MonoBehaviour
 		UnHighlightButton(overlaysButton);
 
 		tutorialMessageField.text = "Quests usually reward you with Money and Materials\nwhich you can use for Trade or to expand your Spacecraft";
+		do
+		{
+			yield return tutorialUpdateInterval;
+		}
+		while(!next);
+		next = false;
+
+		tutorialMessageField.text = "This should be all you need to know right now\nRocket Science itself is trivial and left as an Exercise to the Reader\nGood Luck!";
 		do
 		{
 			yield return tutorialUpdateInterval;
