@@ -19,7 +19,6 @@ public class AudioController : MonoBehaviour, IListener
 	[SerializeField] private AudioSource musicSource = null;
 	[SerializeField] private AudioSource sfxSource = null;
 	[SerializeField] private float audioUpdateInterval = 0.1f;
-	[SerializeField] private float rampUpDuration = 2.0f;
 	[SerializeField] private float maximumPauseDuration = 30.0f;
 	[SerializeField] private float audioLoopOverlapFactor = 0.5f;
 	[SerializeField] private Slider musicSlider = null;
