@@ -91,3 +91,33 @@
 -Scale Towing Quest Progress with Distance to Station
 -Reduce Quest Vessel Spawn Range to ease flying back to the Station even if the Quest takes longer
 -Sound
+
+0.9
+-"Next"-Button in Tutorial orange
+-Make sure Station is actually clicked in Docking-Part of Tutorial
+-Do not expire Docking Permission in Tutorial
+-Mark Port Key for Undocking in Tutorial
+-Remove Throttle Control, because it is useless
+-Adapt Keybinding Help to show Building Controls in Building Mode
+-Implement "Thruster Trimming"
+-Tutorial Docking Permission inidcated Typo
+-Implement Undocking Sound
+-Indicate in Docking Port Control Hint, whether Port is free or docked
+-Fix Stations having Docking Ports too close, so that only 1 Vessel can dock
+-Good Description in Trade Menu only on Mouse-Over
+-Redesign Trade Menu based on Port Royale 3 Trading Menu
+-Fluid/Solid Capacity only in Top Bar in Trade Menu
+-Quantity Buttons next to Input Field in Trade Menu
+-Only 1 Set of Quantity Controls in Trade Menu
+-Mark Fluids/Solids by different Background Color in Trade Menu
+-Mark expensive/cheap Goods with different Price Font Color in Trade Menu
+-Show Buy Price of Player-owned Goods in Trading Menu
+-Remove Good Rewards for Quests
+-Do not require Docking for Quest Completion
+-Implement "Throttle Trimming" for Thrusters
+-Double Font Size and half Scale for all Texts
+-Reduce Transparency of Panels
+-Introduce a simple Backstory and maybe Collectibles
+-Enable/Disable Key Binding Help in Overlay Options
+-Reduce Key Binding Help Font Size
+-Reduce Overlay Option Font Size
