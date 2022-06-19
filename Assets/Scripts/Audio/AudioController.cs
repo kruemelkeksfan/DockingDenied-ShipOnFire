@@ -49,10 +49,10 @@ public class AudioController : MonoBehaviour, IListener
 
 		float volume = musicSource.volume;
 		musicSlider.value = volume;
-		musicInputField.text = volume.ToString();
+		musicInputField.text = volume.ToString("F2");
 		volume = sfxSource.volume;
 		sfxSlider.value = volume;
-		sfxInputField.text = volume.ToString();
+		sfxInputField.text = volume.ToString("F2");
 
 		timeController = TimeController.GetInstance();
 		timeController.StartCoroutine(AudioUpdate(), true);
@@ -180,7 +180,7 @@ public class AudioController : MonoBehaviour, IListener
 	public void MusicSliderChanged()
 	{
 		float volume = musicSlider.value;
-		musicInputField.text = volume.ToString();
+		musicInputField.text = volume.ToString("F2");
 		musicSource.volume = volume;
 	}
 
@@ -188,14 +188,14 @@ public class AudioController : MonoBehaviour, IListener
 	{
 		float volume = Mathf.Clamp01(float.Parse(musicInputField.text));
 		musicSlider.value = volume;
-		musicInputField.text = volume.ToString();
+		musicInputField.text = volume.ToString("F2");
 		musicSource.volume = volume;
 	}
 
 	public void SFXSliderChanged()
 	{
 		float volume = sfxSlider.value;
-		sfxInputField.text = volume.ToString();
+		sfxInputField.text = volume.ToString("F2");
 		sfxSource.volume = volume;
 	}
 
@@ -203,7 +203,7 @@ public class AudioController : MonoBehaviour, IListener
 	{
 		float volume = Mathf.Clamp01(float.Parse(sfxInputField.text));
 		sfxSlider.value = volume;
-		sfxInputField.text = volume.ToString();
+		sfxInputField.text = volume.ToString("F2");
 		sfxSource.volume = volume;
 	}
 
