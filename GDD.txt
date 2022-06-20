@@ -2,6 +2,82 @@ Component System
 	Radiators
  		Components for Reactors, Weapons, Thrusters, Shields, etc.
 		Low Grade Radiators lead to overheating and Disfunction
+	Living Quarters
+		For all Modules which host Crew or Garrison
+		Limits Amount of People assignable to the Module
+	Board Computer
+		For Command Module
+		Determines XP Gain
+		Hosts the Ship AI
+		Serves as Skill Tree
+			Gain Experience by various Actions
+				Completing Quests
+				Trading
+				Destroying Ships
+				Boarding Ships
+				Mining Asteroids
+				Constructing Modules
+				Assembling Components
+			Experience can be invested to improve certain Stats
+				Construction Costs
+				Assembly Costs
+				Energy Usage
+					For Ion Thrusters, Constructor, Assembler, Guns, Shields, ...
+				Fuel Usage
+					For Hydrogen Thrusters
+				Oxygen Usage
+					For Hydrogen Thrusters
+					For Crew
+				Gun Accuracy
+				Buffs to Sensor Detection
+				Mining Efficiency
+		Unlocks new Modules and Components
+			Quests can have Construction-/Assembly Licenses as Reward
+			Licenses have various Tiers (depending on Quest Tier)
+			Each License can unlock Modules/Components of the corresponding Tier
+			Licenses are no longer generated as Quest Reward, once the Player has all Licenses he needs to unlock everything
+		Operates globally (all Ships of a Player share the same AI)
+	Access Control
+		For Docking Ports
+		Hinders Boarding
+	Hacking Component
+		For Docking Ports
+		Enables Boarding
+	Cargo Racks
+		For Solid Containers
+	Tank System
+		For Fluid Containers
+	Capacitor
+		For all Energy Consumers and Producers
+	Power Cells
+		For Batteries and Command Module
+	Solar Panel
+		For Solar Modules
+	Breach
+		For Guns
+		Determines Rate of Fire
+	Barrels
+		For Guns
+		Determines Accuracy
+	Force Field Generator
+		For Shields
+	Ion Engine
+		For Ion Thrusters
+	Fuel Pumps
+		For Hydrogen Thrusters
+	Hydrogen Engine
+		For Hydrogen Thrusters
+	Teleporter
+		For Constructor and Assembler
+		Determines maximum Building Cost of Modules/Parts
+			In Terms of Volume or Mass? Probably Mass
+	Machining Unit
+		For Constructor
+		Determines Module Costs for constructed Modules
+	CNC Machine
+		For Assembler
+		Determines Maximum Component Quality for assembled Components
+		Determines Component Costs for assembled Components
 Combat
 	Weapons
 		Liquid Cooled Machineguns
@@ -119,6 +195,46 @@ Combat
 				Detection Angles depends on Scanner Quality
 				Displays Warnings when detecting incoming Projectiles/Rockets/Collisions
 				Active (gives away Sender Position)
+Crew
+	Every Component can have Personnel-Slots
+	Every Module with Personnel-Slot Components can get a Living Quarter Component
+	Living Quarter Component can contain a Garrison to protect the Module
+	People can have Equipment
+		Personal Shield
+		Weapon
+			Pistol
+				Cheap
+				Fast Draw Time
+				Low Damage and DPS
+			Submachine Gun
+				High continuous DPS
+				Medium Draw Time
+			Shotgun
+				High Burst Damage
+				Low continuos DPS
+				High Draw Time
+		Ammo
+			Pistol/SMG Ammo
+			Shotgun Ammo
+	Boarding Fights
+		Starts by Docking to an disabled Docking Port
+		Port will be hacked by Hacking Component in Docking Port
+			Time taken determined by Hacking Component Quality and Access Control Component Quality in other Port
+		Boarding Crew is assembled in a separate Screen by the Attacker
+			Boarding Crew has a Personnel Limit (4?)
+		Boarders can move from Module to Module
+		In each Module Boarders have to fight Defenders before moving on
+			Boarders and Defenders have a Line-Up
+			First Person in Line-Up has the biggest Chance to be fired upon, last Member has the least Chance
+			The attacked Person is determined randomly on Beginning of the Fight or than the currently attacked Person dies
+			Persons die when their Personal Shield runs out
+			One Side wins, when all other Opponents are dead or one Side retreats to another Module
+		Boarders can temporarily (until the End of the Fight) disable or destroy Modules with defeated Defenders
+		To end the Fight, Boarders have to defeat 50% of the defending Personnel and capture the Command Module
+	Experience
+		Different Skills for different Personnel-Slot-Types and Combat Activities (Pistols, SMGs, Shotguns, Personal Shields)
+		Crew gains Experience passively by executing Actions
+		Level-Ups in these Skills improve Performance	
 New Quest System
 	Abandon JSON and generate Quests from pure Code
 	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
@@ -205,7 +321,5 @@ More Modules
 	Fuel Cells for Electric Energy
 	Hydrolysis Module (Hydrogen-/Oxygen Generator)
 	(Thermo-) Nuclear Reactors for Electric Energy
-	Rocket Thruster
-	Radar System to detect missing Vessels and Enemies?
-Crew
+	Hydrogen Thruster
 Factions
