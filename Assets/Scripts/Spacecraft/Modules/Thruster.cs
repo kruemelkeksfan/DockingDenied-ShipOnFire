@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Thruster : Module
 {
-	[SerializeField] private Capacitor capacitor = null;
 	[Tooltip("Energy Consumption at full Throttle in kW.")]
 	[SerializeField] private float energyConsumption = 160.0f;
 	[SerializeField] private float thrust = 1.0f;
@@ -12,6 +11,7 @@ public class Thruster : Module
 	private new Rigidbody2D rigidbody = null;
 	private GravityWellController gravityWellController = null;
 	private InventoryController inventoryController = null;
+	private Capacitor capacitor = null;
 	private Vector2 thrustVector = Vector2.zero;
 	private float throttle = 0.0f;
 	private ParticleSystem thrustParticles = null;
@@ -29,11 +29,16 @@ public class Thruster : Module
 
 		gravityWellController = GravityWellController.GetInstance();
 		inventoryController = spacecraft.GetInventoryController();
-		inventoryController.AddEnergyConsumer(capacitor);
 
 		thrustParticles = gameObject.GetComponentInChildren<ParticleSystem>();
 		thrustParticlesMain = thrustParticles.main;
 		initialParticleSize = new Vector3(thrustParticlesMain.startSizeXMultiplier, thrustParticlesMain.startSizeYMultiplier, thrustParticlesMain.startSizeZMultiplier);
+
+		capacitor = new Capacitor();
+		componentSlots.Add(GoodManager.ComponentType.Capacitor, capacitor);
+		inventoryController.AddEnergyConsumer(capacitor);
+
+		InstallComponent("Capacitor [crude]");
 	}
 
 	public override void Deconstruct()
@@ -65,9 +70,9 @@ public class Thruster : Module
 		return thrustVector;
 	}
 
-	public void SetThrottle(float throttle)
+	public bool SetThrottle(float throttle)
 	{
-		if(constructed && throttle > 0.0f)
+		if(constructed && capacitor.GetCharge() > 0.0f && throttle > 0.0f)
 		{
 			if(this.throttle <= 0.0f)
 			{
@@ -77,12 +82,18 @@ public class Thruster : Module
 
 				thrustParticles.Play();
 			}
+
+			this.throttle = Mathf.Clamp(throttle, 0.0f, 1.0f);
+
+			return true;
 		}
 		else
 		{
 			thrustParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-		}
 
-		this.throttle = Mathf.Clamp(throttle, 0.0f, 1.0f);
+			this.throttle = 0.0f;
+
+			return false;
+		}
 	}
 }

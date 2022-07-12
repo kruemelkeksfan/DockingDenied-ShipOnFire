@@ -6269,9 +6269,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 12
     price: 2
-    item:
-      type: 
-      attributes: []
   - goodName: Bauxite Ore
     description: Raw iron oxide which can is the primary resource for steel production.
     state: 0
@@ -6280,9 +6277,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 10
     price: 2
-    item:
-      type: 
-      attributes: []
   - goodName: Copper Ore
     description: Raw copper ore which can be refined into copper.
     state: 0
@@ -6291,9 +6285,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 8
     price: 3
-    item:
-      type: 
-      attributes: []
   - goodName: Gold Ore
     description: Raw gold ore which can be refined into gold.
     state: 0
@@ -6302,9 +6293,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 2
     price: 5
-    item:
-      type: 
-      attributes: []
   - goodName: Silicate Minerals
     description: Various rocks which can be refined into silicon.
     state: 0
@@ -6313,9 +6301,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 8
     price: 2
-    item:
-      type: 
-      attributes: []
   - goodName: Steel
     description: Common construction and engineering resource.
     state: 0
@@ -6324,9 +6309,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 24
     price: 10
-    item:
-      type: 
-      attributes: []
   - goodName: Aluminium
     description: Lightweight construction resource, especially suited for spacecraft.
     state: 0
@@ -6335,9 +6317,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 20
     price: 8
-    item:
-      type: 
-      attributes: []
   - goodName: Copper
     description: Important metal for electrics and cables.
     state: 0
@@ -6346,9 +6325,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 12
     price: 12
-    item:
-      type: 
-      attributes: []
   - goodName: Gold
     description: A rare metal which has numerous uses in electronics.
     state: 0
@@ -6357,9 +6333,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 4
     price: 20
-    item:
-      type: 
-      attributes: []
   - goodName: Silicon
     description: A semiconductor which is invaluable for the production of microchips.
     state: 0
@@ -6368,9 +6341,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 16
     price: 12
-    item:
-      type: 
-      attributes: []
   - goodName: Steel Ingredients
     description: "Ingredients other than iron ore for steel production, like carbon,\r 
       chromium, nickel, manganese and molybdenum."
@@ -6380,9 +6350,6 @@ MonoBehaviour:
     flammability: 0.02
     consumption: 10
     price: 4
-    item:
-      type: 
-      attributes: []
   - goodName: Water
     description: "Water is necessary to support human life and can be processed into\r
       oxygen and hydrogen."
@@ -6392,9 +6359,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 10
     price: 1
-    item:
-      type: 
-      attributes: []
   - goodName: Hydrogen
     description: Easily available and cheap rocket fuel.
     state: 1
@@ -6403,9 +6367,6 @@ MonoBehaviour:
     flammability: 2
     consumption: 30
     price: 2
-    item:
-      type: 
-      attributes: []
   - goodName: Oxygen
     description: "Oxidizer for rocket fuel combustion and also necessary for the
       operation\r of life support systems."
@@ -6415,9 +6376,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 40
     price: 2
-    item:
-      type: 
-      attributes: []
   - goodName: Xenon
     description: A noble gas which is useful to operate ion engines.
     state: 1
@@ -6426,9 +6384,6 @@ MonoBehaviour:
     flammability: 0
     consumption: 10
     price: 12
-    item:
-      type: 
-      attributes: []
   - goodName: Food
     description: Organic whole-grain products only.
     state: 0
@@ -6437,9 +6392,6 @@ MonoBehaviour:
     flammability: 0.6
     consumption: 10
     price: 4
-    item:
-      type: 
-      attributes: []
   - goodName: Medicine
     description: Medical equipment, bandages and antibiotics.
     state: 0
@@ -6448,9 +6400,6 @@ MonoBehaviour:
     flammability: 1
     consumption: 2
     price: 8
-    item:
-      type: 
-      attributes: []
   - goodName: Sanitary Products
     description: "Soap, aftershave, toothpaste and a lot of other stuff which appears\r
       to be optional during lockdown."
@@ -6460,9 +6409,6 @@ MonoBehaviour:
     flammability: 0.2
     consumption: 4
     price: 6
-    item:
-      type: 
-      attributes: []
   - goodName: Drugs
     description: Alcohol, chocolate and ... others. Can serve as valuable commodity.
     state: 0
@@ -6471,9 +6417,34 @@ MonoBehaviour:
     flammability: 1.2
     consumption: 1
     price: 20
-    item:
-      type: 
-      attributes: []
+  components:
+  - goodName: Capacitor
+    description: An Energy Storage which can handle rapid charging and discharging.
+    state: 0
+    mass: 2
+    volume: 1
+    flammability: 1.8
+    consumption: 1
+    price: 100
+    type: 1
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 0
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 1
+    - goodName: Silicon
+      amount: 2
+    attributeNames:
+    - Capacity
+    attributeValues:
+    - 320
+  componentCostFactor: 2.5
+  componentPowerFactor: 2
 --- !u!4 &926687709
 Transform:
   m_ObjectHideFlags: 0
@@ -11228,7 +11199,6 @@ MonoBehaviour:
   musicSource: {fileID: 32073812}
   sfxSource: {fileID: 22031118}
   audioUpdateInterval: 0.1
-  rampUpDuration: 2
   maximumPauseDuration: 30
   audioLoopOverlapFactor: 0.5
   musicSlider: {fileID: 1923185671}

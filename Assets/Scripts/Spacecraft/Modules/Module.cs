@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -17,20 +18,25 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
 	protected TimeController timeController = null;
 	protected AudioController audioController = null;
+	protected GoodManager goodManager = null;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
 	protected new Transform transform = null;
 	protected SpacecraftController spacecraft = null;
 	protected Vector2Int position = Vector2Int.zero;
+	protected Dictionary<GoodManager.ComponentType, ModuleComponent> componentSlots = null;
 
 	protected virtual void Awake()
 	{
 		transform = gameObject.GetComponent<Transform>();
 
+		componentSlots = new Dictionary<GoodManager.ComponentType, ModuleComponent>();
+
 		// Needs to be retrieved in Awake(), because e.g. Quest Vessels need those Controllers during Spawn
 		timeController = TimeController.GetInstance();
 		audioController = AudioController.GetInstance();
+		goodManager = GoodManager.GetInstance();
 	}
 
 	protected virtual void Start()
@@ -122,6 +128,45 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public virtual void FixedUpdateNotify()
 	{
 
+	}
+
+	public void InstallComponent(string componentName)
+	{
+		GoodManager.ComponentType componentType = goodManager.GetComponentData(componentName).type;
+		if(componentSlots.ContainsKey(componentType))
+		{
+			if(!componentSlots[componentType].IsSet())
+			{
+				componentSlots[componentType].UpdateComponentData(componentName);
+			}
+			else
+			{
+				Debug.LogWarning("Trying to install " + componentType + "-Component " + componentName + " in an occupied Slot of " + moduleName + "!");
+			}
+		}
+		else
+		{
+			Debug.LogWarning("Trying to install unsupported " + componentType + "-Component " + componentName + " in " + moduleName + "!");
+		}
+	}
+
+	public void RemoveComponent(GoodManager.ComponentType componentType)
+	{
+		if(componentSlots.ContainsKey(componentType))
+		{
+			if(componentSlots[componentType].IsSet())
+			{
+				componentSlots[componentType].UpdateComponentData(null);
+			}
+			else
+			{
+				Debug.LogWarning("Trying to remove " + componentType + "-Component from an unoccupied Slot of " + moduleName + "!");
+			}
+		}
+		else
+		{
+			Debug.LogWarning("Trying to remove unsupported " + componentType + "-Component from " + moduleName + "!");
+		}
 	}
 
 	private void TryCalculateMass()

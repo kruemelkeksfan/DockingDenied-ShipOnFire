@@ -9,7 +9,6 @@ public class Container : Module
     [SerializeField] protected uint capacity = 200;
 	protected Dictionary<string, uint> loads = null;
 	protected uint freeCapacity = 0;
-	protected GoodManager goodManager = null;
 	protected InventoryController inventoryController = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
@@ -19,7 +18,6 @@ public class Container : Module
 		loads = new Dictionary<string, uint>(1);
 		freeCapacity = capacity;
 
-		goodManager = GoodManager.GetInstance();
 		inventoryController = GetComponentInParent<InventoryController>();
 		inventoryController.AddContainer(this);
 	}

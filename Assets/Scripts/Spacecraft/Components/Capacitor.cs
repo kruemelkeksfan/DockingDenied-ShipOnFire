@@ -1,15 +1,31 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 [Serializable]
-public class Capacitor
+public class Capacitor : ModuleComponent
 {
-	[Tooltip("Energy Capacity in kWs, 1m^2 of SciFi Solar Panel in this Game is suppossed to produce 0.4kW, the 400m^2 of one Module therefore produce 160kW.")]
-	public float capacity = 320.0f;
-	[Tooltip("The current Charge of this Capacitor.")]
-	public float charge = 0.0f;
+	private float capacity = 0.0f;
+	private float charge = 0.0f;
+
+	public Capacitor() : base()
+	{
+
+	}
+
+	public override void UpdateComponentData(string componentName)
+	{
+		base.UpdateComponentData(componentName);
+
+		if(componentName != null)
+		{
+			capacity = GetAttribute("Capacity");
+		}
+		else
+		{
+			capacity = 0.0f;
+			charge = 0.0f;
+		}
+	}
 
 	public float Charge(float amount)
 	{
@@ -58,6 +74,16 @@ public class Capacitor
 	{
 		float charge = this.charge;
 		this.charge = 0.0f;
+		return charge;
+	}
+
+	public float GetCapacity()
+	{
+		return capacity;
+	}
+
+	public float GetCharge()
+	{
 		return charge;
 	}
 }

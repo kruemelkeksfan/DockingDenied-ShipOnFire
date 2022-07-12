@@ -307,8 +307,8 @@ public class InventoryController : MonoBehaviour, IListener
 					energy = battery.Charge(energy);
 				}
 
-				storedEnergy += battery.charge;
-				energyCapacity += battery.capacity;
+				storedEnergy += battery.GetCharge();
+				energyCapacity += battery.GetCapacity();
 			}
 
 			if(energy < 0.0f)

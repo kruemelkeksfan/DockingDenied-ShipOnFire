@@ -162,67 +162,71 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	public void SetThrottles(float horizontal, float vertical, float rotationSpeed)
 	{
-		if(!Mathf.Approximately(horizontal, 0.0f) || !Mathf.Approximately(vertical, 0.0f) || !Mathf.Approximately(rotationSpeed, 0.0f))
-		{
-			if(thrusting == false
-				&& ((horizontal < 0.0f && thrusters[(int) ThrusterGroup.left].Count > 0)
-				|| (horizontal > 0.0f && thrusters[(int) ThrusterGroup.right].Count > 0)
-				|| (vertical < 0.0f && thrusters[(int) ThrusterGroup.down].Count > 0)
-				|| (vertical > 0.0f && thrusters[(int) ThrusterGroup.up].Count > 0)
-				|| (rotationSpeed < 0.0f && thrusters[(int) ThrusterGroup.turnLeft].Count > 0)
-				|| (rotationSpeed > 0.0f && thrusters[(int) ThrusterGroup.turnRight].Count > 0)))
-			{
-				audioController.LoopAudioStart(thrusterAudio, gameObject);
-				thrustAudioActive = true;
-			}
-
-			thrusting = true;
-		}
-		else
-		{
-			if(thrustAudioActive)
-			{
-				audioController.LoopAudioStop(thrusterAudio, gameObject);
-				thrustAudioActive = false;
-			}
-
-			thrusting = false;
-		}
-
 		// inactiveThrusters is needed, because Thruster Particle System stops when throttle is set to 0
 		inactiveThrusters.Clear();
 		inactiveThrusters.UnionWith(thrusters[(int)ThrusterGroup.all]);
 
+		thrusting = false;
 		if(vertical > 0.0f)
 		{
-			SetThrusterGroupThrottle(ThrusterGroup.up, vertical, inactiveThrusters);
+			if(SetThrusterGroupThrottle(ThrusterGroup.up, vertical, inactiveThrusters))
+			{
+				thrusting = true;
+			}
 		}
 		if(vertical < 0.0f)
 		{
-			SetThrusterGroupThrottle(ThrusterGroup.down, -vertical, inactiveThrusters);
+			if(SetThrusterGroupThrottle(ThrusterGroup.down, -vertical, inactiveThrusters))
+			{
+				thrusting = true;
+			}
 		}
 
 		if(horizontal < 0.0f)
 		{
-			SetThrusterGroupThrottle(ThrusterGroup.left, -horizontal, inactiveThrusters);
+			if(SetThrusterGroupThrottle(ThrusterGroup.left, -horizontal, inactiveThrusters))
+			{
+				thrusting = true;
+			}
 		}
 		if(horizontal > 0.0f)
 		{
-			SetThrusterGroupThrottle(ThrusterGroup.right, horizontal, inactiveThrusters);
+			if(SetThrusterGroupThrottle(ThrusterGroup.right, horizontal, inactiveThrusters))
+			{
+				thrusting = true;
+			}
 		}
 
 		if(rotationSpeed < 0.0f)
 		{
-			SetThrusterGroupThrottle(ThrusterGroup.turnLeft, -rotationSpeed, inactiveThrusters);
+			if(SetThrusterGroupThrottle(ThrusterGroup.turnLeft, -rotationSpeed, inactiveThrusters))
+			{
+				thrusting = true;
+			}
 		}
 		if(rotationSpeed > 0.0f)
 		{
-			SetThrusterGroupThrottle(ThrusterGroup.turnRight, rotationSpeed, inactiveThrusters);
+			if(SetThrusterGroupThrottle(ThrusterGroup.turnRight, rotationSpeed, inactiveThrusters))
+			{
+				thrusting = true;
+			}
 		}
 
 		foreach(Thruster thruster in inactiveThrusters)
 		{
 			thruster.SetThrottle(0.0f);
+		}
+
+		if(!thrustAudioActive && thrusting)
+		{
+			audioController.LoopAudioStart(thrusterAudio, gameObject);
+			thrustAudioActive = true;
+		}
+
+		if(!thrusting && thrustAudioActive)
+		{
+			audioController.LoopAudioStop(thrusterAudio, gameObject);
+			thrustAudioActive = false;
 		}
 	}
 
@@ -382,13 +386,18 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		}
 	}
 
-	private void SetThrusterGroupThrottle(ThrusterGroup thrusterGroup, float throttle, HashSet<Thruster> inactiveThrusters)
+	private bool SetThrusterGroupThrottle(ThrusterGroup thrusterGroup, float throttle, HashSet<Thruster> inactiveThrusters)
 	{
+		bool thrusting = false;
 		foreach(Thruster thruster in thrusters[(int)thrusterGroup])
 		{
-			thruster.SetThrottle(throttle);
+			if(thruster.SetThrottle(throttle))
+			{
+				thrusting = true;
+			}
 			inactiveThrusters.Remove(thruster);
 		}
+		return thrusting;
 	}
 
 	private void CalculateSpacecraftCollider()
