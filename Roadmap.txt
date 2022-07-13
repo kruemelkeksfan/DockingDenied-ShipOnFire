@@ -2,7 +2,7 @@ Component System
 	Radiators
  		Components for Reactors, Weapons, Thrusters, Shields, etc.
 		Low Grade Radiators lead to overheating and Disfunction
-	Living Quarters
+	Crew Cabin
 		For all Modules which host Crew or Garrison
 		Limits Amount of People assignable to the Module
 	Board Computer
@@ -37,10 +37,10 @@ Component System
 			Each License can unlock Modules/Components of the corresponding Tier
 			Licenses are no longer generated as Quest Reward, once the Player has all Licenses he needs to unlock everything
 		Operates globally (all Ships of a Player share the same AI)
-	Access Control
+	Access Control Unit
 		For Docking Ports
 		Hinders Boarding
-	Hacking Component
+	Hacking Unit
 		For Docking Ports
 		Enables Boarding
 	Cargo Racks
@@ -56,25 +56,25 @@ Component System
 	Breach
 		For Guns
 		Determines Rate of Fire
-	Barrels
+	Barrel
 		For Guns
 		Determines Accuracy
 	Force Field Generator
 		For Shields
 	Ion Engine
 		For Ion Thrusters
-	Fuel Pumps
+	Fuel Pump
 		For Hydrogen Thrusters
 	Hydrogen Engine
 		For Hydrogen Thrusters
 	Teleporter
-		For Constructor and Assembler
+		For Constructor, Assembler and Storage Modules
 		Determines maximum Building Cost of Modules/Parts
 			In Terms of Volume or Mass? Probably Mass
-	Machining Unit
+	Construction Unit
 		For Constructor
 		Determines Module Costs for constructed Modules
-	CNC Machine
+	Assembler Unit
 		For Assembler
 		Determines Maximum Component Quality for assembled Components
 		Determines Component Costs for assembled Components
