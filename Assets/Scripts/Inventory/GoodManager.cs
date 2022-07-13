@@ -6,7 +6,15 @@ using UnityEngine;
 public class GoodManager : MonoBehaviour
 {
 	public enum State { solid, fluid };
-	public enum ComponentType { undefined, Capacitor, EnergyProducer };
+	public enum ComponentType { undefined,
+		BoardComputer, CrewCabin, Radiator,
+		AccessControlUnit, HackingUnit,
+		CargoRacks, TankSystem,
+		Capacitor, PowerCells, EmergencyPowerSupply,
+		SolarPanel,
+		Breach, Barrel, ForceFieldGenerator,
+		IonEngine, FuelPump, HydrogenEngine,
+		Teleporter, ConstructionUnit, AssemblerUnit };
 	public enum ComponentQuality { crude = 0, basic = 1, good = 2, excellent = 3, legendary = 4 };
 
 	[Serializable]

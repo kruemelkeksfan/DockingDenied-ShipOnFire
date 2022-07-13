@@ -6418,15 +6418,110 @@ MonoBehaviour:
     consumption: 1
     price: 20
   components:
-  - goodName: Capacitor
-    description: An Energy Storage which can handle rapid charging and discharging.
+  - goodName: Board Computer
+    description: The Central Processing Unit of each Spacecraft which hosts the Ship
+      AI.
     state: 0
-    mass: 2
-    volume: 1
-    flammability: 1.8
-    consumption: 1
-    price: 100
+    mass: 1
+    volume: 2
+    flammability: 1
+    consumption: 0
+    price: 200
     type: 1
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 0
+    - goodName: Aluminium
+      amount: 1
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 2
+    - goodName: Silicon
+      amount: 4
+    attributeNames: []
+    attributeValues: []
+  - goodName: Crew Cabin
+    description: A self-sustained Resting Place for Crew Members, including Bunks,
+      Sanitation and Life-Support-Systems.
+    state: 0
+    mass: 3
+    volume: 10
+    flammability: 0.8
+    consumption: 0
+    price: 50
+    type: 2
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 3
+    - goodName: Copper
+      amount: 1
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 1
+    attributeNames: []
+    attributeValues: []
+  - goodName: Radiator
+    description: A simple radiative Cooling Solution for all Systems which produce
+      an excessive Amount of Heat.
+    state: 0
+    mass: 1
+    volume: 4
+    flammability: 0
+    consumption: 0
+    price: 50
+    type: 3
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 2
+    - goodName: Aluminium
+      amount: 4
+    - goodName: Copper
+      amount: 1
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 1
+    attributeNames: []
+    attributeValues: []
+  - goodName: Access Control Unit
+    description: Just a fancy Space Door Lock.
+    state: 0
+    mass: 0.2
+    volume: 1
+    flammability: 1
+    consumption: 0
+    price: 60
+    type: 4
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 2
+    - goodName: Aluminium
+      amount: 0
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 1
+    - goodName: Silicon
+      amount: 2
+    attributeNames: []
+    attributeValues: []
+  - goodName: Hacking Unit
+    description: Whats that? A Space Lockpick?
+    state: 0
+    mass: 0.1
+    volume: 1
+    flammability: 1
+    consumption: 0
+    price: 80
+    type: 5
     quality: 0
     buildingCosts:
     - goodName: Steel
@@ -6436,13 +6531,369 @@ MonoBehaviour:
     - goodName: Copper
       amount: 2
     - goodName: Gold
+      amount: 2
+    - goodName: Silicon
+      amount: 3
+    attributeNames: []
+    attributeValues: []
+  - goodName: Cargo Racks
+    description: A simple Storage Solution for solid Goods.
+    state: 0
+    mass: 1
+    volume: 12
+    flammability: 0
+    consumption: 0
+    price: 20
+    type: 6
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
       amount: 1
+    - goodName: Aluminium
+      amount: 4
+    - goodName: Copper
+      amount: 1
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 0
+    attributeNames: []
+    attributeValues: []
+  - goodName: Tank System
+    description: Pressurizable Tanks and Pipes for fluid and gaseous Goods.
+    state: 0
+    mass: 1
+    volume: 40
+    flammability: 0.2
+    consumption: 0
+    price: 40
+    type: 7
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 4
+    - goodName: Aluminium
+      amount: 4
+    - goodName: Copper
+      amount: 1
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 0
+    attributeNames: []
+    attributeValues: []
+  - goodName: Capacitor
+    description: An Energy Storage which can handle rapid charging and discharging.
+    state: 0
+    mass: 1
+    volume: 1
+    flammability: 1.2
+    consumption: 0
+    price: 200
+    type: 8
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 1
+    - goodName: Copper
+      amount: 4
+    - goodName: Gold
+      amount: 2
     - goodName: Silicon
       amount: 2
     attributeNames:
     - Capacity
     attributeValues:
     - 320
+  - goodName: Power Cells
+    description: A heavy but cheap Mass Energy Storage.
+    state: 0
+    mass: 4
+    volume: 4
+    flammability: 2
+    consumption: 0
+    price: 80
+    type: 9
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 1
+    - goodName: Copper
+      amount: 4
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 1
+    attributeNames:
+    - Capacity
+    attributeValues:
+    - 3200
+  - goodName: Emergency Power Supply
+    description: A small and lightweight Battery for Emergency Use.
+    state: 0
+    mass: 1
+    volume: 1
+    flammability: 2
+    consumption: 0
+    price: 120
+    type: 10
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 1
+    - goodName: Copper
+      amount: 3
+    - goodName: Gold
+      amount: 1
+    - goodName: Silicon
+      amount: 1
+    attributeNames:
+    - Capacity
+    attributeValues:
+    - 800
+  - goodName: Solar Panel
+    description: The classic Way of generating free Power in Space.
+    state: 0
+    mass: 2
+    volume: 20
+    flammability: 1
+    consumption: 0
+    price: 200
+    type: 11
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 2
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 1
+    - goodName: Silicon
+      amount: 8
+    attributeNames: []
+    attributeValues: []
+  - goodName: Breach
+    description: The Loading Mechanism for a classical Cannon.
+    state: 0
+    mass: 1
+    volume: 1
+    flammability: 0.2
+    consumption: 0
+    price: 80
+    type: 12
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 3
+    - goodName: Aluminium
+      amount: 0
+    - goodName: Copper
+      amount: 1
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 1
+    attributeNames: []
+    attributeValues: []
+  - goodName: Barrel
+    description: Basically a Pipe for accelerating Projectiles using extreme Pressures
+      and Temperatures.
+    state: 0
+    mass: 2
+    volume: 2
+    flammability: 0
+    consumption: 0
+    price: 120
+    type: 13
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 4
+    - goodName: Aluminium
+      amount: 0
+    - goodName: Copper
+      amount: 1
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 0
+    attributeNames: []
+    attributeValues: []
+  - goodName: Force Field Generator
+    description: A 21st Century Person would not have deemed this possible, but this
+      handy Gadget stops Projectiles which are flying towards it.
+    state: 0
+    mass: 5
+    volume: 4
+    flammability: 2
+    consumption: 0
+    price: 300
+    type: 14
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 2
+    - goodName: Aluminium
+      amount: 1
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 2
+    - goodName: Silicon
+      amount: 4
+    attributeNames: []
+    attributeValues: []
+  - goodName: Ion Engine
+    description: This Engine uses electrical Power and noble Gases (but mostly electrical
+      Power) to provide extremly efficient but weak Propulsion.
+    state: 0
+    mass: 4
+    volume: 6
+    flammability: 1
+    consumption: 0
+    price: 160
+    type: 15
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 2
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 2
+    - goodName: Silicon
+      amount: 2
+    attributeNames: []
+    attributeValues: []
+  - goodName: Fuel Pump
+    description: The practical Solution to supply Hydrogen Engines with absurd Amounts
+      of Fuel and Oxidizer per Second.
+    state: 0
+    mass: 1
+    volume: 1
+    flammability: 1
+    consumption: 0
+    price: 60
+    type: 16
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 1
+    - goodName: Copper
+      amount: 1
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 1
+    attributeNames: []
+    attributeValues: []
+  - goodName: Hydrogen Engine
+    description: The reliable, powerful and downright archaic Way of moving Spacecraft.
+    state: 0
+    mass: 2
+    volume: 4
+    flammability: 0.2
+    consumption: 0
+    price: 40
+    type: 17
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 3
+    - goodName: Aluminium
+      amount: 1
+    - goodName: Copper
+      amount: 1
+    - goodName: Gold
+      amount: 0
+    - goodName: Silicon
+      amount: 1
+    attributeNames: []
+    attributeValues: []
+  - goodName: Teleporter
+    description: An immensely practical Gadget for transporting inanimate Objects
+      over short Distances.
+    state: 0
+    mass: 2
+    volume: 2
+    flammability: 1
+    consumption: 0
+    price: 240
+    type: 18
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 1
+    - goodName: Aluminium
+      amount: 1
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 2
+    - goodName: Silicon
+      amount: 4
+    attributeNames: []
+    attributeValues: []
+  - goodName: Construction Unit
+    description: A combined CNC- and Cold-Welding-Machine which can autonomously
+      construct Structures.
+    state: 0
+    mass: 4
+    volume: 10
+    flammability: 1
+    consumption: 0
+    price: 120
+    type: 19
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 4
+    - goodName: Aluminium
+      amount: 0
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 1
+    - goodName: Silicon
+      amount: 3
+    attributeNames: []
+    attributeValues: []
+  - goodName: Assembler Unit
+    description: A Precision Machine for assembling the most delicate Circuits and
+      Gadgets. Sadly, it wastes a lot of Material.
+    state: 0
+    mass: 5
+    volume: 10
+    flammability: 1
+    consumption: 0
+    price: 160
+    type: 20
+    quality: 0
+    buildingCosts:
+    - goodName: Steel
+      amount: 4
+    - goodName: Aluminium
+      amount: 0
+    - goodName: Copper
+      amount: 2
+    - goodName: Gold
+      amount: 2
+    - goodName: Silicon
+      amount: 4
+    attributeNames: []
+    attributeValues: []
   componentCostFactor: 2.5
   componentPowerFactor: 2
 --- !u!4 &926687709

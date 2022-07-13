@@ -4,13 +4,10 @@ using UnityEngine;
 [Serializable]
 public class Capacitor : ModuleComponent
 {
+	// TODO: Rename to EnergyStorage
+	// TODO: Max Charge-/Discharge-Rate
 	private float capacity = 0.0f;
 	private float charge = 0.0f;
-
-	public Capacitor() : base()
-	{
-
-	}
 
 	public override void UpdateComponentData(string componentName)
 	{
