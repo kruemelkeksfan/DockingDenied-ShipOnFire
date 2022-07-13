@@ -78,6 +78,68 @@ Component System
 		For Assembler
 		Determines Maximum Component Quality for assembled Components
 		Determines Component Costs for assembled Components
+Crew
+	Every Component can have Personnel-Slots
+	Every Module with Personnel-Slot Components can get a Living Quarter Component
+	Living Quarter Component can contain a Garrison to protect the Module
+	People can have Equipment
+		Personal Shield
+		Weapon
+			Pistol
+				Cheap
+				Fast Draw Time
+				Low Damage and DPS
+			Submachine Gun
+				High continuous DPS
+				Medium Draw Time
+			Shotgun
+				High Burst Damage
+				Low continuos DPS
+				High Draw Time
+		Ammo
+			Pistol/SMG Ammo
+			Shotgun Ammo
+	Boarding Fights
+		Starts by Docking to an disabled Docking Port
+		Port will be hacked by Hacking Component in Docking Port
+			Time taken determined by Hacking Component Quality and Access Control Component Quality in other Port
+		Boarding Crew is assembled in a separate Screen by the Attacker
+			Boarding Crew has a Personnel Limit (4?)
+		Boarders can move from Module to Module
+		In each Module Boarders have to fight Defenders before moving on
+			Boarders and Defenders have a Line-Up
+			First Person in Line-Up has the biggest Chance to be fired upon, last Member has the least Chance
+			The attacked Person is determined randomly on Beginning of the Fight or than the currently attacked Person dies
+			Persons die when their Personal Shield runs out
+			One Side wins, when all other Opponents are dead or one Side retreats to another Module
+		Boarders can temporarily (until the End of the Fight) disable or destroy Modules with defeated Defenders
+		To end the Fight, Boarders have to defeat 50% of the defending Personnel and capture the Command Module
+	Experience
+		Different Skills for different Personnel-Slot-Types and Combat Activities (Pistols, SMGs, Shotguns, Personal Shields)
+		Crew gains Experience passively by executing Actions
+		Level-Ups in these Skills improve Performance	
+New Quest System
+	Abandon JSON and generate Quests from pure Code
+	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
+	Only generate Quests for which the Requirements are met by the current Ship
+	Task Types
+		Destroy
+		Jump-Start
+		Supply (Reward must be larger than Investment)
+		Tow
+		Race
+		Taxi/Transport
+		(Plunder)
+		(Build)
+		No Buy/Sell Quests
+	Various Tiers: later Quests require bigger Ships and spawn further away from Stations
+	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Task Type, Difficulty and Spawn Distance)
+	Task Type depends on Quest Tier, no Towing Quests at Start
+	Difficult Tasks/Boss Fights in Story Quests as memorable Milestones
+	Rework Tutorial
+	Spawn Quest Vessels on Quest Generation and instead of on Acceptance
+	Rename QuestVessel to NPC Vessel or something else more neutral
+	Spawn ambient NPC Vessels
 Combat
 	Weapons
 		Liquid Cooled Machineguns
@@ -195,68 +257,24 @@ Combat
 				Detection Angles depends on Scanner Quality
 				Displays Warnings when detecting incoming Projectiles/Rockets/Collisions
 				Active (gives away Sender Position)
-Crew
-	Every Component can have Personnel-Slots
-	Every Module with Personnel-Slot Components can get a Living Quarter Component
-	Living Quarter Component can contain a Garrison to protect the Module
-	People can have Equipment
-		Personal Shield
-		Weapon
-			Pistol
-				Cheap
-				Fast Draw Time
-				Low Damage and DPS
-			Submachine Gun
-				High continuous DPS
-				Medium Draw Time
-			Shotgun
-				High Burst Damage
-				Low continuos DPS
-				High Draw Time
-		Ammo
-			Pistol/SMG Ammo
-			Shotgun Ammo
-	Boarding Fights
-		Starts by Docking to an disabled Docking Port
-		Port will be hacked by Hacking Component in Docking Port
-			Time taken determined by Hacking Component Quality and Access Control Component Quality in other Port
-		Boarding Crew is assembled in a separate Screen by the Attacker
-			Boarding Crew has a Personnel Limit (4?)
-		Boarders can move from Module to Module
-		In each Module Boarders have to fight Defenders before moving on
-			Boarders and Defenders have a Line-Up
-			First Person in Line-Up has the biggest Chance to be fired upon, last Member has the least Chance
-			The attacked Person is determined randomly on Beginning of the Fight or than the currently attacked Person dies
-			Persons die when their Personal Shield runs out
-			One Side wins, when all other Opponents are dead or one Side retreats to another Module
-		Boarders can temporarily (until the End of the Fight) disable or destroy Modules with defeated Defenders
-		To end the Fight, Boarders have to defeat 50% of the defending Personnel and capture the Command Module
-	Experience
-		Different Skills for different Personnel-Slot-Types and Combat Activities (Pistols, SMGs, Shotguns, Personal Shields)
-		Crew gains Experience passively by executing Actions
-		Level-Ups in these Skills improve Performance	
-New Quest System
-	Abandon JSON and generate Quests from pure Code
-	Story Quests (semi-random Quests which provide Tutorial++, steer Progression, unlock new Parts/Components/Ship Blueprints and provide End Goal)
-	Only generate Quests for which the Requirements are met by the current Ship
-	Task Types
-		Destroy
-		Jump-Start
-		Supply (Reward must be larger than Investment)
-		Tow
-		Race
-		Taxi/Transport
-		(Plunder)
-		(Build)
-		No Buy/Sell Quests
-	Various Tiers: later Quests require bigger Ships and spawn further away from Stations
-	Generate Task, Tier, Amount/Difficulty (depending on Tier), Spawn Distance (depending on Tier) and Rewards (depending on Task Type, Difficulty and Spawn Distance)
-	Task Type depends on Quest Tier, no Towing Quests at Start
-	Difficult Tasks/Boss Fights in Story Quests as memorable Milestones
-	Rework Tutorial
-	Spawn Quest Vessels on Quest Generation and instead of on Acceptance
-	Rename QuestVessel to NPC Vessel or something else more neutral
-	Spawn ambient NPC Vessels
+Mining
+	Refineries for Ore to Material Conversion (different Components for different Materials)
+	Bloomeries for Iron + Steel Ingredients to Steel Conversion
+Economy 2.0
+	Un-randomize Economy
+	Production Stations (cheaper Prices for some Goods)
+	Resource Draining Events (Plagues, Attacks, Famines, Storage Module Fires, ...)
+	De-fund Starting Stocks of Stations to make the System poorer
+	AI Traders
+		Just virtual, no actual Ships
+		Certain Amount of Traders (affects overall Resource Distribution Effectivity)
+		Have unlimited Cash
+		Algorithm:
+			Buy Cheapest Goods at Station until? (Cargo Bay is full? Prices are too high? Station is empty?)
+			Allow only 1 Trader Transaction at once, to avoid all Traders buying the same Stuff and going the same Route
+			Travel to Station where they could sell for Max Profit (Travel Time depends linearly on Distance)
+			On Arrival, sell all their Cargo, no Matter how the Stocks changed
+			Repeat
 Multiplayer
 	Send-Receive-Mechanism
 		Following might be obsolete, in Case of Doubt stick to Tinkers Throne Architecture
@@ -299,27 +317,9 @@ Building System 2.0
 		Zone is very narrow, about 20m, to restrict possible planetary Attacks to a small Area
 		Spacecraft outside the Zone (even just partially outside) will be fired upon from the Surface
 	SpaceStations could take Ship Size into Account when assigning Docking Ports to Docking Requests (Collider Extents, Physics2D.OverlayBox)
-Mining
-	Refineries for Ore to Material Conversion (different Components for different Materials)
-	Bloomeries for Iron + Steel Ingredients to Steel Conversion
-Economy 2.0
-	Un-randomize Economy
-	Production Stations (cheaper Prices for some Goods)
-	Resource Draining Events (Plagues, Attacks, Famines, Storage Module Fires, ...)
-	De-fund Starting Stocks of Stations to make the System poorer
-	AI Traders
-		Just virtual, no actual Ships
-		Certain Amount of Traders (affects overall Resource Distribution Effectivity)
-		Have unlimited Cash
-		Algorithm:
-			Buy Cheapest Goods at Station until? (Cargo Bay is full? Prices are too high? Station is empty?)
-			Allow only 1 Trader Transaction at once, to avoid all Traders buying the same Stuff and going the same Route
-			Travel to Station where they could sell for Max Profit (Travel Time depends linearly on Distance)
-			On Arrival, sell all their Cargo, no Matter how the Stocks changed
-			Repeat
+Factions
 More Modules
 	Fuel Cells for Electric Energy
 	Hydrolysis Module (Hydrogen-/Oxygen Generator)
 	(Thermo-) Nuclear Reactors for Electric Energy
 	Hydrogen Thruster
-Factions
