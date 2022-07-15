@@ -11,7 +11,7 @@ public class Thruster : Module
 	private new Rigidbody2D rigidbody = null;
 	private GravityWellController gravityWellController = null;
 	private InventoryController inventoryController = null;
-	private Capacitor capacitor = null;
+	private EnergyStorage capacitor = null;
 	private Vector2 thrustVector = Vector2.zero;
 	private float throttle = 0.0f;
 	private ParticleSystem thrustParticles = null;
@@ -34,7 +34,7 @@ public class Thruster : Module
 		thrustParticlesMain = thrustParticles.main;
 		initialParticleSize = new Vector3(thrustParticlesMain.startSizeXMultiplier, thrustParticlesMain.startSizeYMultiplier, thrustParticlesMain.startSizeZMultiplier);
 
-		capacitor = new Capacitor();
+		capacitor = new EnergyStorage();
 		componentSlots.Add(GoodManager.ComponentType.Capacitor, capacitor);
 		inventoryController.AddEnergyConsumer(capacitor);
 

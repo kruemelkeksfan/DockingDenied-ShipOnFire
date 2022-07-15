@@ -8,8 +8,8 @@ public class InventoryController : MonoBehaviour, IListener
 	[SerializeField] private int startingMoney = 200;
 	private TimeController timeController = null;
 	private HashSet<EnergyProducer> energyProducers = null;
-	private List<Capacitor> energyConsumers = null;
-	private HashSet<Capacitor> batteries = null;
+	private List<EnergyStorage> energyConsumers = null;
+	private HashSet<EnergyStorage> batteries = null;
 	private float transferEnergy = 0.0f;
 	private double storedEnergy = 0.0f;
 	private double energyCapacity = 0.0f;
@@ -22,8 +22,8 @@ public class InventoryController : MonoBehaviour, IListener
 	private void Awake()
 	{
 		energyProducers = new HashSet<EnergyProducer>();
-		energyConsumers = new List<Capacitor>();
-		batteries = new HashSet<Capacitor>();
+		energyConsumers = new List<EnergyStorage>();
+		batteries = new HashSet<EnergyStorage>();
 
 		money = startingMoney;
 
@@ -284,7 +284,7 @@ public class InventoryController : MonoBehaviour, IListener
 				energy += producer.production * deltaTime;
 			}
 
-			foreach(Capacitor battery in batteries)
+			foreach(EnergyStorage battery in batteries)
 			{
 				energy += battery.DischargeAll();
 			}
@@ -300,7 +300,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 			storedEnergy = 0.0f;
 			energyCapacity = 0.0f;
-			foreach(Capacitor battery in batteries)
+			foreach(EnergyStorage battery in batteries)
 			{
 				if(energy > 0.0f)
 				{
@@ -374,22 +374,22 @@ public class InventoryController : MonoBehaviour, IListener
 		energyProducers.Remove(producer);
 	}
 
-	public void AddEnergyConsumer(Capacitor consumer)
+	public void AddEnergyConsumer(EnergyStorage consumer)
 	{
 		energyConsumers.Add(consumer);
 	}
 
-	public void RemoveEnergyConsumer(Capacitor consumer)
+	public void RemoveEnergyConsumer(EnergyStorage consumer)
 	{
 		energyConsumers.Remove(consumer);
 	}
 
-	public void AddBattery(Capacitor battery)
+	public void AddBattery(EnergyStorage battery)
 	{
 		batteries.Add(battery);
 	}
 
-	public void RemoveBattery(Capacitor battery)
+	public void RemoveBattery(EnergyStorage battery)
 	{
 		batteries.Remove(battery);
 	}

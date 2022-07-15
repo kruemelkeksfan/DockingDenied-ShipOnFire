@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class CommandModule : Module
 {
-	[SerializeField] private Capacitor capacitor = null;
+	[SerializeField] private EnergyStorage emergencyPowerSupply = null;
 	private InventoryController inventoryController = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
@@ -12,12 +12,12 @@ public class CommandModule : Module
 		base.Build(position, listenUpdates, listenFixedUpdates);
 
 		inventoryController = spacecraft.GetInventoryController();
-		inventoryController.AddBattery(capacitor);
+		inventoryController.AddBattery(emergencyPowerSupply);
 	}
 
 	public override void Deconstruct()
 	{
-		inventoryController.RemoveBattery(capacitor);
+		inventoryController.RemoveBattery(emergencyPowerSupply);
 
 		base.Deconstruct();
 	}

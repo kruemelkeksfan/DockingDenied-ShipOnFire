@@ -25,13 +25,17 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected new Transform transform = null;
 	protected SpacecraftController spacecraft = null;
 	protected Vector2Int position = Vector2Int.zero;
+	// Dictionary to enable easy Searching for Component Types
 	protected Dictionary<GoodManager.ComponentType, ModuleComponent> componentSlots = null;
+	// Need a second, ordered List for Display in Module Menu
+	protected List<GoodManager.ComponentType> orderedComponentSlots = null;
 
 	protected virtual void Awake()
 	{
 		transform = gameObject.GetComponent<Transform>();
 
 		componentSlots = new Dictionary<GoodManager.ComponentType, ModuleComponent>();
+		orderedComponentSlots = new List<GoodManager.ComponentType>();
 
 		// Needs to be retrieved in Awake(), because e.g. Quest Vessels need those Controllers during Spawn
 		timeController = TimeController.GetInstance();

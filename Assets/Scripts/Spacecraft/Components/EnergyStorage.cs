@@ -2,10 +2,9 @@
 using UnityEngine;
 
 [Serializable]
-public class Capacitor : ModuleComponent
+// Don't implement ChargeRates, because the Code would be a Mess and the Feature not worth the Effort (think e.g. of large Energy Transfers between Ships during Jump-Start)
+public class EnergyStorage : ModuleComponent
 {
-	// TODO: Rename to EnergyStorage
-	// TODO: Max Charge-/Discharge-Rate
 	private float capacity = 0.0f;
 	private float charge = 0.0f;
 
@@ -20,8 +19,9 @@ public class Capacitor : ModuleComponent
 		else
 		{
 			capacity = 0.0f;
-			charge = 0.0f;
 		}
+
+		charge = 0.0f;
 	}
 
 	public float Charge(float amount)
