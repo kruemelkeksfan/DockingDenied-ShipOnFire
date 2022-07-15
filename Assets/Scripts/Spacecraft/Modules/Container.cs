@@ -5,21 +5,23 @@ using UnityEngine;
 public class Container : Module
 {
     [SerializeField] protected GoodManager.State state = GoodManager.State.solid;
-    [Tooltip("Capacity in m^3.")]
-    [SerializeField] protected uint capacity = 200;
-	protected Dictionary<string, uint> loads = null;
-	protected uint freeCapacity = 0;
+	[Tooltip("Cargo Racks or Tank System?")]
+	[SerializeField] private GoodManager.ComponentType storageComponentType = GoodManager.ComponentType.CargoRacks;
 	protected InventoryController inventoryController = null;
+	protected Storage storage = null;
+	protected Dictionary<string, uint> loads = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
 
-		loads = new Dictionary<string, uint>(1);
-		freeCapacity = capacity;
-
 		inventoryController = GetComponentInParent<InventoryController>();
+
+		storage = new Storage();
+		componentSlots.Add(storageComponentType, storage);
 		inventoryController.AddContainer(this);
+
+		loads = new Dictionary<string, uint>();
 	}
 
 	public override void Deconstruct()
@@ -45,7 +47,7 @@ public class Container : Module
 			return true;
 		}
 
-		if(volume <= freeCapacity)
+		if(volume <= storage.GetFreeCapacity())
 		{
 			if(!loads.ContainsKey(goodName))
 			{
@@ -56,7 +58,10 @@ public class Container : Module
 				loads[goodName] += volume;
 			}
 
-			freeCapacity -= volume;
+			if(!storage.Deposit(volume))
+			{
+				Debug.LogWarning("Depositing " + amount + " " + goodName + " in " + storageComponentType + " failed!");
+			}
 
 			mass += good.mass * amount;
 			spacecraft.UpdateMass();
@@ -82,7 +87,10 @@ public class Container : Module
 		if(loads.ContainsKey(goodName) && loads[goodName] >= volume)
 		{
 			loads[goodName] -= volume;
-			freeCapacity += volume;
+			if(!storage.Withdraw(volume))
+			{
+				Debug.LogWarning("Withdrawing " + amount + " " + goodName + " from " + storageComponentType + " failed!");
+			}
 
 			if(loads[goodName] <= 0)
 			{
@@ -107,7 +115,7 @@ public class Container : Module
 
 	public virtual uint GetFreeCapacity(string goodName)
 	{
-		return freeCapacity;
+		return storage.GetFreeCapacity();
 	}
 
 	public uint GetGoodAmount(string goodName)

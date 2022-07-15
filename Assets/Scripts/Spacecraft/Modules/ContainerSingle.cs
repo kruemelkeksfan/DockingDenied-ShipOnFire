@@ -20,7 +20,7 @@ public class ContainerSingle : Container
 	{
 		if(loads.Count <= 0 || loads.ContainsKey(goodName))
 		{
-			return freeCapacity;
+			return storage.GetFreeCapacity();
 		}
 		else
 		{

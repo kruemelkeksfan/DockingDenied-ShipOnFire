@@ -6557,8 +6557,10 @@ MonoBehaviour:
       amount: 0
     - goodName: Silicon
       amount: 0
-    attributeNames: []
-    attributeValues: []
+    attributeNames:
+    - Capacity
+    attributeValues:
+    - 200
   - goodName: Tank System
     description: Pressurizable Tanks and Pipes for fluid and gaseous Goods.
     state: 0
@@ -6580,8 +6582,10 @@ MonoBehaviour:
       amount: 0
     - goodName: Silicon
       amount: 0
-    attributeNames: []
-    attributeValues: []
+    attributeNames:
+    - Capacity
+    attributeValues:
+    - 160
   - goodName: Capacitor
     description: An Energy Storage which can handle rapid charging and discharging.
     state: 0
