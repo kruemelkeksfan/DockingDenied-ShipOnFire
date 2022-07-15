@@ -1,4 +1,5 @@
 Component System
+	UPDATE MODULE DESCRIPTIONS IN BUILD-MENU!!
 	Radiators
  		Components for Reactors, Weapons, Thrusters, Shields, etc.
 		Low Grade Radiators lead to overheating and Disfunction
