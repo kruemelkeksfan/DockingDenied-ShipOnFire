@@ -37,8 +37,6 @@ public class Thruster : Module
 		capacitor = new EnergyStorage();
 		componentSlots.Add(GoodManager.ComponentType.Capacitor, capacitor);
 		inventoryController.AddEnergyConsumer(capacitor);
-
-		InstallComponent("Capacitor [crude]");
 	}
 
 	public override void Deconstruct()
