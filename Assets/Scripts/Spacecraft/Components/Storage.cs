@@ -9,8 +9,13 @@ public class Storage : ModuleComponent
 	// Current Load in m^3
 	private uint load = 0;
 
-	public override void UpdateComponentData(string componentName)
+	public override bool UpdateComponentData(string componentName)
 	{
+		if(load > 0)
+		{
+			return false;
+		}
+
 		base.UpdateComponentData(componentName);
 
 		if(componentName != null)
@@ -23,6 +28,8 @@ public class Storage : ModuleComponent
 		}
 
 		load = 0;
+
+		return true;
 	}
 
 	public bool Deposit(uint volume)

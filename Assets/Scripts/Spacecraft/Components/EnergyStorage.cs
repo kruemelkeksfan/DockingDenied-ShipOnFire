@@ -8,7 +8,7 @@ public class EnergyStorage : ModuleComponent
 	private float capacity = 0.0f;
 	private float charge = 0.0f;
 
-	public override void UpdateComponentData(string componentName)
+	public override bool UpdateComponentData(string componentName)
 	{
 		base.UpdateComponentData(componentName);
 
@@ -22,6 +22,8 @@ public class EnergyStorage : ModuleComponent
 		}
 
 		charge = 0.0f;
+
+		return true;
 	}
 
 	public float Charge(float amount)

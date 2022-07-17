@@ -16,7 +16,7 @@ public class ModuleComponent
 		attributes = new Dictionary<string, float>();
 	}
 
-	public virtual void UpdateComponentData(string componentName)
+	public virtual bool UpdateComponentData(string componentName)
 	{
 		attributes.Clear();
 
@@ -35,6 +35,8 @@ public class ModuleComponent
 		{
 			isSet = false;
 		}
+
+		return true;
 	}
 
 	public bool IsSet()

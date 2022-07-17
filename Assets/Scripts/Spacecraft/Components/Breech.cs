@@ -2,9 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Breach : ModuleComponent
+public class Breech : ModuleComponent
 {
-	public override void UpdateComponentData(string componentName)
+	public override bool UpdateComponentData(string componentName)
 	{
 		base.UpdateComponentData(componentName);
 
@@ -17,5 +17,7 @@ public class Breach : ModuleComponent
 			// capacity = 0.0f;
 			// charge = 0.0f;
 		}
+
+		return true;
 	}
 }

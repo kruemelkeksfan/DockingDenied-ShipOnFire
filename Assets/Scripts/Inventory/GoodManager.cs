@@ -12,7 +12,7 @@ public class GoodManager : MonoBehaviour
 		CargoRacks, TankSystem,
 		Capacitor, PowerCells, EmergencyPowerSupply,
 		SolarPanel,
-		Breach, Barrel, ForceFieldGenerator,
+		Breech, Barrel, ForceFieldGenerator,
 		IonEngine, FuelPump, HydrogenEngine,
 		Teleporter, ConstructionUnit, AssemblerUnit };
 	public enum ComponentQuality { crude = 0, basic = 1, good = 2, excellent = 3, legendary = 4 };

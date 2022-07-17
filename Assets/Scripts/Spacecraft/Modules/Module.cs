@@ -134,14 +134,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	}
 
-	public void InstallComponent(string componentName)
+	public bool InstallComponent(string componentName)
 	{
 		GoodManager.ComponentType componentType = goodManager.GetComponentData(componentName).type;
 		if(componentSlots.ContainsKey(componentType))
 		{
 			if(!componentSlots[componentType].IsSet())
 			{
-				componentSlots[componentType].UpdateComponentData(componentName);
+				return componentSlots[componentType].UpdateComponentData(componentName);
 			}
 			else
 			{
@@ -152,15 +152,17 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		{
 			Debug.LogWarning("Trying to install unsupported " + componentType + "-Component " + componentName + " in " + moduleName + "!");
 		}
+
+		return false;
 	}
 
-	public void RemoveComponent(GoodManager.ComponentType componentType)
+	public bool RemoveComponent(GoodManager.ComponentType componentType)
 	{
 		if(componentSlots.ContainsKey(componentType))
 		{
 			if(componentSlots[componentType].IsSet())
 			{
-				componentSlots[componentType].UpdateComponentData(null);
+				return componentSlots[componentType].UpdateComponentData(null);
 			}
 			else
 			{
@@ -171,6 +173,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		{
 			Debug.LogWarning("Trying to remove unsupported " + componentType + "-Component from " + moduleName + "!");
 		}
+
+		return false;
 	}
 
 	private void TryCalculateMass()

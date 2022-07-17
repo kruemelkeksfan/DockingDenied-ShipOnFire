@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ForceFieldGenerator : ModuleComponent
 {
-	public override void UpdateComponentData(string componentName)
+	public override bool UpdateComponentData(string componentName)
 	{
 		base.UpdateComponentData(componentName);
 
@@ -17,5 +17,7 @@ public class ForceFieldGenerator : ModuleComponent
 			// capacity = 0.0f;
 			// charge = 0.0f;
 		}
+
+		return true;
 	}
 }
