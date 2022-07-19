@@ -6682,8 +6682,10 @@ MonoBehaviour:
       amount: 1
     - goodName: Silicon
       amount: 8
-    attributeNames: []
-    attributeValues: []
+    attributeNames:
+    - Maximum Production
+    attributeValues:
+    - 160
   - goodName: Breech
     description: The Loading Mechanism for a classical Cannon.
     state: 0

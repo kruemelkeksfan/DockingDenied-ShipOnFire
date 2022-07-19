@@ -65,7 +65,7 @@ public class InventoryController : MonoBehaviour, IListener
 			float production = 0.0f;
 			foreach(EnergyProducer producer in energyProducers)
 			{
-				production += producer.production;
+				production += producer.GetProduction();
 			}
 
 			if(storedEnergy + production + energy >= 0.0f)
@@ -281,7 +281,7 @@ public class InventoryController : MonoBehaviour, IListener
 			lastUpdate = timeController.GetTime();
 			foreach(EnergyProducer producer in energyProducers)
 			{
-				energy += producer.production * deltaTime;
+				energy += producer.GetProduction() * deltaTime;
 			}
 
 			foreach(EnergyStorage battery in batteries)
@@ -313,6 +313,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 			if(energy < 0.0f)
 			{
+				// TODO: This could happen because Energy Production changed between TransferEnergy()-Call and here
 				Debug.LogWarning("Negative Energy " + energy + " at the End of Energy Distribution Cycle of " + gameObject.name + "!");
 			}
 

@@ -6,8 +6,9 @@ using UnityEngine;
 [Serializable]
 public class EnergyProducer : ModuleComponent
 {
-	[Tooltip("Energy Production in kW, 1m^2 of SciFi Solar Panel in this Game is suppossed to produce 0.4kW, the 400m^2 of one Module therefore produce 160kW")]
-	public float production = 160.0f;
+	// Energy Production in kW, 1m^2 of SciFi Solar Panel in this Game is suppossed to produce 0.4kW, the 400m^2 of one Module therefore produce 160kW
+	private float maxProduction = 0.0f;
+	private float productionModifier = 1.0f;
 
 	public override bool UpdateComponentData(string componentName)
 	{
@@ -15,14 +16,23 @@ public class EnergyProducer : ModuleComponent
 
 		if(componentName != null)
 		{
-			// capacity = GetAttribute("Capacity");
+			maxProduction = GetAttribute("Maximum Production");
 		}
 		else
 		{
-			// capacity = 0.0f;
-			// charge = 0.0f;
+			maxProduction = 0.0f;
 		}
 
 		return true;
+	}
+
+	public float GetProduction()
+	{
+		return maxProduction * productionModifier;
+	}
+
+	public void SetProductionModifier(float productionModifier)
+	{
+		this.productionModifier = productionModifier;
 	}
 }
