@@ -4,19 +4,29 @@ using UnityEngine;
 
 public class CrewCabin : ModuleComponent
 {
+	private int crewCapacity = 0;
+	// TODO: Enable actual Crew
+	// private List<CrewMember> crew = null;
+
 	public override bool UpdateComponentData(string componentName)
 	{
+		/*if(crew.Count > 0)
+		{
+			return false;
+		}*/
+
 		base.UpdateComponentData(componentName);
 
 		if(componentName != null)
 		{
-			// capacity = GetAttribute("Capacity");
+			crewCapacity = Mathf.RoundToInt(GetAttribute("Crew Capacity"));
 		}
 		else
 		{
-			// capacity = 0.0f;
-			// charge = 0.0f;
+			crewCapacity = 0;
 		}
+
+		// crew.Clear();
 
 		return true;
 	}

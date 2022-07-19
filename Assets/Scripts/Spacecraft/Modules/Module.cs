@@ -19,6 +19,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected TimeController timeController = null;
 	protected AudioController audioController = null;
 	protected GoodManager goodManager = null;
+	protected CrewCabin crewCabin = null;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
@@ -77,11 +78,16 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		}
 		spacecraft.UpdateMass();
 
+		if(pressurized)
+		{
+			crewCabin = new CrewCabin();
+			AddComponentSlot(GoodManager.ComponentType.CrewCabin, crewCabin);
+		}
+
 		if(timeController == null)
 		{
 			timeController = TimeController.GetInstance();
 		}
-
 		if(listenUpdates)
 		{
 			timeController.AddUpdateListener(this);
