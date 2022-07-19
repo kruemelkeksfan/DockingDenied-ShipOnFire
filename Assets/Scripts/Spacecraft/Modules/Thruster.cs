@@ -4,16 +4,16 @@ using UnityEngine;
 
 public class Thruster : Module
 {
-	[Tooltip("Energy Consumption at full Throttle in kW.")]
-	[SerializeField] private float energyConsumption = 160.0f;
-	[SerializeField] private float thrust = 1.0f;
+	[SerializeField] private string fuelName = "Xenon";
 	private Transform spacecraftTransform = null;
 	private new Rigidbody2D rigidbody = null;
 	private GravityWellController gravityWellController = null;
 	private InventoryController inventoryController = null;
 	private EnergyStorage capacitor = null;
-	private Vector2 thrustVector = Vector2.zero;
+	private Engine engine = null;
+	private Vector2 thrustDirection = Vector2.zero;
 	private float throttle = 0.0f;
+	private float fuelSupply = 1.0f;									// TODO: Start with 0.0f, once Remote Trading is implemented
 	private ParticleSystem thrustParticles = null;
 	private ParticleSystem.MainModule thrustParticlesMain = new ParticleSystem.MainModule();
 	private Vector3 initialParticleSize = Vector3.zero;
@@ -24,7 +24,7 @@ public class Thruster : Module
 
 		rigidbody = gameObject.GetComponentInParent<Rigidbody2D>();
 		spacecraftTransform = spacecraft.transform;
-		thrustVector = (transform.localRotation * Vector2.up) * thrust;
+		thrustDirection = transform.localRotation * Vector2.up;
 		spacecraft.AddThruster(this);
 
 		gravityWellController = GravityWellController.GetInstance();
@@ -35,8 +35,11 @@ public class Thruster : Module
 		initialParticleSize = new Vector3(thrustParticlesMain.startSizeXMultiplier, thrustParticlesMain.startSizeYMultiplier, thrustParticlesMain.startSizeZMultiplier);
 
 		capacitor = new EnergyStorage();
-		componentSlots.Add(GoodManager.ComponentType.Capacitor, capacitor);
+		AddComponentSlot(GoodManager.ComponentType.Capacitor, capacitor);
 		inventoryController.AddEnergyConsumer(capacitor);
+
+		engine = new Engine();
+		AddComponentSlot(GoodManager.ComponentType.IonEngine, engine);
 	}
 
 	public override void Deconstruct()
@@ -54,18 +57,40 @@ public class Thruster : Module
 		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
 		if(constructed && throttle > MathUtil.EPSILON && !gravityWellController.IsOriginShifted())
 		{
-			float finalThrottle = throttle * capacitor.DischargePartial(energyConsumption * throttle * timeController.GetFixedDeltaTime());
-			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustVector * finalThrottle * timeController.GetFixedDeltaTime(), transform.position, ForceMode2D.Impulse);
+			if((engine.GetSecondaryFuelConsumption() * throttle) > fuelSupply)
+			{
+				if(inventoryController.Withdraw(fuelName, 1))
+				{
+					fuelSupply += 1.0f;
+				}
+				else
+				{
+					thrustParticlesMain.startSizeXMultiplier = 0.0f;
+					thrustParticlesMain.startSizeYMultiplier = 0.0f;
+					thrustParticlesMain.startSizeZMultiplier = 0.0f;
 
+					InfoController.GetInstance().AddMessage("Out of " + fuelName + " for Propulsion!", true);
+
+					return;
+				}
+			}
+			
+			float finalThrottle = throttle * capacitor.DischargePartial(engine.GetPrimaryFuelConsumption() * throttle * timeController.GetFixedDeltaTime());
+			
+			fuelSupply -= engine.GetSecondaryFuelConsumption() * finalThrottle;
+			
 			thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * finalThrottle;
 			thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * finalThrottle;
 			thrustParticlesMain.startSizeZMultiplier = initialParticleSize.z * finalThrottle;
+
+			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustDirection * engine.GetThrust() * finalThrottle * timeController.GetFixedDeltaTime(),
+				transform.position, ForceMode2D.Impulse);
 		}
 	}
 
-	public Vector2 GetThrustVector()
+	public Vector2 GetThrustDirection()
 	{
-		return thrustVector;
+		return thrustDirection;
 	}
 
 	public bool SetThrottle(float throttle)

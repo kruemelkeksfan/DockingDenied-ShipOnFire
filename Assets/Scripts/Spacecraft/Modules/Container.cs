@@ -18,7 +18,7 @@ public class Container : Module
 		inventoryController = GetComponentInParent<InventoryController>();
 
 		storage = new Storage();
-		componentSlots.Add(storageComponentType, storage);
+		AddComponentSlot(storageComponentType, storage);
 		inventoryController.AddContainer(this);
 
 		loads = new Dictionary<string, uint>();

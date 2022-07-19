@@ -26,9 +26,9 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected SpacecraftController spacecraft = null;
 	protected Vector2Int position = Vector2Int.zero;
 	// Dictionary to enable easy Searching for Component Types
-	protected Dictionary<GoodManager.ComponentType, ModuleComponent> componentSlots = null;
+	private Dictionary<GoodManager.ComponentType, ModuleComponent> componentSlots = null;
 	// Need a second, ordered List for Display in Module Menu
-	protected List<GoodManager.ComponentType> orderedComponentSlots = null;
+	private List<GoodManager.ComponentType> orderedComponentSlots = null;
 
 	protected virtual void Awake()
 	{
@@ -132,6 +132,12 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public virtual void FixedUpdateNotify()
 	{
 
+	}
+
+	protected void AddComponentSlot(GoodManager.ComponentType componentType, ModuleComponent component)
+	{
+		componentSlots.Add(componentType, component);
+		orderedComponentSlots.Add(componentType);
 	}
 
 	public bool InstallComponent(string componentName)

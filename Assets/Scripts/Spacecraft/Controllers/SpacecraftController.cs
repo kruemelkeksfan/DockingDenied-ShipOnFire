@@ -492,13 +492,18 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		// M - Torque
 		// r - Lever
 		// F - Thrust
-		Vector2 lever = (Vector2)thruster.transform.localPosition - rigidbody.centerOfMass;
-		Vector2 thrust = thruster.GetThrustVector();
-		float torque = Vector3.Cross(lever, thrust).z;
-		// To find the Fraction of Thrust used for Rotation, Project thrust on lever, normalize by dividing by thrust.magnitude and subtract the Result from 100%
-		float rotationFraction = 1.0f - Mathf.Abs((Vector2.Dot(lever, thrust) / lever.magnitude) / thrust.magnitude);
+		// Use normalized Values for lever and thrust, because we only check the Sign for torque and normalized Magnitudes for rotationFraction
+		Vector2 lever = ((Vector2)thruster.transform.localPosition - rigidbody.centerOfMass);
+		if(lever.sqrMagnitude > MathUtil.EPSILON)
+		{
+			lever.Normalize();
+		}
+		Vector2 thrust = thruster.GetThrustDirection();
+		// To find the Fraction of Thrust used for Rotation, project (normalized) thrust on lever and subtract the Result from 100%
+		float rotationFraction = 1.0f - Mathf.Abs(Vector2.Dot(lever, thrust));
 		if(rotationFraction > directionalForceThreshold)
 		{
+			float torque = Vector3.Cross(lever, thrust).z;
 			if(torque < 0.0f)
 			{
 				thrusters[(int)ThrusterGroup.turnLeft].Add(thruster);
@@ -642,7 +647,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		thrusters[(int)ThrusterGroup.all].Add(thruster);
 
 		// Add linear Thrust Group
-		Vector2 thrust = thruster.GetThrustVector().normalized;
+		Vector2 thrust = thruster.GetThrustDirection();
 		if(thrust.x < -directionalForceThreshold)
 		{
 			thrusters[(int)ThrusterGroup.left].Add(thruster);
