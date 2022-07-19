@@ -66,12 +66,15 @@ Component System
 		For Ion Thrusters
 	Fuel Pump
 		For Hydrogen Thrusters
+		Use Energy to pump Fuel
+		Also depends on Teleporter in Containers to provide Fuel
 	Hydrogen Engine
 		For Hydrogen Thrusters
 	Teleporter
-		For Constructor, Assembler and Storage Modules
+		For Constructors, Assemblers, Storage Modules and Mining Drills
 		Determines maximum Building Cost of Modules/Parts
 			In Terms of Volume or Mass? Probably Mass
+		In Storage Modules, they are invoked whenever stuff is withdrawn
 	Construction Unit
 		For Constructor
 		Determines Module Costs for constructed Modules
@@ -79,6 +82,10 @@ Component System
 		For Assembler
 		Determines Maximum Component Quality for assembled Components
 		Determines Component Costs for assembled Components
+Remote Trade
+	Players can trade with Stations without being docked
+	Useful for refueling
+	Expensive extra Fee for Teleporter Use, which scales with Distance
 Crew
 	Every Component can have Personnel-Slots
 	Every Module with Personnel-Slot Components can get a Living Quarter Component
