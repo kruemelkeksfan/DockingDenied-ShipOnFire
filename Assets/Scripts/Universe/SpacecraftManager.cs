@@ -110,4 +110,9 @@ public class SpacecraftManager : MonoBehaviour
 
 		return minDistance;
 	}
+
+	public bool IsPlayerSpacecraft(SpacecraftController spacecraft)
+	{
+		return playerSpacecraft["LocalPlayer"].spacecraft.Contains(spacecraft);
+	}
 }

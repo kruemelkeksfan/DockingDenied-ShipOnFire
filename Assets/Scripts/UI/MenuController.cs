@@ -34,6 +34,11 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private InventoryScreenController inventoryMenu = null;
 	[SerializeField] private Transform mapMarkerParent = null;
 	[SerializeField] private Transform orbitMarkerParent = null;
+	// Keep these Module Variables here instead of in Module so that we don't have to set them manually for each Module Prefab
+	[SerializeField] private Button moduleMenuButtonPrefab = null;
+	[SerializeField] private GameObject moduleMenuPrefab = null;
+	[SerializeField] private RectTransform moduleMenuButtonParent = null;
+	[SerializeField] private RectTransform moduleMenuParent = null;
 	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
@@ -447,7 +452,7 @@ public class MenuController : MonoBehaviour, IListener
 	public void UpdateFlightControls()
 	{
 		bool flightControls = activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !inventoryMenu.gameObject.activeSelf && !mainMenu.activeSelf;
-		// TODO: Make a flightControl-Getter instead of pushing it from here
+		
 		localPlayerMainInputController.SetFlightControls(flightControls);
 		infoController.SetFlightControls(flightControls);
 	}
@@ -481,6 +486,26 @@ public class MenuController : MonoBehaviour, IListener
 	public Transform GetOrbitMarkerParent()
 	{
 		return orbitMarkerParent;
+	}
+
+	public Button GetModuleMenuButtonPrefab()
+	{
+		return moduleMenuButtonPrefab;
+	}
+
+	public GameObject GetModuleMenuPrefab()
+	{
+		return moduleMenuPrefab;
+	}
+
+	public RectTransform GetModuleMenuButtonParent()
+	{
+		return moduleMenuButtonParent;
+	}
+
+	public RectTransform GetModuleMenuParent()
+	{
+		return moduleMenuParent;
 	}
 
 	public bool StationIsQuesting(SpaceStationController requester)

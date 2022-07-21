@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 {
@@ -19,6 +20,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected TimeController timeController = null;
 	protected AudioController audioController = null;
 	protected GoodManager goodManager = null;
+	protected ToggleController toggleController = null;
 	protected CrewCabin crewCabin = null;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
@@ -30,6 +32,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	private Dictionary<GoodManager.ComponentType, ModuleComponent> componentSlots = null;
 	// Need a second, ordered List for Display in Module Menu
 	private List<GoodManager.ComponentType> orderedComponentSlots = null;
+	// TODO: Save Custom Name in SpacecraftBlueprintController
+	private string customModuleName = "unnamed";
+	private GameObject moduleMenuButton = null;
+	private GameObject moduleMenu = null;
+	private RectTransform uiTransform = null;
+	private new Camera camera = null;
+	private Transform cameraTransform = null;
+	private RectTransform moduleMenuButtonTransform = null;
 
 	protected virtual void Awake()
 	{
@@ -37,6 +47,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 		componentSlots = new Dictionary<GoodManager.ComponentType, ModuleComponent>();
 		orderedComponentSlots = new List<GoodManager.ComponentType>();
+
+		customModuleName = moduleName;
 
 		// Needs to be retrieved in Awake(), because e.g. Quest Vessels need those Controllers during Spawn
 		timeController = TimeController.GetInstance();
@@ -46,10 +58,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	protected virtual void Start()
 	{
-		if(timeController == null || audioController == null)
+		if(timeController == null || audioController == null || goodManager == null)
 		{
 			timeController = TimeController.GetInstance();
 			audioController = AudioController.GetInstance();
+			goodManager = GoodManager.GetInstance();
 		}
 	}
 
@@ -84,11 +97,39 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			AddComponentSlot(GoodManager.ComponentType.CrewCabin, crewCabin);
 		}
 
+		if(SpacecraftManager.GetInstance().IsPlayerSpacecraft(spacecraft))
+		{
+			MenuController menuController = MenuController.GetInstance();
+			toggleController = ToggleController.GetInstance();
+
+			uiTransform = menuController.GetUITransform();
+			camera = Camera.main;
+			cameraTransform = camera.GetComponent<Transform>();
+
+			moduleMenu = GameObject.Instantiate<GameObject>(menuController.GetModuleMenuPrefab(), menuController.GetModuleMenuParent());
+			moduleMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate
+					{
+						ToggleModuleMenu();
+					});
+
+			Button moduleMenuButton = GameObject.Instantiate<Button>(menuController.GetModuleMenuButtonPrefab(), menuController.GetModuleMenuButtonParent());
+			moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName;
+			moduleMenuButton.onClick.AddListener(delegate
+					{
+						ToggleModuleMenu();
+					});
+
+			this.moduleMenuButton = moduleMenuButton.gameObject;
+			moduleMenuButtonTransform = moduleMenuButton.GetComponent<RectTransform>();
+			toggleController.AddToggleObject("ModuleMenuButtons", this.moduleMenuButton);
+			this.moduleMenuButton.SetActive(toggleController.IsGroupToggled("ModuleMenuButtons"));
+		}
+
 		if(timeController == null)
 		{
 			timeController = TimeController.GetInstance();
 		}
-		if(listenUpdates)
+		if(listenUpdates || moduleMenuButton != null)
 		{
 			timeController.AddUpdateListener(this);
 		}
@@ -100,6 +141,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public virtual void Deconstruct()
 	{
+		if(toggleController != null && moduleMenuButton != null && moduleMenu != null)
+		{
+			toggleController.RemoveToggleObject("ModuleMenuButtons", moduleMenuButton.gameObject);
+
+			GameObject.Destroy(moduleMenuButton);
+			GameObject.Destroy(moduleMenu);
+		}
+
 		foreach(Vector2Int bufferedReservedPosition in bufferedReservedPositions)
 		{
 			spacecraft.RemoveModule(bufferedReservedPosition);
@@ -132,7 +181,19 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public virtual void UpdateNotify()
 	{
-
+		if(moduleMenuButton != null && moduleMenuButton.activeSelf)
+		{
+			Vector2? uiPoint = ScreenUtility.WorldToUIPoint(transform.position, camera, cameraTransform, uiTransform);
+			if(uiPoint.HasValue)
+			{
+				moduleMenuButtonTransform.localScale = Vector3.one;
+				moduleMenuButtonTransform.anchoredPosition = uiPoint.Value;
+			}
+			else
+			{
+				moduleMenuButtonTransform.localScale = Vector3.zero;
+			}
+		}
 	}
 
 	public virtual void FixedUpdateNotify()
@@ -216,6 +277,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				bufferedReservedPositions[i] = Vector2Int.RoundToInt(position + (Vector2)(localRotation * (Vector2)reservedPositions[i]));
 			}
 		}
+	}
+
+	// Don't use ToggleController, since we only want to toggle 1 ModuleMenu, not all
+	public void ToggleModuleMenu()
+	{
+		moduleMenu.GetComponentsInChildren<Text>()[2].text = customModuleName;
+
+		moduleMenu.SetActive(!moduleMenu.activeSelf);
 	}
 
 	public string GetModuleName()
