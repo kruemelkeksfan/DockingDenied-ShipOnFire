@@ -9,6 +9,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
+      propertyPath: m_FontData.m_FontSize
+      value: 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
       propertyPath: m_FontData.m_VerticalOverflow
       value: 0
       objectReference: {fileID: 0}
@@ -21,6 +26,21 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Colors.m_NormalColor.a
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_Colors.m_PressedColor.a
+      value: 0.2509804
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_Colors.m_SelectedColor.a
+      value: 0.2509804
+      objectReference: {fileID: 0}
+    - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_Colors.m_HighlightedColor.a
+      value: 0.2509804
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519969, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -81,12 +101,12 @@ PrefabInstance:
     - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_SizeDelta.x
-      value: 60
+      value: 40
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_SizeDelta.y
-      value: 40
+      value: 30
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
         type: 3}

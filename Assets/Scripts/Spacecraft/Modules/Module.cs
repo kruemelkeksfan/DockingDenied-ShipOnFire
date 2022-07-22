@@ -17,6 +17,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
+	[SerializeField] private int maxModuleMenuButtonCharacters = 24;
 	protected TimeController timeController = null;
 	protected AudioController audioController = null;
 	protected GoodManager goodManager = null;
@@ -113,7 +114,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 					});
 
 			Button moduleMenuButton = GameObject.Instantiate<Button>(menuController.GetModuleMenuButtonPrefab(), menuController.GetModuleMenuButtonParent());
-			moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName;
+			if(customModuleName.Length <= maxModuleMenuButtonCharacters)
+			{
+				moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName;
+			}
+			else
+			{
+				moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName.Substring(0, maxModuleMenuButtonCharacters) + "...";
+			}
 			moduleMenuButton.onClick.AddListener(delegate
 					{
 						ToggleModuleMenu();
