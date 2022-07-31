@@ -114,13 +114,22 @@ Crew
 		Boarding Crew is assembled in a separate Screen by the Attacker
 			Boarding Crew has a Personnel Limit (4?)
 		Boarders can move from Module to Module
+		All Fighters have
+			Shield HP (Morale)
+			Ammo Supply (Push-/Defend-Capacity)
+			Weapons (Strength)
 		In each Module Boarders have to fight Defenders before moving on
 			Boarders and Defenders have a Line-Up
 			First Person in Line-Up has the biggest Chance to be fired upon, last Member has the least Chance
-			The attacked Person is determined randomly on Beginning of the Fight or than the currently attacked Person dies
-			Persons die when their Personal Shield runs out
-			One Side wins, when all other Opponents are dead or one Side retreats to another Module
+			The attacked Person is determined randomly on Beginning of the Fight or than the currently attacked Person is neutralized
+			After a Fighter runs out of Ammunition or Shield HP, he falls back one Module and replenishes his Shield HP
+				If the other Module contains more Fighters of the same Faction, they share their Ammunition Supplies
+			If there is no unoccupied or friendly Module to fall back to, the Fighter is neutralized/captured
+				All remaining Ammunition will be seized by the opposing Fighters
+			One Side wins, when all other Opponents are neutralized
 		Boarders can temporarily (until the End of the Fight) disable or destroy Modules with defeated Defenders
+		Players and AI can order the Movement of their Fighters through the Modules
+		Players need to close in on all Enemies
 		To end the Fight, Boarders have to defeat 50% of the defending Personnel and capture the Command Module
 	Experience
 		Different Skills for different Personnel-Slot-Types and Combat Activities (Pistols, SMGs, Shotguns, Personal Shields)
