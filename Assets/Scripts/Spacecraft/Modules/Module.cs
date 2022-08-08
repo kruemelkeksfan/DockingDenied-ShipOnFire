@@ -22,6 +22,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected TimeController timeController = null;
 	protected AudioController audioController = null;
 	protected GoodManager goodManager = null;
+	private MenuController menuController = null;
 	protected ToggleController toggleController = null;
 	protected CrewCabin crewCabin = null;
 	protected float mass = MathUtil.EPSILON;
@@ -42,6 +43,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
 	private RectTransform moduleMenuButtonTransform = null;
+	private RectTransform componentPanel = null;
 
 	protected virtual void Awake()
 	{
@@ -93,15 +95,9 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		}
 		spacecraft.UpdateMass();
 
-		if(pressurized)
-		{
-			crewCabin = new CrewCabin();
-			AddComponentSlot(GoodManager.ComponentType.CrewCabin, crewCabin);
-		}
-
 		if(SpacecraftManager.GetInstance().IsPlayerSpacecraft(spacecraft))
 		{
-			MenuController menuController = MenuController.GetInstance();
+			menuController = MenuController.GetInstance();
 			toggleController = ToggleController.GetInstance();
 
 			uiTransform = menuController.GetUITransform();
@@ -128,9 +124,16 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 					customModuleName = moduleNameField.text;
 					UpdateModuleMenuButtonText();
 				});
+			componentPanel = (RectTransform)moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(3);
 
 			toggleController.AddToggleObject("ModuleMenuButtons", this.moduleMenuButton);
 			this.moduleMenuButton.SetActive(toggleController.IsGroupToggled("ModuleMenuButtons"));
+		}
+
+		if(pressurized)
+		{
+			crewCabin = new CrewCabin();
+			AddComponentSlot(GoodManager.ComponentType.CrewCabin, crewCabin);
 		}
 
 		if(timeController == null)
@@ -213,6 +216,24 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	{
 		componentSlots.Add(componentType, component);
 		orderedComponentSlots.Add(componentType);
+
+		if(SpacecraftManager.GetInstance().IsPlayerSpacecraft(spacecraft))
+			{
+			RectTransform componentSlotEntry = GameObject.Instantiate<RectTransform>(menuController.GetModuleComponentEntryPrefab(), componentPanel);
+			componentPanel.sizeDelta = componentPanel.sizeDelta + new Vector2(0.0f, componentSlotEntry.sizeDelta.y);
+
+			Text[] componentSlotEntryTexts = componentSlotEntry.GetComponentsInChildren<Text>();
+			if(!componentSlots[componentType].IsSet())
+			{
+				componentSlotEntryTexts[0].text = componentType.ToString() + " <empty>";
+			}
+			else
+			{
+				componentSlotEntryTexts[0].text = componentType.ToString() + " [" + componentSlots[componentType].GetQuality() + "]";
+			}
+
+			componentSlotEntryTexts[1].text = componentSlots[componentType].GetAttributeList();
+		}
 	}
 
 	public bool InstallComponent(string componentName)

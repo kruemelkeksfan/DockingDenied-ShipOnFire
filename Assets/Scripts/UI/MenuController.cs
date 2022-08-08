@@ -37,6 +37,7 @@ public class MenuController : MonoBehaviour, IListener
 	// Keep these Module Variables here instead of in Module so that we don't have to set them manually for each Module Prefab
 	[SerializeField] private Button moduleMenuButtonPrefab = null;
 	[SerializeField] private GameObject moduleMenuPrefab = null;
+	[SerializeField] private RectTransform moduleComponentEntryPrefab = null;
 	[SerializeField] private RectTransform moduleMenuButtonParent = null;
 	[SerializeField] private RectTransform moduleMenuParent = null;
 	private TimeController timeController = null;
@@ -452,7 +453,7 @@ public class MenuController : MonoBehaviour, IListener
 	public void UpdateFlightControls()
 	{
 		bool flightControls = activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !inventoryMenu.gameObject.activeSelf && !mainMenu.activeSelf;
-		
+
 		localPlayerMainInputController.SetFlightControls(flightControls);
 		infoController.SetFlightControls(flightControls);
 	}
@@ -496,6 +497,11 @@ public class MenuController : MonoBehaviour, IListener
 	public GameObject GetModuleMenuPrefab()
 	{
 		return moduleMenuPrefab;
+	}
+
+	public RectTransform GetModuleComponentEntryPrefab()
+	{
+		return moduleComponentEntryPrefab;
 	}
 
 	public RectTransform GetModuleMenuButtonParent()

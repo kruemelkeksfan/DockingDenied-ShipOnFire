@@ -6053,6 +6053,8 @@ MonoBehaviour:
     type: 3}
   moduleMenuPrefab: {fileID: 3716970915892200349, guid: ee3617854f4bb1f40b18d089dbb95204,
     type: 3}
+  moduleComponentEntryPrefab: {fileID: 2778583308160999871, guid: 60d6d3eb104c3e14bb3d1cd97555781c,
+    type: 3}
   moduleMenuButtonParent: {fileID: 1233421532}
   moduleMenuParent: {fileID: 1719765532}
 --- !u!4 &896172637
