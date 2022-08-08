@@ -78,7 +78,8 @@ public class TimeController : MonoBehaviour
 			{
 				fixedTime += fixedDeltaTime;
 
-				foreach(IFixedUpdateListener listener in fixedUpdateListeners)
+				// Copy HashSet to avoid concurrent Modification when new Fixed Update Listeners are instantiated within FixedUpdateNotify()
+				foreach(IFixedUpdateListener listener in new HashSet<IFixedUpdateListener>(fixedUpdateListeners))
 				{
 					listener.FixedUpdateNotify();
 				}
@@ -94,7 +95,8 @@ public class TimeController : MonoBehaviour
 			}
 		}
 
-		foreach(IUpdateListener listener in updateListeners)
+		// Copy HashSet to avoid concurrent Modification when new Update Listeners are instantiated within UpdateNotify()
+		foreach(IUpdateListener listener in new HashSet<IUpdateListener>(updateListeners))
 		{
 			listener.UpdateNotify();
 		}
