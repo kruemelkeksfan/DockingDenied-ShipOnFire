@@ -14,7 +14,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private bool attachableReservePositions = false;
 	[Tooltip("Whether all reserved Positions after the First can overlap with other reserved Positions which have this Flag enabled.")]
 	[SerializeField] private bool overlappingReservePositions = false;
-	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
+	[SerializeField]
+	private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
 	[SerializeField] private int maxModuleMenuButtonCharacters = 24;
@@ -107,28 +108,27 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			camera = Camera.main;
 			cameraTransform = camera.GetComponent<Transform>();
 
-			moduleMenu = GameObject.Instantiate<GameObject>(menuController.GetModuleMenuPrefab(), menuController.GetModuleMenuParent());
-			moduleMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate
-					{
-						ToggleModuleMenu();
-					});
-
 			Button moduleMenuButton = GameObject.Instantiate<Button>(menuController.GetModuleMenuButtonPrefab(), menuController.GetModuleMenuButtonParent());
-			if(customModuleName.Length <= maxModuleMenuButtonCharacters)
-			{
-				moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName;
-			}
-			else
-			{
-				moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName.Substring(0, maxModuleMenuButtonCharacters) + "...";
-			}
+			this.moduleMenuButton = moduleMenuButton.gameObject;
+			moduleMenuButtonTransform = moduleMenuButton.GetComponent<RectTransform>();
+			UpdateModuleMenuButtonText();
 			moduleMenuButton.onClick.AddListener(delegate
 					{
 						ToggleModuleMenu();
 					});
 
-			this.moduleMenuButton = moduleMenuButton.gameObject;
-			moduleMenuButtonTransform = moduleMenuButton.GetComponent<RectTransform>();
+			moduleMenu = GameObject.Instantiate<GameObject>(menuController.GetModuleMenuPrefab(), menuController.GetModuleMenuParent());
+			moduleMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate
+					{
+						ToggleModuleMenu();
+					});
+			InputField moduleNameField = moduleMenu.GetComponentInChildren<InputField>();
+			moduleNameField.onEndEdit.AddListener(delegate
+				{
+					customModuleName = moduleNameField.text;
+					UpdateModuleMenuButtonText();
+				});
+
 			toggleController.AddToggleObject("ModuleMenuButtons", this.moduleMenuButton);
 			this.moduleMenuButton.SetActive(toggleController.IsGroupToggled("ModuleMenuButtons"));
 		}
@@ -287,10 +287,22 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		}
 	}
 
+	public void UpdateModuleMenuButtonText()
+	{
+		if(customModuleName.Length <= maxModuleMenuButtonCharacters)
+		{
+			moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName;
+		}
+		else
+		{
+			moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName.Substring(0, maxModuleMenuButtonCharacters) + "...";
+		}
+	}
+
 	// Don't use ToggleController, since we only want to toggle 1 ModuleMenu, not all
 	public void ToggleModuleMenu()
 	{
-		moduleMenu.GetComponentsInChildren<Text>()[2].text = customModuleName;
+		moduleMenu.GetComponentInChildren<InputField>().text = customModuleName;
 
 		moduleMenu.SetActive(!moduleMenu.activeSelf);
 	}
