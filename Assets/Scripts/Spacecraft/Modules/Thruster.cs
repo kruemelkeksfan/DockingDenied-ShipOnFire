@@ -8,7 +8,6 @@ public class Thruster : Module
 	private Transform spacecraftTransform = null;
 	private new Rigidbody2D rigidbody = null;
 	private GravityWellController gravityWellController = null;
-	private InventoryController inventoryController = null;
 	private EnergyStorage capacitor = null;
 	private Engine engine = null;
 	private Vector2 thrustDirection = Vector2.zero;
@@ -28,7 +27,6 @@ public class Thruster : Module
 		spacecraft.AddThruster(this);
 
 		gravityWellController = GravityWellController.GetInstance();
-		inventoryController = spacecraft.GetInventoryController();
 
 		thrustParticles = gameObject.GetComponentInChildren<ParticleSystem>();
 		thrustParticlesMain = thrustParticles.main;

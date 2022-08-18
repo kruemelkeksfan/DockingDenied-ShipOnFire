@@ -7,9 +7,32 @@ public class ModuleComponent
 {
 	private GoodManager goodManager = null;
 	private bool isSet = false;
+	private string name = "undefined";
 	private string quality = "undefined";
 	// Attributes are private instead of protected to keep them read-only
 	private Dictionary<string, float> attributes = null;
+
+	public static string GetAttributeList(GoodManager.ComponentData componentData)
+	{
+		StringBuilder attributeList = new StringBuilder();
+
+		for(int i = 0; i < componentData.attributeNames.Length && i < componentData.attributeValues.Length; ++i)
+		{
+			if(i > 0)
+			{
+				attributeList.Append("\n");
+			}
+			attributeList.Append(componentData.attributeNames[i]);
+			attributeList.Append(" ");
+			if(componentData.attributeValues[i] > 0.0f)
+			{
+				attributeList.Append("+");
+			}
+			attributeList.Append(componentData.attributeValues[i]);
+		}
+
+		return attributeList.ToString();
+	}
 
 	public ModuleComponent()
 	{
@@ -26,6 +49,7 @@ public class ModuleComponent
 		{
 			GoodManager.ComponentData componentData = goodManager.GetComponentData(componentName);
 
+			name = componentName;
 			quality = componentData.quality.ToString();
 			for(int i = 0; i < componentData.attributeNames.Length && i < componentData.attributeValues.Length; ++i)
 			{
@@ -36,9 +60,12 @@ public class ModuleComponent
 		}
 		else
 		{
+			name = "undefined";
+			quality = "undefined";
 			isSet = false;
 		}
 
+		// Return false when no Module will be removed for special Cases, e.g. Storage-Component
 		return true;
 	}
 
@@ -57,6 +84,11 @@ public class ModuleComponent
 		{
 			return 0.0f;
 		}
+	}
+
+	public string GetName()
+	{
+		return name;
 	}
 
 	public string GetQuality()

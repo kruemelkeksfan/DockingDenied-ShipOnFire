@@ -10,7 +10,6 @@ public class Constructor : Module
 	[SerializeField] private Transform constructionAreaIndicator = null;
 	[SerializeField] private Transform beamOrigin = null;
 	[SerializeField] private AudioClip constructionAudio = null;
-	private InventoryController inventoryController = null;
 	private SpaceStationController spaceStationController = null;
 	private Color startColor = Color.white;
 	private Color endColor = Color.white;
@@ -28,7 +27,6 @@ public class Constructor : Module
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
 
-		inventoryController = spacecraft.GetInventoryController();
 		spaceStationController = GetComponentInParent<SpaceStationController>();
 
 		SpacecraftManager.GetInstance().AddConstructor(this);

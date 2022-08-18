@@ -7,15 +7,12 @@ public class Container : Module
     [SerializeField] protected GoodManager.State state = GoodManager.State.solid;
 	[Tooltip("Cargo Racks or Tank System?")]
 	[SerializeField] private GoodManager.ComponentType storageComponentType = GoodManager.ComponentType.CargoRacks;
-	protected InventoryController inventoryController = null;
 	protected Storage storage = null;
 	protected Dictionary<string, uint> loads = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
-
-		inventoryController = GetComponentInParent<InventoryController>();
 
 		storage = new Storage();
 		AddComponentSlot(storageComponentType, storage);
@@ -51,11 +48,11 @@ public class Container : Module
 		{
 			if(!loads.ContainsKey(goodName))
 			{
-				loads[goodName] = volume;
+				loads[goodName] = amount;
 			}
 			else
 			{
-				loads[goodName] += volume;
+				loads[goodName] += amount;
 			}
 
 			if(!storage.Deposit(volume))
@@ -84,9 +81,9 @@ public class Container : Module
 			return true;
 		}
 
-		if(loads.ContainsKey(goodName) && loads[goodName] >= volume)
+		if(loads.ContainsKey(goodName) && loads[goodName] >= amount)
 		{
-			loads[goodName] -= volume;
+			loads[goodName] -= amount;
 			if(!storage.Withdraw(volume))
 			{
 				Debug.LogWarning("Withdrawing " + amount + " " + goodName + " from " + storageComponentType + " failed!");
@@ -122,7 +119,7 @@ public class Container : Module
 	{
 		if(loads.ContainsKey(goodName))
 		{
-			return loads[goodName] / (uint) Mathf.CeilToInt(goodManager.GetGood(goodName).volume);
+			return loads[goodName];
 		}
 		else
 		{

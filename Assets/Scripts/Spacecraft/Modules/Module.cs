@@ -24,6 +24,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected GoodManager goodManager = null;
 	private MenuController menuController = null;
 	protected ToggleController toggleController = null;
+	protected InfoController infoController = null;
+	protected InventoryController inventoryController = null;
 	protected CrewCabin crewCabin = null;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
@@ -44,6 +46,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	private Transform cameraTransform = null;
 	private RectTransform moduleMenuButtonTransform = null;
 	private RectTransform componentPanel = null;
+	private List<RectTransform> componentSlotEntries = null;
+	private RectTransform moduleComponentSelectionPanel = null;
 
 	protected virtual void Awake()
 	{
@@ -58,15 +62,17 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		timeController = TimeController.GetInstance();
 		audioController = AudioController.GetInstance();
 		goodManager = GoodManager.GetInstance();
+		infoController = InfoController.GetInstance();
 	}
 
 	protected virtual void Start()
 	{
-		if(timeController == null || audioController == null || goodManager == null)
+		if(timeController == null || audioController == null || goodManager == null || infoController == null)
 		{
 			timeController = TimeController.GetInstance();
 			audioController = AudioController.GetInstance();
 			goodManager = GoodManager.GetInstance();
+			infoController = InfoController.GetInstance();
 		}
 	}
 
@@ -78,6 +84,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public virtual void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		spacecraft = gameObject.GetComponentInParent<SpacecraftController>();
+
+		inventoryController = spacecraft.GetInventoryController();
 
 		this.position = position;
 		transform.localPosition = BuildingMenu.GetInstance().GridToLocalPosition(position);
@@ -99,6 +107,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		{
 			menuController = MenuController.GetInstance();
 			toggleController = ToggleController.GetInstance();
+
+			moduleComponentSelectionPanel = menuController.GetModuleComponentSelectionPanel();
 
 			uiTransform = menuController.GetUITransform();
 			camera = Camera.main;
@@ -125,6 +135,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 					UpdateModuleMenuButtonText();
 				});
 			componentPanel = (RectTransform)moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(3);
+			componentSlotEntries = new List<RectTransform>();
 
 			toggleController.AddToggleObject("ModuleMenuButtons", this.moduleMenuButton);
 			this.moduleMenuButton.SetActive(toggleController.IsGroupToggled("ModuleMenuButtons"));
@@ -217,22 +228,18 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		componentSlots.Add(componentType, component);
 		orderedComponentSlots.Add(componentType);
 
-		if(SpacecraftManager.GetInstance().IsPlayerSpacecraft(spacecraft))
-			{
+		if(moduleMenu != null)
+		{
 			RectTransform componentSlotEntry = GameObject.Instantiate<RectTransform>(menuController.GetModuleComponentEntryPrefab(), componentPanel);
 			componentPanel.sizeDelta = componentPanel.sizeDelta + new Vector2(0.0f, componentSlotEntry.sizeDelta.y);
 
-			Text[] componentSlotEntryTexts = componentSlotEntry.GetComponentsInChildren<Text>();
-			if(!componentSlots[componentType].IsSet())
-			{
-				componentSlotEntryTexts[0].text = componentType.ToString() + " <empty>";
-			}
-			else
-			{
-				componentSlotEntryTexts[0].text = componentType.ToString() + " [" + componentSlots[componentType].GetQuality() + "]";
-			}
+			int localSlotId = orderedComponentSlots.Count - 1;
+			componentSlotEntry.GetComponent<Button>().onClick.AddListener(delegate
+				{
+					ComponentSlotClick(localSlotId);
+				});
 
-			componentSlotEntryTexts[1].text = componentSlots[componentType].GetAttributeList();
+			componentSlotEntries.Add(componentSlotEntry);
 		}
 	}
 
@@ -277,6 +284,26 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		}
 
 		return false;
+	}
+
+	private void UpdateComponentButtons()
+	{
+		for(int i = 0; i < componentSlotEntries.Count; ++i)
+		{	
+			RectTransform componentSlotEntry = componentSlotEntries[i];
+			GoodManager.ComponentType componentType = orderedComponentSlots[i];
+
+			Text[] componentSlotEntryTexts = componentSlotEntry.GetComponentsInChildren<Text>();
+			if(!componentSlots[componentType].IsSet())
+			{
+				componentSlotEntryTexts[0].text = componentType.ToString() + " <empty>";
+			}
+			else
+			{
+				componentSlotEntryTexts[0].text = componentType.ToString() + " [" + componentSlots[componentType].GetQuality() + "]";
+			}
+			componentSlotEntryTexts[1].text = componentSlots[componentType].GetAttributeList();
+		}
 	}
 
 	private void TryCalculateMass()
@@ -324,8 +351,65 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public void ToggleModuleMenu()
 	{
 		moduleMenu.GetComponentInChildren<InputField>().text = customModuleName;
+		UpdateComponentButtons();
 
 		moduleMenu.SetActive(!moduleMenu.activeSelf);
+	}
+
+	public void ComponentSlotClick(int componentSlotIndex)
+	{
+		GoodManager.ComponentType slotType = orderedComponentSlots[componentSlotIndex];
+
+		if(componentSlots[slotType].IsSet())
+		{
+			if(inventoryController.Deposit(componentSlots[slotType].GetName(), 1))
+			{
+				RemoveComponent(slotType);
+				UpdateComponentButtons();
+			}
+			else
+			{
+				infoController.AddMessage("Unable to remove " + componentSlots[slotType].GetName() + ", because there is to Space to store it!", true);
+			}
+		}
+		else
+		{
+			RectTransform selectionList = moduleComponentSelectionPanel.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>();
+
+			// Clear Component Selection List
+			for(int i = 0; i < selectionList.childCount; ++i)
+			{
+				GameObject.Destroy(selectionList.GetChild(i).gameObject);
+			}
+
+			// Fill Component Selection List
+			foreach(GoodManager.ComponentData componentData in inventoryController.GetModuleComponentsInInventory(slotType))
+			{
+				RectTransform componentSlotEntry = GameObject.Instantiate<RectTransform>(menuController.GetModuleComponentEntryPrefab(), selectionList);
+				selectionList.sizeDelta = selectionList.sizeDelta + new Vector2(0.0f, componentSlotEntry.sizeDelta.y);
+
+				Text[] componentSlotEntryTexts = componentSlotEntry.GetComponentsInChildren<Text>();
+				componentSlotEntryTexts[0].text = componentData.type.ToString() + " [" + componentData.quality + "]";
+				componentSlotEntryTexts[1].text = ModuleComponent.GetAttributeList(componentData);
+
+				int localComponentData = orderedComponentSlots.Count - 1;
+				componentSlotEntry.GetComponent<Button>().onClick.AddListener(delegate
+					{
+						if(inventoryController.Withdraw(componentData.goodName, 1))
+						{
+							InstallComponent(componentData.goodName);
+							UpdateComponentButtons();
+							moduleComponentSelectionPanel.gameObject.SetActive(false);
+						}
+						else
+						{
+							infoController.AddMessage("Unable to install " + componentSlots[slotType].GetName() + ", because it can not be retrieved from Inventory!", true);
+						}
+					});
+			}
+
+			moduleComponentSelectionPanel.gameObject.SetActive(true);
+		}
 	}
 
 	public string GetModuleName()

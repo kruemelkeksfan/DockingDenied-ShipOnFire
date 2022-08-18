@@ -4,14 +4,11 @@ using UnityEngine;
 
 public class SolarModule : Module
 {
-	private InventoryController inventoryController = null;
 	private EnergyProducer energyProducer = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
-
-		inventoryController = spacecraft.GetInventoryController();
 
 		energyProducer = new EnergyProducer();
 		energyProducer.SetProductionModifier(1.0f);									// TODO: Adjust based on Sun Angle

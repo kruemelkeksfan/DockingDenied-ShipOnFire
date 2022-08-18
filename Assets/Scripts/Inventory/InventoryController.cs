@@ -128,7 +128,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			foreach(Container container in containers[state])
 			{
-				uint partialAmount = (uint)Mathf.Min((int)container.GetFreeCapacity(goodName), (int)(amount * (uint)Mathf.CeilToInt(goodManager.GetGood(goodName).volume)));
+				uint partialAmount = (uint)Mathf.Min((int)(container.GetFreeCapacity(goodName) / goodManager.GetGood(goodName).volume), (int)amount);
 				if(partialAmount > 0 && container.Deposit(goodName, partialAmount))
 				{
 					amount -= partialAmount;
@@ -435,5 +435,26 @@ public class InventoryController : MonoBehaviour, IListener
 		}
 
 		return inventoryContents;
+	}
+
+	public List<GoodManager.ComponentData> GetModuleComponentsInInventory(GoodManager.ComponentType componentType)
+	{
+		List<GoodManager.ComponentData> components = new List<GoodManager.ComponentData>();
+
+		Dictionary<string, uint> inventoryContents = GetInventoryContents();
+		foreach(string goodName in inventoryContents.Keys)
+		{
+			GoodManager.Good good = goodManager.GetGood(goodName);
+			GoodManager.ComponentData componentData = null;
+			if((componentData = good as GoodManager.ComponentData) != null && componentData.type == componentType)
+			{
+				for(int i = 0; i < inventoryContents[goodName]; ++i)
+				{
+					components.Add(componentData);
+				}
+			}
+		}
+
+		return components;
 	}
 }

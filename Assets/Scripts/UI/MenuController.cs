@@ -14,6 +14,7 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private RectTransform moduleMenu = null;
 	[SerializeField] private InputField moduleNameField = null;
 	[SerializeField] private Dropdown hotkeySelectionField = null;
+	[SerializeField] private RectTransform moduleComponentSelectionPanel = null;
 	[SerializeField] private GameObject stationMainMenu = null;
 	[SerializeField] private Text stationNameField = null;
 	[SerializeField] private GameObject stationQuestMenu = null;
@@ -87,6 +88,7 @@ public class MenuController : MonoBehaviour, IListener
 	{
 		if(!forceOpen)
 		{
+			// TODO: Dynamically search for Close-Buttons and press them (e.g. give them a special Tag), respect Order (close last active Panel in Hierarchy first)
 			if(activeModule != null)
 			{
 				CloseModuleMenu();
@@ -173,6 +175,11 @@ public class MenuController : MonoBehaviour, IListener
 		moduleMenu.gameObject.SetActive(false);
 		activeModule = null;
 		UpdateFlightControls();
+	}
+
+	public void CloseModuleComponentSelection()
+	{
+		moduleComponentSelectionPanel.gameObject.SetActive(false);
 	}
 
 	public void ToggleStationMenu(SpaceStationController requester, string name)
@@ -512,6 +519,11 @@ public class MenuController : MonoBehaviour, IListener
 	public RectTransform GetModuleMenuParent()
 	{
 		return moduleMenuParent;
+	}
+
+	public RectTransform GetModuleComponentSelectionPanel()
+	{
+		return moduleComponentSelectionPanel;
 	}
 
 	public bool StationIsQuesting(SpaceStationController requester)
