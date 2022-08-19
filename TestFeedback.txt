@@ -93,6 +93,8 @@
 -Sound
 
 0.9
+NOTE-TO-SELF: Test CoM Calculation, Test Moment of Inertia Calculation, Test Component Fill Costs, Test Fuel Consumption, Balance Thrust Values of Ion Engine
+
 -"Next"-Button in Tutorial orange
 -Make sure Station is actually clicked in Docking-Part of Tutorial
 -Do not expire Docking Permission in Tutorial
