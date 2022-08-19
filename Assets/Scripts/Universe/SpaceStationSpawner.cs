@@ -31,8 +31,9 @@ public class SpaceStationSpawner : MonoBehaviour
 		{
 			SpacecraftController spaceStationSpacecraft = GameObject.Instantiate<SpacecraftController>(spaceStationPrefab, gravityWellController.GlobalToLocalPosition(position), Quaternion.identity);
 			SpacecraftBlueprintController.InstantiateModules(SpacecraftBlueprintController.LoadBlueprintModules(stationBlueprints[Random.Range(0, stationBlueprints.Length)]), spaceStationSpacecraft.GetTransform());
-			SpaceStationController spaceStation = spaceStationSpacecraft.GetComponent<SpaceStationController>();
+			spaceStationSpacecraft.FillComponents(GoodManager.ComponentQuality.legendary);
 
+			SpaceStationController spaceStation = spaceStationSpacecraft.GetComponent<SpaceStationController>();
 			int prefixIndex = Random.Range(0, namePrefixes.Count);
 			if(Random.value < numberSuffixChance)
 			{

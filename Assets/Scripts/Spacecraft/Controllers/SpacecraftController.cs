@@ -28,8 +28,10 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	[Tooltip("Time until a slow Rotation will be stopped, if the angularVelocity stays too low")]
 	[SerializeField] private float rotationStopTime = 2.0f;
 	[SerializeField] private AudioClip thrusterAudio = null;
+	private GoodManager goodManager = null;
 	private AudioController audioController = null;
-	private Dictionary<Vector2Int, Module> modules = null;
+	private HashSet<Module> modules = null;
+	private Dictionary<Vector2Int, Module> modulesPositions = null;
 	private BuildingMenu buildingMenu = null;
 	private InventoryController inventoryController = null;
 	private float inertiaFactor = 1.0f;
@@ -49,7 +51,10 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	{
 		base.Awake();
 
-		modules = new Dictionary<Vector2Int, Module>();
+		goodManager = GoodManager.GetInstance();
+
+		modules = new HashSet<Module>();
+		modulesPositions = new Dictionary<Vector2Int, Module>();
 		inventoryController = gameObject.GetComponent<InventoryController>();
 
 		thrusters = new HashSet<Thruster>[Enum.GetValues(typeof(ThrusterGroup)).Length];
@@ -244,14 +249,15 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		// Calculate Center of Mass
 		Vector2 centerOfMass = Vector2.zero;
 		float totalMass = 0.0f;
-		foreach(KeyValuePair<Vector2Int, Module> moduleData in modules)
+		foreach(KeyValuePair<Vector2Int, Module> moduleData in modulesPositions)
 		{
-			if(moduleData.Key == moduleData.Value.GetPosition())
+			if(moduleData.Key == moduleData.Value.GetPosition() || !moduleData.Value.HasOverlappingReservePositions())
 			{
-				float moduleMass = moduleData.Value.GetMass();
+				int massPositionCount = (moduleData.Value.HasOverlappingReservePositions() ? 1 : moduleData.Value.GetReservedPositionCount());
+				float positionMass = moduleData.Value.GetMass() / massPositionCount;
 
-				centerOfMass += (Vector2)moduleData.Value.GetTransform().localPosition * moduleMass;
-				totalMass += moduleMass;
+				centerOfMass += (Vector2)buildingMenu.GridToLocalPosition(moduleData.Key) * positionMass;
+				totalMass += positionMass;
 			}
 		}
 
@@ -262,11 +268,13 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 			// Calculate Moment of Inertia
 			float inertia = 0.0f;
-			foreach(KeyValuePair<Vector2Int, Module> moduleData in modules)
+			foreach(KeyValuePair<Vector2Int, Module> moduleData in modulesPositions)
 			{
 				if(moduleData.Key == moduleData.Value.GetPosition() || !moduleData.Value.HasOverlappingReservePositions())
 				{
-					float positionMass = moduleData.Value.GetMass() / moduleData.Value.GetReservedPositionCount();
+					int massPositionCount = (moduleData.Value.HasOverlappingReservePositions() ? 1 : moduleData.Value.GetReservedPositionCount());
+					float positionMass = moduleData.Value.GetMass() / massPositionCount;
+					;
 
 					// Approximate Modules as Cubes and use Steiner's Theorem to calculate their Moment of Inertia around the Ships Center of Mass
 					// https://en.wikipedia.org/wiki/List_of_moments_of_inertia
@@ -342,10 +350,10 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		bool neighbour = ignoreAttachmentPoints;
 		for(int i = 0; i < positions.Length; ++i)
 		{
-			if(modules.ContainsKey(positions[i])                                                                                                           // Position is already in Use
-				&& (i == 0 || positions[i] == modules[positions[i]].GetPosition()                                                                          // Either Requester or current Position User have their Main Position on this Position
-				|| !HasOverlappingReservePositions || !modules[positions[i]].HasOverlappingReservePositions())                                             // Either Requester or current Position User do not allow overlapping Reserve Positions
-				&& !(ignoreCommandModule && modules[positions[i]].GetModuleName() == "Command Module"))
+			if(modulesPositions.ContainsKey(positions[i])                                                                                                           // Position is already in Use
+				&& (i == 0 || positions[i] == modulesPositions[positions[i]].GetPosition()                                                                          // Either Requester or current Position User have their Main Position on this Position
+				|| !HasOverlappingReservePositions || !modulesPositions[positions[i]].HasOverlappingReservePositions())                                             // Either Requester or current Position User do not allow overlapping Reserve Positions
+				&& !(ignoreCommandModule && modulesPositions[positions[i]].GetModuleName() == "Command Module"))
 			{
 				return false;
 			}
@@ -355,9 +363,9 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 				foreach(Vector2Int direction in Directions.VECTORS)
 				{
 					Vector2Int neighbourPosition = positions[i] + direction;
-					if(modules.ContainsKey(neighbourPosition)                                                                                               // Position has a Neighbour
+					if(modulesPositions.ContainsKey(neighbourPosition)                                                                                               // Position has a Neighbour
 						&& (i == 0 || HasAttachableReservePositions)                                                                                        // Requester either neighbours with his Main Position or allows attachable Reserve Positions
-						&& (neighbourPosition == modules[neighbourPosition].GetPosition() || modules[neighbourPosition].HasAttachableReservePositions()))   // Neighbour either neighbours with his Main Position or allows attachable Reserve Positions
+						&& (neighbourPosition == modulesPositions[neighbourPosition].GetPosition() || modulesPositions[neighbourPosition].HasAttachableReservePositions()))   // Neighbour either neighbours with his Main Position or allows attachable Reserve Positions
 					{
 						neighbour = true;
 						break;
@@ -376,12 +384,54 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	public void DeconstructModules()
 	{
-		List<Vector2Int> moduleKeys = new List<Vector2Int>(modules.Keys);                       // Avoid concurrent Modification
-		foreach(Vector2Int position in moduleKeys)
+		List<Module> modules = new List<Module>(this.modules);          // Avoid concurrent Modification
+		foreach(Module module in modules)
 		{
-			if(modules.ContainsKey(position) && modules[position].GetPosition() == position)    // Check if Module has already been deleted first
+			module.Deconstruct();
+		}
+	}
+
+	public GoodManager.Load[] CalculateComponentFillCosts()
+	{
+		Dictionary<string, uint> componentFillCostsDictionary = new Dictionary<string, uint>();
+
+		foreach(Module module in modules)
+		{
+			foreach(GoodManager.ComponentType emptyComponentSlot in module.GetEmptyComponentSlots())
 			{
-				modules[position].Deconstruct();
+				GoodManager.ComponentData componentData = goodManager.GetComponentData(goodManager.GetComponentName(emptyComponentSlot) + " [crude]");
+				foreach(GoodManager.Load cost in componentData.buildingCosts)
+				{
+					if(componentFillCostsDictionary.ContainsKey(cost.goodName))
+					{
+						componentFillCostsDictionary[cost.goodName] += cost.amount;
+					}
+					else
+					{
+						componentFillCostsDictionary[cost.goodName] = cost.amount;
+					}
+				}
+			}
+		}
+
+		GoodManager.Load[] componentFillCosts = new GoodManager.Load[componentFillCostsDictionary.Count];
+		int i = 0;
+		foreach(KeyValuePair<string, uint> cost in componentFillCostsDictionary)
+		{
+			componentFillCosts[i] = new GoodManager.Load(cost.Key, cost.Value);
+			++i;
+		}
+
+		return componentFillCosts;
+	}
+
+	public void FillComponents(GoodManager.ComponentQuality quality = GoodManager.ComponentQuality.crude)
+	{
+		foreach(Module module in modules)
+		{
+			foreach(GoodManager.ComponentType emptyComponentSlot in module.GetEmptyComponentSlots())
+			{
+				module.InstallComponent(goodManager.GetComponentName(emptyComponentSlot) + " [" + quality.ToString() + "]");
 			}
 		}
 	}
@@ -402,7 +452,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	private void CalculateSpacecraftCollider()
 	{
-		if(modules.Count <= 0)
+		if(modulesPositions.Count <= 0)
 		{
 			spacecraftCollider.SetPath(0, new Vector2[] { Vector2.zero });
 			return;
@@ -410,7 +460,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 		// Find Maximum Y Value of this Spacecrafts Modules
 		int maxY = 0;
-		foreach(Vector2Int maxPosition in modules.Keys)
+		foreach(Vector2Int maxPosition in modulesPositions.Keys)
 		{
 			if(maxPosition.y > maxY)
 			{
@@ -420,7 +470,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 		// Go from Top Bounding Border of the Spacecraft downwards until you find the topmost Module at X = 0
 		Vector2Int position = new Vector2Int(0, maxY);
-		while(!modules.ContainsKey(position) || (position != modules[position].GetPosition() && modules[position].HasOverlappingReservePositions()))
+		while(!modulesPositions.ContainsKey(position) || (position != modulesPositions[position].GetPosition() && modulesPositions[position].HasOverlappingReservePositions()))
 		{
 			position += Vector2Int.down;
 		}
@@ -471,8 +521,8 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	private bool CheckBorderPosition(Vector2Int position, Vector2Int borderingPosition)
 	{
-		return modules.ContainsKey(position) && (position == modules[position].GetPosition() || !modules[position].HasOverlappingReservePositions())
-				&& (!modules.ContainsKey(borderingPosition) || (borderingPosition != modules[borderingPosition].GetPosition() && modules[borderingPosition].HasOverlappingReservePositions()));
+		return modulesPositions.ContainsKey(position) && (position == modulesPositions[position].GetPosition() || !modulesPositions[position].HasOverlappingReservePositions())
+				&& (!modulesPositions.ContainsKey(borderingPosition) || (borderingPosition != modulesPositions[borderingPosition].GetPosition() && modulesPositions[borderingPosition].HasOverlappingReservePositions()));
 	}
 
 	private void CalculateThrusterTurningGroups()
@@ -585,9 +635,9 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	public Module GetModule(Vector2Int position)
 	{
-		if(modules.ContainsKey(position))
+		if(modulesPositions.ContainsKey(position))
 		{
-			return modules[position];
+			return modulesPositions[position];
 		}
 		else
 		{
@@ -595,9 +645,14 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		}
 	}
 
+	public int GetModuleCount()
+	{
+		return modules.Count;
+	}
+
 	public Dictionary<Vector2Int, Module> GetModules()
 	{
-		return modules;
+		return modulesPositions;
 	}
 
 	public int GetDockedSpacecraftCount()
@@ -631,13 +686,18 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	public void AddModule(Vector2Int position, Module module)
 	{
-		modules[position] = module;
+		modules.Add(module);
+		modulesPositions[position] = module;
 		calculateCollider = true;
 	}
 
 	public void RemoveModule(Vector2Int position)
 	{
-		modules.Remove(position);
+		if(position == modulesPositions[position].GetPosition())
+		{
+			modules.Remove(modulesPositions[position]);
+		}
+		modulesPositions.Remove(position);
 		calculateCollider = true;
 	}
 

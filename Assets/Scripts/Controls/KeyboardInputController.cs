@@ -18,7 +18,6 @@ public class KeyboardInputController : InputController
 
 	private InfoController infoController = null;
 	private Dictionary<HotkeyKey, string> actionNames = null;
-	private float throttle = 1.0f;
 	private bool autoThrottle = false;
 	private Vector3 autoThrottleSetting = Vector3.zero;
 
@@ -42,9 +41,6 @@ public class KeyboardInputController : InputController
 
 		if((flightControls || autoThrottleSetting != Vector3.zero) && !Input.GetButton("Rotate Camera"))
 		{
-			throttle += Input.GetAxis("Throttle") * timeController.GetDeltaTime();
-			throttle = Mathf.Clamp01(throttle);
-
 			if(Input.GetButtonDown("AutoThrottle"))
 			{
 				autoThrottle = !autoThrottle;
@@ -68,8 +64,7 @@ public class KeyboardInputController : InputController
 				autoThrottleSetting = new Vector3(Input.GetAxis("Horizontal"), Input.GetAxis("Vertical"), Input.GetAxis("Rotate"));
 			}
 
-			infoController.UpdateThrottleDisplay(throttle, autoThrottle);
-			spacecraft.SetThrottles(autoThrottleSetting.x * throttle, autoThrottleSetting.y * throttle, autoThrottleSetting.z * throttle);
+			spacecraft.SetThrottles(autoThrottleSetting.x, autoThrottleSetting.y, autoThrottleSetting.z);
 
 			for(int i = 0; i < hotkeyCount; ++i)
 			{

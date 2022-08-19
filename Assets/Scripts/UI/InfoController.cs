@@ -23,8 +23,6 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 	[SerializeField] private Text controlHint = null;
 	[SerializeField] private Text resourceDisplay = null;
 	[SerializeField] private Text secondaryDisplay = null;
-	[SerializeField] private Text throttleDisplay = null;
-	[SerializeField] private Text autoThrottleDisplay = null;
 	[SerializeField] private GameObject keyBindingDisplay = null;
 	[SerializeField] private Text showFlightInfoButtonText = null;
 	[SerializeField] private AudioClip warningAudio = null;
@@ -284,12 +282,6 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 	public void UpdateBuildingResourceDisplay()
 	{
 		updateBuildingResourceDisplay = true;
-	}
-
-	public void UpdateThrottleDisplay(float throttle, bool autoThrottle)
-	{
-		throttleDisplay.text = "Throttle - " + ((int)(throttle * 100.0f)) + "%";
-		autoThrottleDisplay.text = "Hold Throttle - " + (autoThrottle ? "on" : "off");
 	}
 
 	public void ToggleFlightInfo()

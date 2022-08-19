@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -38,7 +39,6 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 	private static BuildingMenu instance = null;
 
 	[SerializeField] private float buildingGridSize = 1.0f;
-	[SerializeField] private Button moduleButtonPrefab = null;
 	[SerializeField] private Button blueprintButtonPrefab = null;
 	[SerializeField] private GameObject blueprintMenu = null;
 	[SerializeField] private InputField blueprintNameField = null;
@@ -51,6 +51,8 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 	[SerializeField] private string blueprintFolder = "Blueprints";
 	[SerializeField] private TextAsset starterShip = null;
 	[SerializeField] private Text cheaterModeText = null;
+	[SerializeField] private GameObject assembleComponentConfirmationPanel = null;
+	[SerializeField] private Text assembleComponentCostText = null;
 	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private SpacecraftManager spacecraftManager = null;
@@ -100,23 +102,6 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 
 	private void Start()
 	{
-		Transform transform = GetComponent<Transform>();
-		// Skip Command Module
-		for(int i = 1; i < modulePrefabs.Length; ++i)
-		{
-			Button moduleButton = GameObject.Instantiate<Button>(moduleButtonPrefab, transform);
-			RectTransform moduleButtonRectTransform = moduleButton.GetComponent<RectTransform>();
-			moduleButtonRectTransform.anchoredPosition =
-				new Vector3(moduleButtonRectTransform.anchoredPosition.x, -(moduleButtonRectTransform.rect.height * 0.5f + moduleButtonRectTransform.rect.height * (i - 1)));
-			moduleButton.GetComponentInChildren<Text>().text = modulePrefabs[i].GetModuleName();
-			int localI = i;
-			moduleButton.onClick.AddListener(delegate
-				{
-					// Seems to pass-by-reference
-					SelectModule(localI);
-				});
-		}
-
 		timeController = TimeController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 		menuController = MenuController.GetInstance();
@@ -429,7 +414,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 
 	public void ConfirmBlueprint()
 	{
-		if(localPlayerMainSpacecraft.GetModules().Count <= 1)
+		if(localPlayerMainSpacecraft.GetModuleCount() <= 1)
 		{
 			foreach(SpacecraftBlueprintController.ModuleData moduleData in selectedBlueprintData.moduleData)
 			{
@@ -452,6 +437,43 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 		else
 		{
 			InfoController.GetInstance().AddMessage("Unable to instantiate Blueprint, deconstruct old Modules first!", true);
+		}
+	}
+
+	public void ToggleComponentAssemblyConfirmation()
+	{
+		if(!assembleComponentConfirmationPanel.activeSelf)
+		{
+			StringBuilder costString = new StringBuilder();
+			costString.Append("Material Costs: ");
+			bool first = true;
+			foreach(GoodManager.Load cost in localPlayerMainSpacecraft.CalculateComponentFillCosts())
+			{
+				if(!first)
+				{
+					costString.Append(", ");
+				}
+				costString.Append(cost.amount);
+				costString.Append(" ");
+				costString.Append(cost.goodName);
+
+				first = false;
+			}
+			assembleComponentCostText.text = costString.ToString();
+		}
+
+		assembleComponentConfirmationPanel.SetActive(!assembleComponentConfirmationPanel.activeSelf);
+	}
+
+	public void AssembleCrudeComponents()
+	{
+		GoodManager.Load[] componentCosts = localPlayerMainSpacecraft.CalculateComponentFillCosts();
+		Constructor constructor = null;
+		if(cheaterMode || (constructor = FindBuildingConstructor(localPlayerMainSpacecraftTransform.position, componentCosts)) != null)
+		{
+			constructor?.StartConstruction(localPlayerMainSpacecraftTransform.position);
+
+			localPlayerMainSpacecraft.FillComponents();
 		}
 	}
 

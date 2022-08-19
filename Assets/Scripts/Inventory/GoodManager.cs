@@ -69,6 +69,7 @@ public class GoodManager : MonoBehaviour
 	[Tooltip("How much more powerful do Components get with every Quality Level?")]
 	[SerializeField] private float componentPowerFactor = 2.0f;
 	private Dictionary<string, Good> goodDictionary = null;
+	private Dictionary<ComponentType, string> componentNames = null;
 
 	public static GoodManager GetInstance()
 	{
@@ -102,8 +103,12 @@ public class GoodManager : MonoBehaviour
 		/*Debug.Log("Average Solid Consumption: " + ((float) solidConsumptionSum / (float) solidCount) + ", " + solidCount + " Goods");
 		Debug.Log("Average Fluid Consumption: " + ((float) fluidConsumptionSum / (float) fluidCount) + ", " + fluidCount + " Goods");*/
 
+		componentNames = new Dictionary<ComponentType, string>();
+
 		foreach(ComponentData component in components)
 		{
+			componentNames[component.type] = component.goodName;
+
 			foreach(ComponentQuality quality in Enum.GetValues(typeof(ComponentQuality)))
 			{
 				ComponentData qualityComponent = new ComponentData();
@@ -169,6 +174,11 @@ public class GoodManager : MonoBehaviour
 	public ComponentData GetComponentData(string componentName)
 	{
 		return goodDictionary[componentName] as ComponentData;;
+	}
+
+	public string GetComponentName(ComponentType type)
+	{
+		return componentNames[type];
 	}
 
 	public Dictionary<string, Good> GetGoodDictionary()

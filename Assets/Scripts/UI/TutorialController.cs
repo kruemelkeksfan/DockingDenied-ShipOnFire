@@ -93,7 +93,7 @@ public class TutorialController : MonoBehaviour
 		{
 			yield return tutorialUpdateInterval;
 		}
-		while(playerSpacecraft.GetModules().Count < 6);
+		while(playerSpacecraft.GetModuleCount() < 6);
 		if(starterShipButton != null)
 		{
 			UnHighlightButton(starterShipButton);

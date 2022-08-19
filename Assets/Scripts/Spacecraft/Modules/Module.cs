@@ -412,6 +412,21 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		}
 	}
 
+	public List<GoodManager.ComponentType> GetEmptyComponentSlots()
+	{
+		List<GoodManager.ComponentType> emptyComponentSlots = new List<GoodManager.ComponentType>(orderedComponentSlots.Count);
+
+		foreach(GoodManager.ComponentType componentSlot in componentSlots.Keys)
+		{
+			if(!componentSlots[componentSlot].IsSet())
+			{
+				emptyComponentSlots.Add(componentSlot);
+			}
+		}
+
+		return emptyComponentSlots;
+	}
+
 	public string GetModuleName()
 	{
 		return moduleName;

@@ -648,7 +648,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				{
 					inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, inventoryController.GetGoodAmount(goodName)));
 				}
-				else if(localPlayerMainSpacecraft.GetModules().Count > 6)
+				else if(localPlayerMainSpacecraft.GetModuleCount() > 6)
 				{
 					spawnProtection = false;
 				}
