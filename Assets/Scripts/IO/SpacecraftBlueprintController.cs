@@ -142,25 +142,28 @@ public class SpacecraftBlueprintController
 
 	public static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)
 	{
-		spacecraftTransform.gameObject.GetComponent<SpacecraftController>().DeconstructModules();
+		spacecraftTransform.gameObject.GetComponent<SpacecraftController>().DeconstructModules(true);
 
 		Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)
 		{
-			Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type], spacecraftTransform);
-			module.Rotate(moduleData.rotation);
-			module.Build(moduleData.position);
-
-			if(moduleData.hotkey >= 0 || !string.IsNullOrEmpty(moduleData.actionName))
+			if(moduleData.type != "Command Module")
 			{
-				HotkeyModule hotkeyModule = module.GetComponent<HotkeyModule>();
-				if(!string.IsNullOrEmpty(moduleData.actionName))
+				Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type], spacecraftTransform);
+				module.Rotate(moduleData.rotation);
+				module.Build(moduleData.position);
+
+				if(moduleData.hotkey >= 0 || !string.IsNullOrEmpty(moduleData.actionName))
 				{
-					hotkeyModule.SetActionName(moduleData.actionName);
-				}
-				if(moduleData.hotkey >= 0)
-				{
-					hotkeyModule.SetHotkey(moduleData.hotkey);
+					HotkeyModule hotkeyModule = module.GetComponent<HotkeyModule>();
+					if(!string.IsNullOrEmpty(moduleData.actionName))
+					{
+						hotkeyModule.SetActionName(moduleData.actionName);
+					}
+					if(moduleData.hotkey >= 0)
+					{
+						hotkeyModule.SetHotkey(moduleData.hotkey);
+					}
 				}
 			}
 		}

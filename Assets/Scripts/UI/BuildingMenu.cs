@@ -53,6 +53,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 	[SerializeField] private Text cheaterModeText = null;
 	[SerializeField] private GameObject assembleComponentConfirmationPanel = null;
 	[SerializeField] private Text assembleComponentCostText = null;
+	[SerializeField] private GameObject assembleComponentButton = null;
 	private TimeController timeController = null;
 	private GoodManager goodManager = null;
 	private SpacecraftManager spacecraftManager = null;
@@ -187,13 +188,20 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			{
 				if(module.GetModuleName() != "Command Module")
 				{
-					Vector3 position = module.GetTransform().position;
-					Constructor constructor = null;
-					if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), localPlayerMainSpacecraft)) != null)
+					if(module.UninstallAllComponents())
 					{
-						constructor?.StartConstruction(position);
+						Vector3 position = module.GetTransform().position;
+						Constructor constructor = null;
+						if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), localPlayerMainSpacecraft)) != null)
+						{
+							constructor?.StartConstruction(position);
 
-						module.Deconstruct();
+							module.Deconstruct();
+						}
+					}
+					else
+					{
+						infoController.AddMessage("Can't deconstruct Module, because there is no Storage Space to store the installed Components!", true);
 					}
 				}
 				else
@@ -276,7 +284,6 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			erase = false;
 			SpawnModule(moduleIndex);
 			infoController.SetBuildingCosts(currentModule.module);
-			infoController.AddMessage(currentModule.module.GetDescription(), false);
 		}
 		else
 		{
@@ -459,7 +466,17 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 
 				first = false;
 			}
-			assembleComponentCostText.text = costString.ToString();
+
+			if(!first)
+			{
+				assembleComponentCostText.text = costString.ToString();
+				assembleComponentButton.SetActive(true);
+			}
+			else
+			{
+				assembleComponentCostText.text = "No Components missing";
+				assembleComponentButton.SetActive(false);
+			}
 		}
 
 		assembleComponentConfirmationPanel.SetActive(!assembleComponentConfirmationPanel.activeSelf);

@@ -17,7 +17,6 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField]
 	private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
-	[TextArea(1, 2)] [SerializeField] private string description = "Module Description missing!";
 	[SerializeField] private int maxModuleMenuButtonCharacters = 24;
 	protected TimeController timeController = null;
 	protected AudioController audioController = null;
@@ -250,7 +249,12 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		{
 			if(!componentSlots[componentType].IsSet())
 			{
-				return componentSlots[componentType].UpdateComponentData(componentName);
+				bool componentSwapSuccess = componentSlots[componentType].UpdateComponentData(componentName);
+				if(moduleMenu != null)
+				{
+					UpdateComponentButtons();
+				}
+				return componentSwapSuccess;
 			}
 			else
 			{
@@ -271,7 +275,12 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		{
 			if(componentSlots[componentType].IsSet())
 			{
-				return componentSlots[componentType].UpdateComponentData(null);
+				bool componentSwapSuccess = componentSlots[componentType].UpdateComponentData(null);
+				if(moduleMenu != null)
+				{
+					UpdateComponentButtons();
+				}
+				return componentSwapSuccess;
 			}
 			else
 			{
@@ -286,10 +295,30 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return false;
 	}
 
+	public bool UninstallAllComponents()
+	{
+		foreach(GoodManager.ComponentType componentSlot in orderedComponentSlots)
+		{
+			if(componentSlots[componentSlot].IsSet())
+			{
+				if(inventoryController.Deposit(componentSlots[componentSlot].GetName(), 1))
+				{
+					RemoveComponent(componentSlot);
+				}
+				else
+				{
+					return false;
+				}
+			}
+		}
+
+		return true;
+	}
+
 	private void UpdateComponentButtons()
 	{
 		for(int i = 0; i < componentSlotEntries.Count; ++i)
-		{	
+		{
 			RectTransform componentSlotEntry = componentSlotEntries[i];
 			GoodManager.ComponentType componentType = orderedComponentSlots[i];
 
@@ -365,7 +394,6 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			if(inventoryController.Deposit(componentSlots[slotType].GetName(), 1))
 			{
 				RemoveComponent(slotType);
-				UpdateComponentButtons();
 			}
 			else
 			{
@@ -398,7 +426,6 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 						if(inventoryController.Withdraw(componentData.goodName, 1))
 						{
 							InstallComponent(componentData.goodName);
-							UpdateComponentButtons();
 							moduleComponentSelectionPanel.gameObject.SetActive(false);
 						}
 						else
@@ -430,11 +457,6 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public string GetModuleName()
 	{
 		return moduleName;
-	}
-
-	public string GetDescription()
-	{
-		return description;
 	}
 
 	public Vector2Int GetPosition()

@@ -382,12 +382,15 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		return neighbour;
 	}
 
-	public void DeconstructModules()
+	public void DeconstructModules(bool keepCommandModule)
 	{
 		List<Module> modules = new List<Module>(this.modules);          // Avoid concurrent Modification
 		foreach(Module module in modules)
 		{
-			module.Deconstruct();
+			if(!keepCommandModule || module.GetModuleName() != "Command Module")
+			{
+				module.Deconstruct();
+			}
 		}
 	}
 
