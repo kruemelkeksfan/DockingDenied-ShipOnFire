@@ -118,7 +118,7 @@ NOTE-TO-SELF: Test CoM Calculation, Test Moment of Inertia Calculation, Test Com
 -Do not require Docking for Quest Completion
 -Implement "Throttle Trimming" for Thrusters
 -Double Font Size and half Scale for all Texts
--Reduce Transparency of Panels
+-Reduce Transparency of Panels (especially Component Selection)
 -Introduce a simple Backstory and maybe Collectibles
 -Enable/Disable Key Binding Help in Overlay Options
 -Reduce Key Binding Help Font Size
