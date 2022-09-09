@@ -7973,7 +7973,7 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 200
+    - 100
   - goodName: Tank System
     description: Pressurizable Tanks and Pipes for fluid and gaseous Goods.
     state: 0
@@ -7998,7 +7998,7 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 160
+    - 60
   - goodName: Capacitor
     description: An Energy Storage which can handle rapid charging and discharging.
     state: 0
@@ -8319,8 +8319,8 @@ MonoBehaviour:
       amount: 4
     attributeNames: []
     attributeValues: []
-  componentCostFactor: 2.5
-  componentPowerFactor: 2
+  componentCostFactor: 2
+  componentPowerFactor: 1.5
 --- !u!4 &926687709
 Transform:
   m_ObjectHideFlags: 0
