@@ -141,14 +141,14 @@ public class SpacecraftBlueprintController
 		return JsonUtility.FromJson<SpacecraftData>(blueprint.text);
 	}
 
-	public static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform)
+	public static void InstantiateModules(SpacecraftData spacecraftData, Transform spacecraftTransform, bool instantiateCommandModule = false)
 	{
 		spacecraftTransform.gameObject.GetComponent<SpacecraftController>().DeconstructModules(true);
 
 		Dictionary<string, Module> modulePrefabDictionary = BuildingMenu.GetInstance().GetModulePrefabDictionary();
 		foreach(ModuleData moduleData in spacecraftData.moduleData)
 		{
-			if(moduleData.type != "Command Module")
+			if(instantiateCommandModule || moduleData.type != "Command Module")
 			{
 				Module module = GameObject.Instantiate<Module>(modulePrefabDictionary[moduleData.type], spacecraftTransform);
 				module.Rotate(moduleData.rotation);

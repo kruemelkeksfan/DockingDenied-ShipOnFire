@@ -99,8 +99,8 @@ MonoBehaviour:
   dockingTimeout: 120
   cancelDockingDelay: 0.5
   stationUpdateInterval: 120
-  maxGoodStockFactor: 12
-  targetGoodStockFactor: 6
+  maxGoodStockFactor: 30
+  targetGoodStockFactor: 10
   minProfit: -100
   maxProfit: 200
   tradingEntryPrefab: {fileID: 1009032507462002704, guid: 0f67ddc186ff7cb499fb57c610d0eee1,

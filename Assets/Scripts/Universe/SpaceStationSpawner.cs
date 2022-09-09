@@ -30,7 +30,7 @@ public class SpaceStationSpawner : MonoBehaviour
 		foreach(Vector2 position in stationPositions)
 		{
 			SpacecraftController spaceStationSpacecraft = GameObject.Instantiate<SpacecraftController>(spaceStationPrefab, gravityWellController.GlobalToLocalPosition(position), Quaternion.identity);
-			SpacecraftBlueprintController.InstantiateModules(SpacecraftBlueprintController.LoadBlueprintModules(stationBlueprints[Random.Range(0, stationBlueprints.Length)]), spaceStationSpacecraft.GetTransform());
+			SpacecraftBlueprintController.InstantiateModules(SpacecraftBlueprintController.LoadBlueprintModules(stationBlueprints[Random.Range(0, stationBlueprints.Length)]), spaceStationSpacecraft.GetTransform(), true);
 			spaceStationSpacecraft.FillComponents(GoodManager.ComponentQuality.legendary);
 
 			SpaceStationController spaceStation = spaceStationSpacecraft.GetComponent<SpaceStationController>();

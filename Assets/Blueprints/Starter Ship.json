@@ -119,16 +119,6 @@
             "rotation": 0.0,
             "actionName": "",
             "hotkey": -1
-        },
-        {
-            "type": "Battery",
-            "position": {
-                "x": 0,
-                "y": -1
-            },
-            "rotation": 0.0,
-            "actionName": "",
-            "hotkey": -1
         }
     ]
 }
