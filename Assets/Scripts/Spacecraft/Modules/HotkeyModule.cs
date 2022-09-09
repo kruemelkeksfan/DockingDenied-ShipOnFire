@@ -5,10 +5,8 @@ using UnityEngine.UI;
 
 public class HotkeyModule : Module, IHotkeyListener
 {
-	[SerializeField] private InputField actionNameField = null;
-	[SerializeField] private Dropdown hotkeySelection = null;
 	private InputController inputController = null;
-	private string actionName = null;
+	private Dropdown hotkeySelection = null;
 	private int hotkey = 0;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
@@ -16,8 +14,21 @@ public class HotkeyModule : Module, IHotkeyListener
 		base.Build(position);
 
 		inputController = spacecraft.gameObject.GetComponent<InputController>();
-		SetActionName(actionNameField.text);
-		SetHotkey(hotkeySelection.value);
+
+		if(moduleMenu != null)
+		{
+			hotkeySelection = settingPanel.GetComponentInChildren<Dropdown>();
+			SetHotkey(hotkeySelection.value);
+
+			settingPanel.GetComponentInChildren<Dropdown>().onValueChanged.AddListener(delegate
+			{
+				SetHotkey(hotkeySelection.value);
+			});
+		}
+		else
+		{
+			SetHotkey(0);
+		}
 	}
 
 	public override void Deconstruct()
@@ -37,22 +48,16 @@ public class HotkeyModule : Module, IHotkeyListener
 
 	}
 
-	public string GetActionName()
-	{
-		return actionName;
-	}
-
 	public int GetHotkey()
 	{
 		return hotkey;
 	}
 
-	public virtual void SetActionName(string actionName)
+	public override void SetCustomModuleName(string customModuleName)
 	{
-		this.actionName = (!string.IsNullOrEmpty(actionName) ? actionName : moduleName);
-		(inputController as KeyboardInputController)?.UpdateActionName(hotkey, this, actionName);
-		actionNameField.text = actionName;
-		actionNameField.placeholder.enabled = false;
+		base.SetCustomModuleName(customModuleName);
+
+		(inputController as KeyboardInputController)?.UpdateActionName(hotkey, this, customModuleName);
 	}
 
 	public void SetHotkey(int hotkey)
@@ -60,7 +65,10 @@ public class HotkeyModule : Module, IHotkeyListener
 		// TODO: Clean up the ?.-Operators by figuring out a Software Architecture that does not need Hotkeys when no KeyboardInputController is present
 		inputController?.RemoveHotkey(this.hotkey, this);
 		this.hotkey = hotkey;
-		inputController?.AddHotkey(hotkey, this, actionName);
-		hotkeySelection.value = hotkey;
+		inputController?.AddHotkey(hotkey, this, customModuleName);
+		if(moduleMenu != null)
+		{
+			hotkeySelection.value = hotkey;
+		}
 	}
 }

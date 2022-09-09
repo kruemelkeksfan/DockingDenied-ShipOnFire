@@ -26,6 +26,7 @@ public class SpacecraftBlueprintController
 		public string actionName;
 		public int hotkey;
 
+		// TODO: Rename actionName to customModuleName
 		public ModuleData(string type, Vector2Int position, float rotation, string actionName = "", int hotkey = -1)
 		{
 			this.type = type;
@@ -62,11 +63,11 @@ public class SpacecraftBlueprintController
 				if(modules[position] is HotkeyModule)
 				{
 					HotkeyModule hotkeyModule = (HotkeyModule)modules[position];
-					moduleData.Add(new ModuleData(modules[position].GetModuleName(), hotkeyModule.GetPosition(), hotkeyModule.GetTransform().localRotation.eulerAngles.z, hotkeyModule.GetActionName(), hotkeyModule.GetHotkey()));
+					moduleData.Add(new ModuleData(modules[position].GetModuleName(), hotkeyModule.GetPosition(), hotkeyModule.GetTransform().localRotation.eulerAngles.z, hotkeyModule.GetCustomModuleName(), hotkeyModule.GetHotkey()));
 				}
 				else
 				{
-					moduleData.Add(new ModuleData(modules[position].GetModuleName(), modules[position].GetPosition(), modules[position].GetTransform().localRotation.eulerAngles.z));
+					moduleData.Add(new ModuleData(modules[position].GetModuleName(), modules[position].GetPosition(), modules[position].GetTransform().localRotation.eulerAngles.z, modules[position].GetCustomModuleName()));
 				}
 			}
 		}
@@ -153,13 +154,14 @@ public class SpacecraftBlueprintController
 				module.Rotate(moduleData.rotation);
 				module.Build(moduleData.position);
 
-				if(moduleData.hotkey >= 0 || !string.IsNullOrEmpty(moduleData.actionName))
+				if(!string.IsNullOrEmpty(moduleData.actionName))
+				{
+					module.SetCustomModuleName(moduleData.actionName);
+				}
+
+				if(moduleData.hotkey >= 0)
 				{
 					HotkeyModule hotkeyModule = module.GetComponent<HotkeyModule>();
-					if(!string.IsNullOrEmpty(moduleData.actionName))
-					{
-						hotkeyModule.SetActionName(moduleData.actionName);
-					}
 					if(moduleData.hotkey >= 0)
 					{
 						hotkeyModule.SetHotkey(moduleData.hotkey);

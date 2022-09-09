@@ -18,6 +18,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
 	[SerializeField] private int maxModuleMenuButtonCharacters = 24;
+	[SerializeField] private GameObject moduleSettingPrefab = null;
 	protected TimeController timeController = null;
 	protected AudioController audioController = null;
 	protected GoodManager goodManager = null;
@@ -37,9 +38,9 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	// Need a second, ordered List for Display in Module Menu
 	private List<GoodManager.ComponentType> orderedComponentSlots = null;
 	// TODO: Save Custom Name in SpacecraftBlueprintController
-	private string customModuleName = "unnamed";
+	protected string customModuleName = "unnamed";
 	private GameObject moduleMenuButton = null;
-	private GameObject moduleMenu = null;
+	protected GameObject moduleMenu = null;
 	private RectTransform uiTransform = null;
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
@@ -47,6 +48,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	private RectTransform componentPanel = null;
 	private List<RectTransform> componentSlotEntries = null;
 	private RectTransform moduleComponentSelectionPanel = null;
+	protected RectTransform settingPanel = null;
 
 	protected virtual void Awake()
 	{
@@ -130,11 +132,20 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			InputField moduleNameField = moduleMenu.GetComponentInChildren<InputField>();
 			moduleNameField.onEndEdit.AddListener(delegate
 				{
-					customModuleName = moduleNameField.text;
-					UpdateModuleMenuButtonText();
+					SetCustomModuleName(moduleNameField.text);
 				});
 			componentPanel = (RectTransform)moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(3);
 			componentSlotEntries = new List<RectTransform>();
+
+			if(moduleSettingPrefab != null)
+			{
+				settingPanel = (RectTransform)moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(7);
+				GameObject.Instantiate<GameObject>(moduleSettingPrefab, settingPanel);
+			}
+			else
+			{
+				moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(6).gameObject.SetActive(false);
+			}
 
 			toggleController.AddToggleObject("ModuleMenuButtons", this.moduleMenuButton);
 			this.moduleMenuButton.SetActive(toggleController.IsGroupToggled("ModuleMenuButtons"));
@@ -459,6 +470,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return moduleName;
 	}
 
+	public string GetCustomModuleName()
+	{
+		return customModuleName;
+	}
+
 	public Vector2Int GetPosition()
 	{
 		return position;
@@ -509,5 +525,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		}
 
 		return mass;
+	}
+
+	public virtual void SetCustomModuleName(string customModuleName)
+	{
+		this.customModuleName = customModuleName;
+		if(moduleMenu != null)
+		{
+			UpdateModuleMenuButtonText();
+		}
 	}
 }

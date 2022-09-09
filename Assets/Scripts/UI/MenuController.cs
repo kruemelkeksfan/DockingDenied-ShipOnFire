@@ -89,11 +89,7 @@ public class MenuController : MonoBehaviour, IListener
 		if(!forceOpen)
 		{
 			// TODO: Dynamically search for Close-Buttons and press them (e.g. give them a special Tag), respect Order (close last active Panel in Hierarchy first)
-			if(activeModule != null)
-			{
-				CloseModuleMenu();
-			}
-			else if(activeStation != null)
+			if(activeStation != null)
 			{
 				if(stationQuestMenu.activeSelf)
 				{
@@ -138,45 +134,6 @@ public class MenuController : MonoBehaviour, IListener
 		UpdateFlightControls();
 	}
 
-	public void ToggleModuleMenu(HotkeyModule requester)
-	{
-		CloseStationMenu();
-		CloseQuestVesselMenu();
-
-		if(requester != activeModule)
-		{
-			moduleMenu.gameObject.SetActive(true);
-
-			activeModule = requester;
-
-			moduleNameField.text = requester.GetActionName();
-			hotkeySelectionField.value = requester.GetHotkey();
-		}
-		else
-		{
-			CloseModuleMenu();
-		}
-
-		UpdateFlightControls();
-	}
-
-	public void ModuleNameChanged()
-	{
-		activeModule.SetActionName(moduleNameField.text);
-	}
-
-	public void HotkeySelectionChanged()
-	{
-		activeModule.SetHotkey(hotkeySelectionField.value);
-	}
-
-	public void CloseModuleMenu()
-	{
-		moduleMenu.gameObject.SetActive(false);
-		activeModule = null;
-		UpdateFlightControls();
-	}
-
 	public void CloseModuleComponentSelection()
 	{
 		moduleComponentSelectionPanel.gameObject.SetActive(false);
@@ -184,7 +141,6 @@ public class MenuController : MonoBehaviour, IListener
 
 	public void ToggleStationMenu(SpaceStationController requester, string name)
 	{
-		CloseModuleMenu();
 		CloseQuestVesselMenu();
 
 		if(requester != activeStation)
@@ -398,7 +354,6 @@ public class MenuController : MonoBehaviour, IListener
 
 	public void ToggleQuestVesselMenu(QuestVesselController requester, string name, string progress, string hint, string interactionLabel, UnityAction interaction)
 	{
-		CloseModuleMenu();
 		CloseStationMenu();
 
 		if(requester != activeQuestVessel)

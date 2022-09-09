@@ -259,7 +259,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 						{
 							dockingTimeoutCoroutine = timeController.StartCoroutine(DockingTimeout(alignedPort, requester), false);
 
-							infoController.AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetActionName() + "!", false);
+							infoController.AddMessage("Docking Permission granted for Docking Port " + alignedPort.GetCustomModuleName() + "!", false);
 						}
 					}
 					else if(requester == localPlayerMainSpacecraft)
@@ -279,7 +279,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				{
 					if(expectedDockings[port] == localPlayerMainSpacecraft)
 					{
-						portName = port.GetActionName();
+						portName = port.GetCustomModuleName();
 						break;
 					}
 				}

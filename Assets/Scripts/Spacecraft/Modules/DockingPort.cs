@@ -47,7 +47,7 @@ public class DockingPort : HotkeyModule
 		base.Build(position, listenUpdates, listenFixedUpdates);
 		spacecraftTransform = spacecraft.GetTransform();
 		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
-		portNameField.text = GetActionName();
+		portNameField.text = customModuleName;
 		AddDockingListener(spacecraft);
 	}
 
@@ -99,12 +99,6 @@ public class DockingPort : HotkeyModule
 		}
 
 		ToggleParticles();
-	}
-
-	public override void SetActionName(string actionName)
-	{
-		base.SetActionName(actionName);
-		portNameField.text = actionName;
 	}
 
 	private void ToggleParticles()
@@ -188,5 +182,12 @@ public class DockingPort : HotkeyModule
 	public bool IsFree()
 	{
 		return connectedPort == null;
+	}
+
+	public override void SetCustomModuleName(string customModuleName)
+	{
+		base.SetCustomModuleName(customModuleName);
+
+		portNameField.text = customModuleName;
 	}
 }

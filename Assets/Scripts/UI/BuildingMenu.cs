@@ -210,21 +210,6 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 				}
 			}
 		}
-		else if(selectedBlueprintData.moduleData == null)
-		{
-			if(Input.GetButtonUp("Place Module") && !EventSystem.current.IsPointerOverGameObject())
-			{
-				Module module = localPlayerMainSpacecraft.GetModule(gridPosition);
-				if(module != null)
-				{
-					HotkeyModule hotkeyModule = module as HotkeyModule;
-					if(hotkeyModule != null)
-					{
-						menuController.ToggleModuleMenu(hotkeyModule);
-					}
-				}
-			}
-		}
 
 		UpdateReservedZone();
 	}
@@ -264,7 +249,6 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 
 	public void SelectModule(int moduleIndex)
 	{
-		menuController.CloseModuleMenu();
 		DeselectBlueprint();
 
 		if(currentModule.index >= 0 && currentModule.module != null)
@@ -387,7 +371,6 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			return;
 		}
 
-		menuController.CloseModuleMenu();
 		DeselectModule();
 
 		selectedBlueprintCosts = SpacecraftBlueprintController.CalculateBlueprintCosts(selectedBlueprintData);

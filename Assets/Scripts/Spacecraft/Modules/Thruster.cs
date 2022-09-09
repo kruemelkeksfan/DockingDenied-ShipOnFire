@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Thruster : Module
 {
@@ -12,10 +13,13 @@ public class Thruster : Module
 	private Engine engine = null;
 	private Vector2 thrustDirection = Vector2.zero;
 	private float throttle = 0.0f;
-	private float fuelSupply = 1.0f;									// TODO: Start with 0.0f, once Remote Trading is implemented
+	private float fuelSupply = 1.0f;                                    // TODO: Start with 0.0f, once Remote Trading is implemented
 	private ParticleSystem thrustParticles = null;
 	private ParticleSystem.MainModule thrustParticlesMain = new ParticleSystem.MainModule();
 	private Vector3 initialParticleSize = Vector3.zero;
+	private float power = 1.0f;
+	private Slider powerSlider = null;
+	private InputField powerInputField = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -38,6 +42,25 @@ public class Thruster : Module
 
 		engine = new Engine();
 		AddComponentSlot(GoodManager.ComponentType.IonEngine, engine);
+
+		if(moduleMenu != null)
+		{
+			powerSlider = settingPanel.GetComponentInChildren<Slider>();
+			powerInputField = settingPanel.GetComponentInChildren<InputField>();
+
+			powerSlider.onValueChanged.AddListener(delegate
+			{
+				PowerSliderChanged();
+			});
+			powerInputField.onEndEdit.AddListener(delegate
+			{
+				PowerInputFieldChanged();
+			});
+
+			int power = 100;
+			powerSlider.value = power;
+			powerInputField.text = power.ToString();
+		}
 	}
 
 	public override void Deconstruct()
@@ -53,9 +76,9 @@ public class Thruster : Module
 		// Don't apply Thrust during a Frame in which the Origin shifted,
 		// because the Physics freak out when moving transform.position while Forces are being applied
 		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
-		if(constructed && throttle > MathUtil.EPSILON && !gravityWellController.IsOriginShifted())
+		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && !gravityWellController.IsOriginShifted())
 		{
-			if((engine.GetSecondaryFuelConsumption() * throttle) > fuelSupply)
+			if((engine.GetSecondaryFuelConsumption() * throttle * power) > fuelSupply)
 			{
 				if(inventoryController.Withdraw(fuelName, 1))
 				{
@@ -63,20 +86,19 @@ public class Thruster : Module
 				}
 				else
 				{
-					thrustParticlesMain.startSizeXMultiplier = 0.0f;
-					thrustParticlesMain.startSizeYMultiplier = 0.0f;
-					thrustParticlesMain.startSizeZMultiplier = 0.0f;
-
-					InfoController.GetInstance().AddMessage("Out of " + fuelName + " for Propulsion!", true);
+					if(infoController.GetMessageCount() < 1)
+					{
+						infoController.AddMessage("Out of " + fuelName + " for Propulsion!", true);
+					}
 
 					return;
 				}
 			}
-			
-			float finalThrottle = throttle * capacitor.DischargePartial(engine.GetPrimaryFuelConsumption() * throttle * timeController.GetFixedDeltaTime());
-			
+
+			float finalThrottle = throttle * power * capacitor.DischargePartial(engine.GetPrimaryFuelConsumption() * throttle * power * timeController.GetFixedDeltaTime());
+
 			fuelSupply -= engine.GetSecondaryFuelConsumption() * finalThrottle;
-			
+
 			thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * finalThrottle;
 			thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * finalThrottle;
 			thrustParticlesMain.startSizeZMultiplier = initialParticleSize.z * finalThrottle;
@@ -93,28 +115,48 @@ public class Thruster : Module
 
 	public bool SetThrottle(float throttle)
 	{
-		if(constructed && capacitor.GetCharge() > 0.0f && throttle > 0.0f)
+		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON)
 		{
-			if(this.throttle <= 0.0f)
+			if(fuelSupply < MathUtil.EPSILON && inventoryController.Withdraw(fuelName, 1))
 			{
-				thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * throttle;
-				thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * throttle;
-				thrustParticlesMain.startSizeZMultiplier = initialParticleSize.z * throttle;
-
-				thrustParticles.Play();
+				fuelSupply += 1.0f;
 			}
 
-			this.throttle = Mathf.Clamp(throttle, 0.0f, 1.0f);
+			if(fuelSupply > MathUtil.EPSILON && capacitor.GetCharge() > MathUtil.EPSILON)
+			{
+				if(this.throttle <= 0.0f)
+				{
+					thrustParticlesMain.startSizeXMultiplier = 0.0f;
+					thrustParticlesMain.startSizeYMultiplier = 0.0f;
+					thrustParticlesMain.startSizeZMultiplier = 0.0f;
 
-			return true;
+					thrustParticles.Play();
+				}
+				this.throttle = Mathf.Clamp(throttle, 0.0f, 1.0f);
+
+				return true;
+			}
 		}
-		else
-		{
-			thrustParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
 
-			this.throttle = 0.0f;
+		thrustParticles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+		this.throttle = 0.0f;
+		return false;
+	}
 
-			return false;
-		}
+	public void PowerSliderChanged()
+	{
+		float power = powerSlider.value;
+		powerInputField.text = power.ToString();
+
+		this.power = power / 100.0f;
+	}
+
+	public void PowerInputFieldChanged()
+	{
+		float power = Mathf.Clamp(int.Parse(powerInputField.text), 0, 100);
+		powerSlider.value = power;
+		powerInputField.text = power.ToString();
+
+		this.power = power / 100.0f;
 	}
 }
