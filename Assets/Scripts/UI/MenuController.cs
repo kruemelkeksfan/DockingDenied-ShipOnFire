@@ -11,9 +11,6 @@ public class MenuController : MonoBehaviour, IListener
 	private static MenuController instance = null;
 
 	[SerializeField] private RectTransform uiTransform = null;
-	[SerializeField] private RectTransform moduleMenu = null;
-	[SerializeField] private InputField moduleNameField = null;
-	[SerializeField] private Dropdown hotkeySelectionField = null;
 	[SerializeField] private RectTransform moduleComponentSelectionPanel = null;
 	[SerializeField] private GameObject stationMainMenu = null;
 	[SerializeField] private Text stationNameField = null;
@@ -45,7 +42,6 @@ public class MenuController : MonoBehaviour, IListener
 	private GoodManager goodManager = null;
 	private QuestManager questManager = null;
 	private InfoController infoController = null;
-	private HotkeyModule activeModule = null;
 	private SpaceStationController activeStation = null;
 	private QuestVesselController activeQuestVessel = null;
 	private Dictionary<string, string> amountSettings = null;
@@ -88,29 +84,10 @@ public class MenuController : MonoBehaviour, IListener
 	{
 		if(!forceOpen)
 		{
-			// TODO: Dynamically search for Close-Buttons and press them (e.g. give them a special Tag), respect Order (close last active Panel in Hierarchy first)
-			if(activeStation != null)
+			Button closeButton = FindCloseButton();
+			if(closeButton != null)
 			{
-				if(stationQuestMenu.activeSelf)
-				{
-					ToggleQuests();
-				}
-				else if(stationTradingMenu.activeSelf)
-				{
-					ToggleTrading();
-				}
-				else
-				{
-					CloseStationMenu();
-				}
-			}
-			else if(activeQuestVessel != null)
-			{
-				CloseQuestVesselMenu();
-			}
-			else if(inventoryMenu.gameObject.activeSelf)
-			{
-				inventoryMenu.ToggleInventoryMenu();
+				closeButton.onClick.Invoke();
 			}
 			else if(buildingMenu.gameObject.activeSelf)
 			{
@@ -414,7 +391,7 @@ public class MenuController : MonoBehaviour, IListener
 
 	public void UpdateFlightControls()
 	{
-		bool flightControls = activeModule == null && activeStation == null && activeQuestVessel == null && !buildingMenu.gameObject.activeSelf && !inventoryMenu.gameObject.activeSelf && !mainMenu.activeSelf;
+		bool flightControls = !buildingMenu.gameObject.activeSelf && (FindCloseButton() == null);
 
 		localPlayerMainInputController.SetFlightControls(flightControls);
 		infoController.SetFlightControls(flightControls);
@@ -423,6 +400,21 @@ public class MenuController : MonoBehaviour, IListener
 	public void ResetTarget()
 	{
 		localPlayerMainSpacecraft.GetComponent<PlayerSpacecraftUIController>().SetTarget(null, null, null);
+	}
+
+	private Button FindCloseButton()
+	{
+		Button[] buttons = uiTransform.GetComponentsInChildren<Button>();
+		for(int i = buttons.Length - 1; i > 0; --i)
+		{
+			Text buttonText = buttons[i].GetComponentInChildren<Text>();
+			if(buttonText != null && buttonText.text == "Close")
+			{
+				return buttons[i];
+			}
+		}
+
+		return null;
 	}
 
 	private IEnumerator<float> UpdateNextUpdateField(double lastStationUpdate, float stationUpdateInterval)

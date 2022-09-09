@@ -394,6 +394,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		UpdateComponentButtons();
 
 		moduleMenu.SetActive(!moduleMenu.activeSelf);
+
+		menuController.UpdateFlightControls();
 	}
 
 	public void ComponentSlotClick(int componentSlotIndex)

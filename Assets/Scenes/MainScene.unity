@@ -7359,9 +7359,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   uiTransform: {fileID: 523977861}
-  moduleMenu: {fileID: 0}
-  moduleNameField: {fileID: 0}
-  hotkeySelectionField: {fileID: 0}
   moduleComponentSelectionPanel: {fileID: 7791415145602848215}
   stationMainMenu: {fileID: 601492268}
   stationNameField: {fileID: 1324499790}
