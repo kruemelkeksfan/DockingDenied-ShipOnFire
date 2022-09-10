@@ -18,8 +18,16 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private RectTransform[] stationQuestEntries = { };
 	[SerializeField] private GameObject stationTradingMenu = null;
 	[SerializeField] private Text playerMoneyField = null;
-	[SerializeField] private Text stationMoneyField = null;
 	[SerializeField] private Text nextUpdateField = null;
+	[SerializeField] private Button[] amountButtons = { };
+	[SerializeField] private Color amountHighlightColor = Color.blue;
+	[SerializeField] private InputField customAmountField = null;
+	[SerializeField] private float expensiveGoodFactor = 2.0f;
+	[SerializeField] private Color cheapPriceColor = Color.green;
+	[SerializeField] private Color normalPriceColor = Color.white;
+	[SerializeField] private Color expensivePriceColor = Color.red;
+	[SerializeField] private GameObject remoteTradeHint = null;
+	[SerializeField] private Text stationMoneyField = null;
 	[SerializeField] private RectTransform tradingContentPane = null;
 	[SerializeField] private GameObject emptyListIndicator = null;
 	[SerializeField] private RectTransform questVesselMenu = null;
@@ -44,11 +52,13 @@ public class MenuController : MonoBehaviour, IListener
 	private InfoController infoController = null;
 	private SpaceStationController activeStation = null;
 	private QuestVesselController activeQuestVessel = null;
-	private Dictionary<string, string> amountSettings = null;
 	private SpacecraftController localPlayerMainSpacecraft = null;
 	private InventoryController localPlayerMainInventory = null;
 	private InputController localPlayerMainInputController = null;
 	private TimeController.Coroutine nextUpdateFieldCoroutine = null;
+	private int amount = 1;
+	private ColorBlock amountButtonColors = ColorBlock.defaultColorBlock;
+	private ColorBlock amountButtonHighlightedColors = ColorBlock.defaultColorBlock;
 
 	public static MenuController GetInstance()
 	{
@@ -57,8 +67,6 @@ public class MenuController : MonoBehaviour, IListener
 
 	private void Awake()
 	{
-		amountSettings = new Dictionary<string, string>();
-
 		instance = this;
 	}
 
@@ -71,6 +79,14 @@ public class MenuController : MonoBehaviour, IListener
 		goodManager = GoodManager.GetInstance();
 		questManager = QuestManager.GetInstance();
 		infoController = InfoController.GetInstance();
+
+		amountButtonColors = amountButtons[0].colors;
+		amountButtonHighlightedColors.normalColor = amountHighlightColor;
+		amountButtonHighlightedColors.highlightedColor = amountHighlightColor;
+		amountButtonHighlightedColors.pressedColor = amountHighlightColor;
+		amountButtonHighlightedColors.selectedColor = amountHighlightColor;
+
+		SetHighlightedAmountButton(0);
 	}
 
 	public void Notify()
@@ -253,7 +269,7 @@ public class MenuController : MonoBehaviour, IListener
 		}
 	}
 
-	public void UpdateTrading(SpaceStationController requester, RectTransform[] tradingEntries, int stationMoney, double lastStationUpdate, float stationUpdateInterval)
+	public void UpdateTrading(SpaceStationController requester, RectTransform[] tradingEntries, int stationMoney, double lastStationUpdate, float stationUpdateInterval, bool remoteTrade)
 	{
 		if(requester == activeStation)
 		{
@@ -264,36 +280,115 @@ public class MenuController : MonoBehaviour, IListener
 			}
 			nextUpdateFieldCoroutine = timeController.StartCoroutine(UpdateNextUpdateField(lastStationUpdate, stationUpdateInterval), false);
 
-			playerMoneyField.text = localPlayerMainInventory.GetMoney() + "$";
+			int playerMoney = localPlayerMainInventory.GetMoney();
+			playerMoneyField.text = playerMoney + "$";
 			stationMoneyField.text = stationMoney + "$";
 
-			amountSettings.Clear();
+			remoteTradeHint.SetActive(remoteTrade);
+
 			for(int i = 1; i < tradingContentPane.childCount; ++i)
 			{
-				Transform child = tradingContentPane.GetChild(i);
-				amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(8).GetComponent<InputField>().text;
-				GameObject.Destroy(child.gameObject);
+				GameObject.Destroy(tradingContentPane.GetChild(i).gameObject);
 			}
 
 			foreach(RectTransform tradingEntry in tradingEntries)
 			{
 				tradingEntry.SetParent(tradingContentPane, false);
 
-				string goodName = tradingEntry.GetChild(0).GetComponent<Text>().text;
-				if(amountSettings.ContainsKey(goodName))
-				{
-					GoodManager.Good good = goodManager.GetGood(goodName);
-					int amount = Mathf.Abs(int.Parse(amountSettings[goodName]));
+				InventoryController playerInventory = localPlayerMainInventory;
+				InventoryController stationInventory = requester.GetInventoryController();
+				string goodName = tradingEntry.GetChild(3).GetComponent<Text>().text;
+				GoodManager.Good good = goodManager.GetGood(goodName);
+				uint playerAmount = playerInventory.GetGoodAmount(goodName);
+				uint stationAmount = stationInventory.GetGoodAmount(goodName);
 
-					tradingEntry.GetChild(3).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), -amount) + "$";
-					tradingEntry.GetChild(4).GetComponent<Text>().text = requester.CalculateGoodPrice(goodName, uint.Parse(tradingEntry.GetChild(2).GetComponent<Text>().text), amount) + "$";
-					tradingEntry.GetChild(5).GetComponent<Text>().text = (good.volume * amount) + "/" + localPlayerMainInventory.GetFreeCapacity(good) + " m3";
-					tradingEntry.GetChild(6).GetComponent<Text>().text = (good.mass * amount) + " t";
-					tradingEntry.GetChild(8).GetComponent<InputField>().text = amountSettings[goodName];
+				int amount = this.amount;
+				// Sell MAX
+				if(amount == -1)
+				{
+					amount = (int)playerAmount;
+					int maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, amount);
+					while(maxPrice > stationMoney)
+					{
+						--amount;
+						maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, amount);
+					}
+				}
+				// Buy MAX
+				else if(amount == -2)
+				{
+					amount = (int)stationAmount;
+					int maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount);
+					while(maxPrice > playerMoney)
+					{
+						--amount;
+						maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount);
+					}
+				}
+
+				int buyPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount);
+				Button buyButton = tradingEntry.GetChild(1).GetComponent<Button>();
+				Text buyPriceLabel = tradingEntry.GetChild(2).GetComponent<Text>();
+				if(stationAmount > 0)
+				{
+					buyButton.gameObject.SetActive(true);
+					buyButton.onClick.AddListener(delegate
+					{
+						requester.Trade(goodName, (uint)amount, playerInventory, stationInventory, stationAmount);
+					});
+
+					// TODO: Real Remote Trade Fees, based on Teleportation Distance and actually apply the fee
+					buyPriceLabel.text = (buyPrice + (remoteTrade ? (0 * amount) : 0)) + "$";
 				}
 				else
 				{
-					tradingEntry.GetChild(8).GetComponent<InputField>().text = "1";
+					buyButton.gameObject.SetActive(false);
+
+					buyPriceLabel.text = string.Empty;
+				}
+				tradingEntry.GetChild(3).GetComponent<Text>().text += " [" + good.state + "]";
+				InfoController localInfoController = infoController;
+				string localDescription = good.description;
+				tradingEntry.GetChild(4).GetComponent<Button>().onClick.AddListener(delegate
+				{
+					infoController.AddMessage(localDescription, false);
+				});
+				tradingEntry.GetChild(5).GetComponent<Text>().text = (good.volume * amount) + " m3";
+				tradingEntry.GetChild(6).GetComponent<Text>().text = (good.mass * amount).ToString("F2") + " t";
+				int sellPrice = requester.CalculateGoodPrice(goodName, stationAmount, amount);
+				Text sellPriceLabel = tradingEntry.GetChild(7).GetComponent<Text>();
+				Button sellButton = tradingEntry.GetChild(8).GetComponent<Button>();
+				if(playerAmount > 0)
+				{
+					sellPriceLabel.text = Mathf.Max(sellPrice - (remoteTrade ? (0 * amount) : 0), 0) + "$";
+
+					sellButton.gameObject.SetActive(true);
+					sellButton.onClick.AddListener(delegate
+					{
+						requester.Trade(goodName, (uint)amount, stationInventory, playerInventory, stationAmount);
+					});
+				}
+				else
+				{
+					sellPriceLabel.text = string.Empty;
+
+					sellButton.gameObject.SetActive(false);
+				}
+
+				if((buyPrice / (float)amount) < good.price)
+				{
+					tradingEntry.GetChild(2).GetComponent<Text>().color = cheapPriceColor;
+					tradingEntry.GetChild(7).GetComponent<Text>().color = cheapPriceColor;
+				}
+				else if((buyPrice / (float)amount) > good.price * expensiveGoodFactor)
+				{
+					tradingEntry.GetChild(2).GetComponent<Text>().color = expensivePriceColor;
+					tradingEntry.GetChild(7).GetComponent<Text>().color = expensivePriceColor;
+				}
+				else
+				{
+					tradingEntry.GetChild(2).GetComponent<Text>().color = normalPriceColor;
+					tradingEntry.GetChild(7).GetComponent<Text>().color = normalPriceColor;
 				}
 			}
 
@@ -481,5 +576,41 @@ public class MenuController : MonoBehaviour, IListener
 	public bool StationIsTrading(SpaceStationController requester)
 	{
 		return requester == activeStation && stationTradingMenu.activeSelf;
+	}
+
+	public void SetTradeAmount(int amount)
+	{
+		this.amount = amount;
+		activeStation.UpdateTrading();
+	}
+
+	public void SetCustomTradeAmount()
+	{
+		if(customAmountField.text.StartsWith("-"))
+		{
+			customAmountField.text = customAmountField.text.Remove(0, 1);
+		}
+		amount = int.Parse(customAmountField.text);
+		activeStation.UpdateTrading();
+
+		SetHighlightedAmountButton(-1);
+		customAmountField.colors = amountButtonHighlightedColors;
+	}
+
+	public void SetHighlightedAmountButton(int id)
+	{
+		for(int i = 0; i < amountButtons.Length; ++i)
+		{
+			if(i == id)
+			{
+				amountButtons[i].colors = amountButtonHighlightedColors;
+			}
+			else
+			{
+				amountButtons[i].colors = amountButtonColors;
+			}
+		}
+
+		customAmountField.colors = amountButtonColors;
 	}
 }
