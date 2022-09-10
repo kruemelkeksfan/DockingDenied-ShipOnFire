@@ -106,14 +106,13 @@ NOTE-TO-SELF: Test CoM Calculation, Test Moment of Inertia Calculation, Test Com
 -Implement Undocking Sound
 -Indicate in Docking Port Control Hint, whether Port is free or docked
 -Fix Stations having Docking Ports too close, so that only 1 Vessel can dock
--Good Description in Trade Menu only on Mouse-Over
+-Good Description in Trade Menu only on Mouse-Over (implemented with Button)
 -Redesign Trade Menu based on Port Royale 3 Trading Menu
--Fluid/Solid Capacity only in Top Bar in Trade Menu
+-Fluid/Solid Capacity only in Top Bar in Trade Menu (impossible to implement because each Container can only hold 1 Fluid)
 -Quantity Buttons next to Input Field in Trade Menu
 -Only 1 Set of Quantity Controls in Trade Menu
--Mark Fluids/Solids by different Background Color in Trade Menu
--Mark expensive/cheap Goods with different Price Font Color in Trade Menu
--Show Buy Price of Player-owned Goods in Trading Menu
+-Mark Fluids/Solids by different Background Color in Trade Menu (implemented by Text instead of Color)
+-Mark expensive/cheap Goods with different Price Font Color in Trade Menu based on Stock and Consumption
 -Remove Good Rewards for Quests
 -Do not require Docking for Quest Completion
 -Implement "Throttle Trimming" for Thrusters
