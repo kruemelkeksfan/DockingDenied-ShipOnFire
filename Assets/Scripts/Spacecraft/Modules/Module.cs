@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -423,11 +424,48 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				GameObject.Destroy(selectionList.GetChild(i).gameObject);
 			}
 
+			// Add Assemble Component Option
+			string assembleComponentName = goodManager.GetComponentName(slotType) + " [crude]";
+			GoodManager.ComponentData crudeComponentData = goodManager.GetComponentData(assembleComponentName);
+			RectTransform assembleComponentEntry = GameObject.Instantiate<RectTransform>(menuController.GetModuleComponentEntryPrefab(), selectionList);
+
+			Text[] assembleComponentEntryTexts = assembleComponentEntry.GetComponentsInChildren<Text>();
+			StringBuilder assembleString = new StringBuilder();
+			assembleString.Append("Assemble Component: \n");
+			bool first = true;
+			foreach(GoodManager.Load cost in crudeComponentData.buildingCosts)
+			{
+				if(!first)
+				{
+					assembleString.Append(", ");
+				}
+				assembleString.Append(cost.amount);
+				assembleString.Append(" ");
+				assembleString.Append(cost.goodName);
+
+				first = false;
+			}
+			assembleComponentEntryTexts[0].text = assembleString.ToString();
+			assembleComponentEntryTexts[1].text = ModuleComponent.GetAttributeList(crudeComponentData);
+
+			assembleComponentEntry.GetComponent<Button>().onClick.AddListener(delegate
+			{
+				Constructor constructor = null;
+				if((constructor = BuildingMenu.GetInstance().FindBuildingConstructor(transform.position, crudeComponentData.buildingCosts)) != null)
+				{
+					InstallComponent(assembleComponentName);
+					moduleComponentSelectionPanel.gameObject.SetActive(false);
+				}
+				else
+				{
+					infoController.AddMessage("Unable to assemble " + assembleComponentName + ", because there are either no Constructors in Range or no Building Materials available!", true);
+				}
+			});
+
 			// Fill Component Selection List
 			foreach(GoodManager.ComponentData componentData in inventoryController.GetModuleComponentsInInventory(slotType))
 			{
 				RectTransform componentSlotEntry = GameObject.Instantiate<RectTransform>(menuController.GetModuleComponentEntryPrefab(), selectionList);
-				selectionList.sizeDelta = selectionList.sizeDelta + new Vector2(0.0f, componentSlotEntry.sizeDelta.y);
 
 				Text[] componentSlotEntryTexts = componentSlotEntry.GetComponentsInChildren<Text>();
 				componentSlotEntryTexts[0].text = componentData.type.ToString() + " [" + componentData.quality + "]";

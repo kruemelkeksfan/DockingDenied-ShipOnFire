@@ -583,7 +583,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 		return true;
 	}
 
-	private Constructor FindBuildingConstructor(Vector2 position, GoodManager.Load[] materials)
+	public Constructor FindBuildingConstructor(Vector2 position, GoodManager.Load[] materials)
 	{
 		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
 		{
@@ -609,7 +609,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 		return null;
 	}
 
-	private Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials, SpacecraftController deconstructingSpacecraft)
+	public Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials, SpacecraftController deconstructingSpacecraft)
 	{
 		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
 		{
