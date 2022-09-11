@@ -18,7 +18,7 @@ public class SpacecraftManager : MonoBehaviour
 		}
 	}
 
-	public static SpacecraftManager instance = null;
+	private static SpacecraftManager instance = null;
 
 	[SerializeField] private SpacecraftController localPlayerSpacecraft = null;		// Temporary Solution until multiple Ships and Multiplayer is implemented
 	private GravityWellController gravityWellController = null;

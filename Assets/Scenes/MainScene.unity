@@ -3158,7 +3158,7 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_RootOrder
-      value: 16
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
@@ -3488,7 +3488,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &438357388
 GameObject:
@@ -3624,7 +3624,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &452516120
 GameObject:
@@ -4133,7 +4133,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &488042605
 GameObject:
@@ -4355,7 +4355,7 @@ RectTransform:
   - {fileID: 1438289197}
   - {fileID: 817186073}
   m_Father: {fileID: 0}
-  m_RootOrder: 12
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -6098,7 +6098,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &702266748
 GameObject:
@@ -6288,7 +6288,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 13
+  m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: -20, z: 0}
 --- !u!1001 &724742951
 PrefabInstance:
@@ -7954,7 +7954,6 @@ MonoBehaviour:
   interactButton: {fileID: 1843211680}
   mainMenu: {fileID: 1438289196}
   buildingMenu: {fileID: 2000540777}
-  inventoryMenu: {fileID: 336802295}
   mapMarkerParent: {fileID: 926470443}
   orbitMarkerParent: {fileID: 817186073}
   moduleMenuButtonPrefab: {fileID: 1283022792540517676, guid: 9da894d43bec88e458efc8793a86f401,
@@ -7978,7 +7977,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &899978991
 GameObject:
@@ -8771,9 +8770,9 @@ MonoBehaviour:
     - Secondary Fuel Consumption
     - Thrust
     attributeValues:
-    - 1
-    - 1
-    - 1000
+    - 160
+    - 0.06
+    - 2000
   - goodName: Fuel Pump
     description: The practical solution to supply hydrogen engines with absurd amounts
       of fuel and oxidizer per second.
@@ -8843,8 +8842,10 @@ MonoBehaviour:
       amount: 2
     - goodName: Silicon
       amount: 4
-    attributeNames: []
-    attributeValues: []
+    attributeNames:
+    - Energy Cost Reduction
+    attributeValues:
+    - 1
   - goodName: Construction Unit
     description: A combined CNC- and cold-welding-machine which can autonomously
       construct structures.
@@ -8867,8 +8868,10 @@ MonoBehaviour:
       amount: 1
     - goodName: Silicon
       amount: 3
-    attributeNames: []
-    attributeValues: []
+    attributeNames:
+    - Energy Cost Reduction
+    attributeValues:
+    - 1
   - goodName: Assembler Unit
     description: A precision machine for assembling the most delicate circuits and
       gadgets. Sadly, it wastes a lot of material.
@@ -8891,8 +8894,10 @@ MonoBehaviour:
       amount: 2
     - goodName: Silicon
       amount: 4
-    attributeNames: []
-    attributeValues: []
+    attributeNames:
+    - Energy Cost Reduction
+    attributeValues:
+    - 1
   componentCostFactor: 2
   componentPowerFactor: 1.5
 --- !u!4 &926687709
@@ -14357,7 +14362,7 @@ Transform:
   - {fileID: 32073811}
   - {fileID: 22031117}
   m_Father: {fileID: 0}
-  m_RootOrder: 14
+  m_RootOrder: 15
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1372876022
 MonoBehaviour:
@@ -14888,6 +14893,52 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -35}
   m_SizeDelta: {x: 500, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
+--- !u!1 &1429713920
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1429713921}
+  - component: {fileID: 1429713922}
+  m_Layer: 0
+  m_Name: ComponentManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1429713921
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1429713920}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1429713922
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1429713920}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f0e79669e09598f43a400c266c53c4c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  teleportationEnergyCost: 0.0002
+  constructionEnergyCost: 2
 --- !u!1001 &1435049328
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15724,7 +15775,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1466514765 stripped
 MonoBehaviour:
@@ -18882,7 +18933,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1821346603 stripped
 MonoBehaviour:
@@ -21722,7 +21773,7 @@ PrefabInstance:
     - target: {fileID: 8025485152524623507, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
       propertyPath: m_RootOrder
-      value: 15
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 8025485152524623507, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}

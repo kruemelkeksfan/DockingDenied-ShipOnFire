@@ -37,7 +37,6 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private Button interactButton = null;
 	[SerializeField] private GameObject mainMenu = null;
 	[SerializeField] private BuildingMenu buildingMenu = null;
-	[SerializeField] private InventoryScreenController inventoryMenu = null;
 	[SerializeField] private Transform mapMarkerParent = null;
 	[SerializeField] private Transform orbitMarkerParent = null;
 	// Keep these Module Variables here instead of in Module so that we don't have to set them manually for each Module Prefab

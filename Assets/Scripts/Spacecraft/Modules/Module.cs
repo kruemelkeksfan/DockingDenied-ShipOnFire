@@ -337,13 +337,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			Text[] componentSlotEntryTexts = componentSlotEntry.GetComponentsInChildren<Text>();
 			if(!componentSlots[componentType].IsSet())
 			{
-				componentSlotEntryTexts[0].text = componentType.ToString() + " <empty>";
+				componentSlotEntryTexts[0].text = goodManager.GetComponentName(componentType);
+				componentSlotEntryTexts[1].text = "<empty>";
 			}
 			else
 			{
-				componentSlotEntryTexts[0].text = componentType.ToString() + " [" + componentSlots[componentType].GetQuality() + "]";
+				componentSlotEntryTexts[0].text = componentSlots[componentType].GetName();
+				componentSlotEntryTexts[1].text = componentSlots[componentType].GetAttributeList();
 			}
-			componentSlotEntryTexts[1].text = componentSlots[componentType].GetAttributeList();
 		}
 	}
 

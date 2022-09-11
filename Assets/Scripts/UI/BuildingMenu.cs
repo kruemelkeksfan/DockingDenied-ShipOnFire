@@ -585,52 +585,114 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 
 	public Constructor FindBuildingConstructor(Vector2 position, GoodManager.Load[] materials)
 	{
+		bool constructorInRange = false;
+		int errorCode = 0;
 		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
 		{
 			if(constructor.PositionInRange(position))
 			{
+				constructorInRange = true;
 				SpaceStationController spaceStationController = constructor.GetSpaceStationController();
 				if(spaceStationController != null)
 				{
-					if(spaceStationController.BuyConstructionMaterials(materials))
+					if((errorCode = constructor.TryConstruction(position, materials)) == 0 && spaceStationController.BuyConstructionMaterials(materials))
 					{
 						return constructor;
 					}
 				}
-				else if(constructor.GetInventoryController().WithdrawBulk(materials))
+				else if((errorCode = constructor.TryConstruction(position, materials)) == 0 && constructor.GetInventoryController().WithdrawBulk(materials))
 				{
 					return constructor;
 				}
 			}
 		}
 
-		infoController.AddMessage("Either there is no Constructor in Range or no Construction Materials could be provided!", true);
+		if(!constructorInRange)
+		{
+			infoController.AddMessage("There is no Constructor in Range!", true);
+		}
+		else if(errorCode == 1)
+		{
+			infoController.AddMessage("Constructor Module is missing a Teleporter!", true);
+		}
+		else if(errorCode == 2)
+		{
+			infoController.AddMessage("Constructor Module is missing a Capacitor!", true);
+		}
+		else if(errorCode == 3)
+		{
+			infoController.AddMessage("Constructor Module is missing a Construction Unit!", true);
+		}
+		else if(errorCode == 4)
+		{
+			infoController.AddMessage("Not enough Energy available for Construction!", true);
+		}
+		else if(errorCode == 0)
+		{
+			infoController.AddMessage("Not enough Building Materials available!", true);
+		}
+		else
+		{
+			infoController.AddMessage("An unknown Error ocurred during Construction!", true);
+			Debug.LogWarning("Unknown Error " + constructorInRange + " " + errorCode + " ocurred during Construction!");
+		}
 
 		return null;
 	}
 
 	public Constructor FindDeconstructionConstructor(Vector2 position, GoodManager.Load[] materials, SpacecraftController deconstructingSpacecraft)
 	{
+		bool constructorInRange = false;
+		int errorCode = 0;
 		foreach(Constructor constructor in spacecraftManager.GetConstructorsNearPosition(position))
 		{
 			if(constructor.GetSpacecraft() != deconstructingSpacecraft && constructor.PositionInRange(position))
 			{
+				constructorInRange = true;
 				SpaceStationController spaceStationController = constructor.GetSpaceStationController();
 				if(spaceStationController != null)
 				{
-					if(spaceStationController.SellDeconstructionMaterials(materials))
+					if((errorCode = constructor.TryConstruction(position, materials)) == 0 && spaceStationController.SellDeconstructionMaterials(materials))
 					{
 						return constructor;
 					}
 				}
-				else if(constructor.GetInventoryController().DepositBulk(materials))
+				else if((errorCode = constructor.TryConstruction(position, materials)) == 0 && constructor.GetInventoryController().DepositBulk(materials))
 				{
 					return constructor;
 				}
 			}
 		}
 
-		infoController.AddMessage("Either there is no Constructor in Range or the Materials could not be sold or stored! Ships may not disassemble themselves!", true);
+		if(!constructorInRange)
+		{
+			infoController.AddMessage("There is no Constructor in Range! Ships may not disassemble themselves!", true);
+		}
+		else if(errorCode == 1)
+		{
+			infoController.AddMessage("Constructor Module is missing a Teleporter!", true);
+		}
+		else if(errorCode == 2)
+		{
+			infoController.AddMessage("Constructor Module is missing a Capacitor!", true);
+		}
+		else if(errorCode == 3)
+		{
+			infoController.AddMessage("Constructor Module is missing a Construction Unit!", true);
+		}
+		else if(errorCode == 4)
+		{
+			infoController.AddMessage("Not enough Energy available for Deconstruction!", true);
+		}
+		else if(errorCode == 0)
+		{
+			infoController.AddMessage("Deconstruction Materials could not be sold or stored!", true);
+		}
+		else
+		{
+			infoController.AddMessage("An unknown Error ocurred during Deconstruction!", true);
+			Debug.LogWarning("Unknown Error " + constructorInRange + " " + errorCode + " ocurred during Deconstruction!");
+		}
 
 		return null;
 	}

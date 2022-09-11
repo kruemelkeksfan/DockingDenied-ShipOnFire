@@ -16,8 +16,6 @@ public class InventoryScreenController : MonoBehaviour, IListener
 
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
 		Notify();
-
-		gameObject.SetActive(false);
 	}
 
 	public void Notify()
@@ -27,6 +25,12 @@ public class InventoryScreenController : MonoBehaviour, IListener
 
 	public void ToggleInventoryMenu()
 	{
+		if(menuController == null)
+		{
+			menuController = MenuController.GetInstance();
+			Notify();
+		}
+
 		gameObject.SetActive(!gameObject.activeSelf);
 		menuController.UpdateFlightControls();
 		if(gameObject.activeSelf)

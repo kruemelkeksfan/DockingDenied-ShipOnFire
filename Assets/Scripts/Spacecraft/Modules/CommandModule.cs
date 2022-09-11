@@ -15,7 +15,7 @@ public class CommandModule : Module
 		radarDish.Rotate(0.0f, 0.0f, Random.value * 360.0f);
 
 		emergencyPowerSupply = new EnergyStorage();
-
+		AddComponentSlot(GoodManager.ComponentType.EmergencyPowerSupply, emergencyPowerSupply);
 		inventoryController.AddBattery(emergencyPowerSupply);
 	}
 

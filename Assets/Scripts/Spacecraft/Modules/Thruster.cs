@@ -13,7 +13,7 @@ public class Thruster : Module
 	private Engine engine = null;
 	private Vector2 thrustDirection = Vector2.zero;
 	private float throttle = 0.0f;
-	private float fuelSupply = 1.0f;                                    // TODO: Start with 0.0f, once Remote Trading is implemented
+	private float fuelSupply = 0.0f;
 	private ParticleSystem thrustParticles = null;
 	private ParticleSystem.MainModule thrustParticlesMain = new ParticleSystem.MainModule();
 	private Vector3 initialParticleSize = Vector3.zero;
@@ -78,7 +78,8 @@ public class Thruster : Module
 		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
 		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && !gravityWellController.IsOriginShifted())
 		{
-			if((engine.GetSecondaryFuelConsumption() * throttle * power) > fuelSupply)
+			float deltaTime = timeController.GetFixedDeltaTime();
+			if((engine.GetSecondaryFuelConsumption() * throttle * power * deltaTime) > fuelSupply)
 			{
 				if(inventoryController.Withdraw(fuelName, 1))
 				{
@@ -95,15 +96,15 @@ public class Thruster : Module
 				}
 			}
 
-			float finalThrottle = throttle * power * capacitor.DischargePartial(engine.GetPrimaryFuelConsumption() * throttle * power * timeController.GetFixedDeltaTime());
+			float finalThrottle = throttle * power * capacitor.DischargePartial(engine.GetPrimaryFuelConsumption() * throttle * power * deltaTime);
 
-			fuelSupply -= engine.GetSecondaryFuelConsumption() * finalThrottle;
+			fuelSupply -= engine.GetSecondaryFuelConsumption() * finalThrottle * deltaTime;
 
 			thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * finalThrottle;
 			thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * finalThrottle;
 			thrustParticlesMain.startSizeZMultiplier = initialParticleSize.z * finalThrottle;
 
-			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustDirection * engine.GetThrust() * finalThrottle * timeController.GetFixedDeltaTime(),
+			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustDirection * engine.GetThrust() * finalThrottle * deltaTime,
 				transform.position, ForceMode2D.Impulse);
 		}
 	}

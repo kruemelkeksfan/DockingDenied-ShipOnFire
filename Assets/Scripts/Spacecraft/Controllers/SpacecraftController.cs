@@ -442,7 +442,9 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	private bool SetThrusterGroupThrottle(ThrusterGroup thrusterGroup, float throttle, HashSet<Thruster> inactiveThrusters)
 	{
 		bool thrusting = false;
-		foreach(Thruster thruster in thrusters[(int)thrusterGroup])
+		// Buffer in extra Variable to avoid Concurrent Modification when Fuel is being taken from Inventory and Center of Mass is recalculated
+		HashSet<Thruster> thrusters = new HashSet<Thruster>(this.thrusters[(int)thrusterGroup]);
+		foreach(Thruster thruster in thrusters)
 		{
 			if(thruster.SetThrottle(throttle))
 			{

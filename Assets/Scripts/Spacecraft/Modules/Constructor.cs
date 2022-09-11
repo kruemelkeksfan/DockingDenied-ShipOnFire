@@ -13,6 +13,9 @@ public class Constructor : Module
 	private SpaceStationController spaceStationController = null;
 	private Color startColor = Color.white;
 	private Color endColor = Color.white;
+	private EnergyStorage capacitor = null;
+	private Teleporter teleporter = null;
+	private ConstructionUnit constructionUnit = null;
 
 	protected override void Start()
 	{
@@ -28,6 +31,16 @@ public class Constructor : Module
 		base.Build(position, listenUpdates, listenFixedUpdates);
 
 		spaceStationController = GetComponentInParent<SpaceStationController>();
+
+		capacitor = new EnergyStorage();
+		AddComponentSlot(GoodManager.ComponentType.Capacitor, capacitor);
+		inventoryController.AddEnergyConsumer(capacitor);
+
+		teleporter = new Teleporter();
+		AddComponentSlot(GoodManager.ComponentType.Teleporter, teleporter);
+
+		constructionUnit = new ConstructionUnit();
+		AddComponentSlot(GoodManager.ComponentType.ConstructionUnit, constructionUnit);
 
 		SpacecraftManager.GetInstance().AddConstructor(this);
 		ToggleController.GetInstance().AddToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
@@ -46,6 +59,11 @@ public class Constructor : Module
 		// TODO: Why InverseTransformPosition in the 1st Part instead of using transform.position in the 2nd Part?
 		Vector2 direction = (Vector2)transform.InverseTransformPoint(position) - (Vector2)transform.localPosition;
 		return direction.x >= -constructionRange && direction.x <= constructionRange && direction.y >= -constructionRange && direction.y <= constructionRange;
+	}
+
+	public int TryConstruction(Vector2 targetPosition, GoodManager.Load[] constructionCosts)
+	{
+		return constructionUnit.Construct(transform.position, position, constructionCosts,	teleporter, capacitor);
 	}
 
 	public void StartConstruction(Vector2 position)

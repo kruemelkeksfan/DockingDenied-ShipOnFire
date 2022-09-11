@@ -87,7 +87,7 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 			textBuilder.Append("$ / Mass - ");
 			textBuilder.Append(Mathf.RoundToInt(playerSpacecraftRigidbody.mass));
 			textBuilder.Append(" t / Energy - ");
-			textBuilder.Append(playerSpacecraftInventoryController.GetEnergyKWH(true));
+			textBuilder.Append(playerSpacecraftInventoryController.GetEnergyString(true));
 			resourceDisplay.text = textBuilder.ToString();
 			/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
 		+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/
