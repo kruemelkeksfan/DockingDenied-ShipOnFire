@@ -400,10 +400,10 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				tradingEntries[i] = GameObject.Instantiate<RectTransform>(tradingEntryPrefab);
 				GoodManager.Good good = goodManager.GetGood(goodNames[i]);
-				tradingEntries[i].GetChild(0).GetComponent<Text>().text = tradingInventory[goodNames[i]].playerAmount.ToString()
+				tradingEntries[i].GetChild(0).GetComponentInChildren<Text>().text = goodNames[i];
+				tradingEntries[i].GetChild(4).GetComponent<Text>().text = tradingInventory[goodNames[i]].playerAmount.ToString()
 					+ "/" + localPlayerMainInventory.GetFreeCapacity(good) + " m3";
-				tradingEntries[i].GetChild(3).GetComponent<Text>().text = goodNames[i];
-				tradingEntries[i].GetChild(9).GetComponent<Text>().text = tradingInventory[goodNames[i]].stationAmount.ToString()
+				tradingEntries[i].GetChild(7).GetComponent<Text>().text = tradingInventory[goodNames[i]].stationAmount.ToString()
 					+ "/" + inventoryController.GetFreeCapacity(good) + " m3";
 
 				if(!odd)
@@ -419,11 +419,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	}
 
 	public bool Trade(string goodName, uint tradeAmount, InventoryController buyer, InventoryController seller, uint stationAmount,
-		bool dumpGoods = false, bool hollowSale = false)
+		bool dumpGoods = false, bool hollowSale = false, int price = int.MinValue)
 	{
 		int money = buyer.GetMoney();
 		uint availableAmount = seller.GetGoodAmount(goodName);
-		int totalPrice = CalculateGoodPrice(goodName, stationAmount, (buyer == localPlayerMainInventory ? (int)-tradeAmount : (int)tradeAmount));
+		int totalPrice = (price == int.MinValue) ? CalculateGoodPrice(goodName, stationAmount, (buyer == localPlayerMainInventory ? (int)-tradeAmount : (int)tradeAmount)) : price;
 		if(money >= totalPrice)
 		{
 			if(hollowSale || availableAmount >= tradeAmount)
@@ -666,6 +666,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	public string GetStationName()
 	{
 		return stationName;
+	}
+
+	public Teleporter GetTeleporter()
+	{
+		return GetComponentInChildren<Constructor>().GetModuleComponent<Teleporter>(GoodManager.ComponentType.Teleporter);
 	}
 
 	public void SetStationName(string stationName)

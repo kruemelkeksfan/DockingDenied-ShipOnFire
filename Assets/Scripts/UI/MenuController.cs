@@ -23,9 +23,11 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private Color amountHighlightColor = Color.blue;
 	[SerializeField] private InputField customAmountField = null;
 	[SerializeField] private float expensiveGoodFactor = 2.0f;
-	[SerializeField] private Color cheapPriceColor = Color.green;
+	[SerializeField] private Color goodPriceColor = Color.green;
 	[SerializeField] private Color normalPriceColor = Color.white;
-	[SerializeField] private Color expensivePriceColor = Color.red;
+	[SerializeField] private Color badPriceColor = Color.red;
+	[SerializeField] private float remoteTradeFeeFactor = 5.0f;
+	[SerializeField] private float remoteTradeFeeRecalculationDistance = 50.0f;
 	[SerializeField] private GameObject remoteTradeHint = null;
 	[SerializeField] private Text stationMoneyField = null;
 	[SerializeField] private RectTransform tradingContentPane = null;
@@ -52,6 +54,7 @@ public class MenuController : MonoBehaviour, IListener
 	private SpaceStationController activeStation = null;
 	private QuestVesselController activeQuestVessel = null;
 	private SpacecraftController localPlayerMainSpacecraft = null;
+	private Transform localPlayerMainTransform = null;
 	private InventoryController localPlayerMainInventory = null;
 	private InputController localPlayerMainInputController = null;
 	private TimeController.Coroutine nextUpdateFieldCoroutine = null;
@@ -91,6 +94,7 @@ public class MenuController : MonoBehaviour, IListener
 	public void Notify()
 	{
 		localPlayerMainSpacecraft = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft();
+		localPlayerMainTransform = localPlayerMainSpacecraft.GetTransform();
 		localPlayerMainInventory = localPlayerMainSpacecraft.GetComponent<InventoryController>();
 		localPlayerMainInputController = localPlayerMainSpacecraft.GetComponent<InputController>();
 	}
@@ -292,79 +296,94 @@ public class MenuController : MonoBehaviour, IListener
 
 			foreach(RectTransform tradingEntry in tradingEntries)
 			{
+				// Place Entry in List
 				tradingEntry.SetParent(tradingContentPane, false);
 
+				// Get Good Data and Stocks
 				InventoryController playerInventory = localPlayerMainInventory;
 				InventoryController stationInventory = requester.GetInventoryController();
-				string goodName = tradingEntry.GetChild(3).GetComponent<Text>().text;
+				string goodName = tradingEntry.GetChild(0).GetComponentInChildren<Text>().text;
 				GoodManager.Good good = goodManager.GetGood(goodName);
 				uint playerAmount = playerInventory.GetGoodAmount(goodName);
 				uint stationAmount = stationInventory.GetGoodAmount(goodName);
 
+				// Calculate Amount
 				int amount = this.amount;
 				// Sell MAX
 				if(amount == -1)
 				{
-					amount = (int)playerAmount;
-					int maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, amount);
+					amount = Mathf.Min((int)playerAmount, (int)stationInventory.GetFreeCapacity(good));
+					int maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, amount)
+						- (remoteTrade ? Mathf.CeilToInt(requester.GetTeleporter().CalculateTeleportationEnergyCost(
+						requester.GetTransform().position, localPlayerMainTransform.position, (good.mass * amount)) * remoteTradeFeeFactor) : 0);
 					while(maxPrice > stationMoney)
 					{
 						--amount;
-						maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, amount);
+						maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, amount)
+							- (remoteTrade ? Mathf.CeilToInt(requester.GetTeleporter().CalculateTeleportationEnergyCost(
+							requester.GetTransform().position, localPlayerMainTransform.position, (good.mass * amount)) * remoteTradeFeeFactor) : 0);
 					}
 				}
 				// Buy MAX
 				else if(amount == -2)
 				{
-					amount = (int)stationAmount;
-					int maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount);
+					amount = Mathf.Min((int)stationAmount, (int)playerInventory.GetFreeCapacity(good));
+					int maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount)
+						+ (remoteTrade ? Mathf.CeilToInt(requester.GetTeleporter().CalculateTeleportationEnergyCost(
+						requester.GetTransform().position, localPlayerMainTransform.position, (good.mass * amount)) * remoteTradeFeeFactor) : 0);
 					while(maxPrice > playerMoney)
 					{
 						--amount;
-						maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount);
+						maxPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount)
+							+ (remoteTrade ? Mathf.CeilToInt(requester.GetTeleporter().CalculateTeleportationEnergyCost(
+							requester.GetTransform().position, localPlayerMainTransform.position, (good.mass * amount)) * remoteTradeFeeFactor) : 0);
 					}
 				}
 
+				// Set Entry Fields
+				InfoController localInfoController = infoController;
+				string localDescription = good.description;
+				tradingEntry.GetChild(0).GetComponent<Button>().onClick.AddListener(delegate
+				{
+					localInfoController.AddMessage(localDescription, false);
+				});
+				tradingEntry.GetChild(1).GetComponent<Text>().text = good.state.ToString();
+				tradingEntry.GetChild(2).GetComponent<Text>().text = (good.volume * amount) + " m3";
+				tradingEntry.GetChild(3).GetComponent<Text>().text = (good.mass * amount).ToString("F2") + " t";
 				int buyPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount);
-				Button buyButton = tradingEntry.GetChild(1).GetComponent<Button>();
-				Text buyPriceLabel = tradingEntry.GetChild(2).GetComponent<Text>();
+				Text buyPriceLabel = tradingEntry.GetChild(5).GetComponentInChildren<Text>();
+				Button buyButton = tradingEntry.GetChild(5).GetComponent<Button>();
 				if(stationAmount > 0)
 				{
+					buyPrice += remoteTrade ? Mathf.CeilToInt(requester.GetTeleporter().CalculateTeleportationEnergyCost(
+						requester.GetTransform().position, localPlayerMainTransform.position, (good.mass * amount)) * remoteTradeFeeFactor) : 0;
+					buyPriceLabel.text = buyPrice + "$";
+
 					buyButton.gameObject.SetActive(true);
 					buyButton.onClick.AddListener(delegate
 					{
-						requester.Trade(goodName, (uint)amount, playerInventory, stationInventory, stationAmount);
+						requester.Trade(goodName, (uint)amount, playerInventory, stationInventory, stationAmount, false, false, buyPrice);
 					});
-
-					// TODO: Real Remote Trade Fees, based on Teleportation Distance and actually apply the fee
-					buyPriceLabel.text = (buyPrice + (remoteTrade ? (0 * amount) : 0)) + "$";
 				}
 				else
 				{
-					buyButton.gameObject.SetActive(false);
-
 					buyPriceLabel.text = string.Empty;
+
+					buyButton.gameObject.SetActive(false);
 				}
-				tradingEntry.GetChild(3).GetComponent<Text>().text += " [" + good.state + "]";
-				InfoController localInfoController = infoController;
-				string localDescription = good.description;
-				tradingEntry.GetChild(4).GetComponent<Button>().onClick.AddListener(delegate
-				{
-					infoController.AddMessage(localDescription, false);
-				});
-				tradingEntry.GetChild(5).GetComponent<Text>().text = (good.volume * amount) + " m3";
-				tradingEntry.GetChild(6).GetComponent<Text>().text = (good.mass * amount).ToString("F2") + " t";
 				int sellPrice = requester.CalculateGoodPrice(goodName, stationAmount, amount);
-				Text sellPriceLabel = tradingEntry.GetChild(7).GetComponent<Text>();
-				Button sellButton = tradingEntry.GetChild(8).GetComponent<Button>();
+				Text sellPriceLabel = tradingEntry.GetChild(6).GetComponentInChildren<Text>();
+				Button sellButton = tradingEntry.GetChild(6).GetComponent<Button>();
 				if(playerAmount > 0)
 				{
-					sellPriceLabel.text = Mathf.Max(sellPrice - (remoteTrade ? (0 * amount) : 0), 0) + "$";
+					sellPrice -= remoteTrade ? Mathf.CeilToInt(requester.GetTeleporter().CalculateTeleportationEnergyCost(
+						requester.GetTransform().position, localPlayerMainTransform.position, (good.mass * amount)) * remoteTradeFeeFactor) : 0;
+					sellPriceLabel.text = Mathf.Max(sellPrice, 0) + "$";
 
 					sellButton.gameObject.SetActive(true);
 					sellButton.onClick.AddListener(delegate
 					{
-						requester.Trade(goodName, (uint)amount, stationInventory, playerInventory, stationAmount);
+						requester.Trade(goodName, (uint)amount, stationInventory, playerInventory, stationAmount, false, false, sellPrice);
 					});
 				}
 				else
@@ -374,20 +393,30 @@ public class MenuController : MonoBehaviour, IListener
 					sellButton.gameObject.SetActive(false);
 				}
 
+				// Mark cheap and expensive Prices
 				if((buyPrice / (float)amount) < good.price)
 				{
-					tradingEntry.GetChild(2).GetComponent<Text>().color = cheapPriceColor;
-					tradingEntry.GetChild(7).GetComponent<Text>().color = cheapPriceColor;
+					buyPriceLabel.color = goodPriceColor;
 				}
 				else if((buyPrice / (float)amount) > good.price * expensiveGoodFactor)
 				{
-					tradingEntry.GetChild(2).GetComponent<Text>().color = expensivePriceColor;
-					tradingEntry.GetChild(7).GetComponent<Text>().color = expensivePriceColor;
+					buyPriceLabel.color = badPriceColor;
 				}
 				else
 				{
-					tradingEntry.GetChild(2).GetComponent<Text>().color = normalPriceColor;
-					tradingEntry.GetChild(7).GetComponent<Text>().color = normalPriceColor;
+					buyPriceLabel.color = normalPriceColor;
+				}
+				if((sellPrice / (float)amount) < good.price)
+				{
+					sellPriceLabel.color = badPriceColor;
+				}
+				else if((sellPrice / (float)amount) > good.price * expensiveGoodFactor)
+				{
+					sellPriceLabel.color = goodPriceColor;
+				}
+				else
+				{
+					sellPriceLabel.color = normalPriceColor;
 				}
 			}
 
@@ -514,8 +543,16 @@ public class MenuController : MonoBehaviour, IListener
 	private IEnumerator<float> UpdateNextUpdateField(double lastStationUpdate, float stationUpdateInterval)
 	{
 		int remainingTime = 0;
+		float lastDistance = (activeStation.GetTransform().position - localPlayerMainTransform.position).magnitude;
 		while(stationTradingMenu.activeSelf && remainingTime >= 0)
 		{
+			float currentDistance = (activeStation.GetTransform().position - localPlayerMainTransform.position).magnitude;
+			if(remoteTradeHint.activeSelf && Math.Abs(lastDistance - currentDistance) >= remoteTradeFeeRecalculationDistance)
+			{
+				activeStation.UpdateTrading();
+				lastDistance = currentDistance;
+			}
+
 			remainingTime = Math.Max((int)((lastStationUpdate + stationUpdateInterval) - timeController.GetTime()), 0);
 			nextUpdateField.text = remainingTime + " s";
 			yield return 1.0f;

@@ -506,6 +506,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return emptyComponentSlots;
 	}
 
+	public T GetModuleComponent<T>(GoodManager.ComponentType componentType) where T : ModuleComponent
+	{
+		return (T) componentSlots[componentType];
+	}
+
 	public string GetModuleName()
 	{
 		return moduleName;
