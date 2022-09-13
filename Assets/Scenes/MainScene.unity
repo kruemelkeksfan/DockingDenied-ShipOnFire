@@ -8218,7 +8218,7 @@ MonoBehaviour:
     volume: 2
     flammability: 1
     consumption: 0
-    price: 200
+    price: 1
     type: 1
     quality: 0
     buildingCosts:
@@ -8242,7 +8242,7 @@ MonoBehaviour:
     volume: 10
     flammability: 0.8
     consumption: 0
-    price: 50
+    price: 1
     type: 2
     quality: 0
     buildingCosts:
@@ -8268,7 +8268,7 @@ MonoBehaviour:
     volume: 4
     flammability: 0
     consumption: 0
-    price: 50
+    price: 1
     type: 3
     quality: 0
     buildingCosts:
@@ -8291,7 +8291,7 @@ MonoBehaviour:
     volume: 1
     flammability: 1
     consumption: 0
-    price: 60
+    price: 1
     type: 4
     quality: 0
     buildingCosts:
@@ -8314,7 +8314,7 @@ MonoBehaviour:
     volume: 1
     flammability: 1
     consumption: 0
-    price: 80
+    price: 1
     type: 5
     quality: 0
     buildingCosts:
@@ -8337,7 +8337,7 @@ MonoBehaviour:
     volume: 12
     flammability: 0
     consumption: 0
-    price: 20
+    price: 1
     type: 6
     quality: 0
     buildingCosts:
@@ -8362,7 +8362,7 @@ MonoBehaviour:
     volume: 40
     flammability: 0.2
     consumption: 0
-    price: 40
+    price: 1
     type: 7
     quality: 0
     buildingCosts:
@@ -8387,7 +8387,7 @@ MonoBehaviour:
     volume: 1
     flammability: 1.2
     consumption: 0
-    price: 200
+    price: 1
     type: 8
     quality: 0
     buildingCosts:
@@ -8412,7 +8412,7 @@ MonoBehaviour:
     volume: 4
     flammability: 2
     consumption: 0
-    price: 80
+    price: 1
     type: 9
     quality: 0
     buildingCosts:
@@ -8437,7 +8437,7 @@ MonoBehaviour:
     volume: 1
     flammability: 2
     consumption: 0
-    price: 120
+    price: 1
     type: 10
     quality: 0
     buildingCosts:
@@ -8462,7 +8462,7 @@ MonoBehaviour:
     volume: 20
     flammability: 1
     consumption: 0
-    price: 200
+    price: 1
     type: 11
     quality: 0
     buildingCosts:
@@ -8487,7 +8487,7 @@ MonoBehaviour:
     volume: 1
     flammability: 0.2
     consumption: 0
-    price: 80
+    price: 1
     type: 12
     quality: 0
     buildingCosts:
@@ -8511,7 +8511,7 @@ MonoBehaviour:
     volume: 2
     flammability: 0
     consumption: 0
-    price: 120
+    price: 1
     type: 13
     quality: 0
     buildingCosts:
@@ -8535,7 +8535,7 @@ MonoBehaviour:
     volume: 4
     flammability: 2
     consumption: 0
-    price: 300
+    price: 1
     type: 14
     quality: 0
     buildingCosts:
@@ -8559,7 +8559,7 @@ MonoBehaviour:
     volume: 6
     flammability: 1
     consumption: 0
-    price: 160
+    price: 1
     type: 15
     quality: 0
     buildingCosts:
@@ -8589,7 +8589,7 @@ MonoBehaviour:
     volume: 1
     flammability: 1
     consumption: 0
-    price: 60
+    price: 1
     type: 16
     quality: 0
     buildingCosts:
@@ -8612,7 +8612,7 @@ MonoBehaviour:
     volume: 4
     flammability: 0.2
     consumption: 0
-    price: 40
+    price: 1
     type: 17
     quality: 0
     buildingCosts:
@@ -8636,7 +8636,7 @@ MonoBehaviour:
     volume: 2
     flammability: 1
     consumption: 0
-    price: 240
+    price: 1
     type: 18
     quality: 0
     buildingCosts:
@@ -8662,7 +8662,7 @@ MonoBehaviour:
     volume: 10
     flammability: 1
     consumption: 0
-    price: 120
+    price: 1
     type: 19
     quality: 0
     buildingCosts:
@@ -8688,7 +8688,7 @@ MonoBehaviour:
     volume: 10
     flammability: 1
     consumption: 0
-    price: 160
+    price: 1
     type: 20
     quality: 0
     buildingCosts:
@@ -8708,6 +8708,7 @@ MonoBehaviour:
     - 1
   componentCostFactor: 2
   componentPowerFactor: 1.5
+  moduleComponentPriceFactor: 0.2
 --- !u!4 &926687709
 Transform:
   m_ObjectHideFlags: 0

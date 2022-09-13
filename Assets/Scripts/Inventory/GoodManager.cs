@@ -68,6 +68,8 @@ public class GoodManager : MonoBehaviour
 	[SerializeField] private float componentCostFactor = 2.5f;
 	[Tooltip("How much more powerful do Components get with every Quality Level?")]
 	[SerializeField] private float componentPowerFactor = 2.0f;
+	[Tooltip("An additional Penalty for Module Component Prices, because Resources are dirt cheap due to vast Supply in the early Game.")]
+	[SerializeField] private float moduleComponentPriceFactor = 0.2f;
 	private Dictionary<string, Good> goodDictionary = null;
 	private Dictionary<ComponentType, string> componentNames = null;
 
@@ -123,7 +125,13 @@ public class GoodManager : MonoBehaviour
 				qualityComponent.volume = component.volume;
 				qualityComponent.flammability = component.flammability;
 				qualityComponent.consumption = component.consumption;
-				qualityComponent.price = component.price * componentCostFactor;
+				// TODO: Use Iridium Cost for Price Calculation to enable Moneymaking with Components at the Cost of Iridium
+				float price = 0.0f;
+				for(int i = 0; i < component.buildingCosts.Length; ++i)
+				{
+					price += GetGood(component.buildingCosts[i].goodName).price * component.buildingCosts[i].amount;
+				}
+				qualityComponent.price = Mathf.FloorToInt(price * componentCostFactor * moduleComponentPriceFactor);
 				qualityComponent.type = component.type;
 				qualityComponent.quality = quality;
 				qualityComponent.buildingCosts = new Load[component.buildingCosts.Length];
@@ -179,6 +187,11 @@ public class GoodManager : MonoBehaviour
 	public string GetComponentName(ComponentType type)
 	{
 		return componentNames[type];
+	}
+
+	public string GetRandomComponentName(ComponentQuality quality)
+	{
+		return components[UnityEngine.Random.Range(0, components.Length)].goodName + " [" + quality.ToString() + "]";
 	}
 
 	public Dictionary<string, Good> GetGoodDictionary()
