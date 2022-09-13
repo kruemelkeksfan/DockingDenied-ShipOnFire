@@ -330,7 +330,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 	public string GetEnergyString(bool showTotal = false)
 	{
-		return storedEnergy.ToString("F2") + (showTotal ? ("/" + energyCapacity.ToString("F2") + "kWs") : "");
+		return storedEnergy.ToString("F2") + (showTotal ? ("/" + energyCapacity.ToString("F2")) : "") + " kWs";
 	}
 
 	public int GetMoney()

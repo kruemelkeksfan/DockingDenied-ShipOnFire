@@ -8404,7 +8404,7 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 320
+    - 20000
   - goodName: Power Cells
     description: A heavy but cheap mass energy storage.
     state: 0
@@ -8429,7 +8429,7 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 3200
+    - 300000
   - goodName: Emergency Power Supply
     description: A small and lightweight battery for emergency use.
     state: 0
@@ -8454,7 +8454,7 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 800
+    - 60000
   - goodName: Solar Panel
     description: The classic way of generating free power in space.
     state: 0
@@ -8477,9 +8477,9 @@ MonoBehaviour:
     - goodName: Silicon
       amount: 8
     attributeNames:
-    - Maximum Production
+    - Energy Production
     attributeValues:
-    - 160
+    - 40
   - goodName: Breech
     description: The loading mechanism for a classical cannon.
     state: 0
@@ -8578,9 +8578,9 @@ MonoBehaviour:
     - Secondary Fuel Consumption
     - Thrust
     attributeValues:
-    - 160
-    - 0.06
-    - 2000
+    - 6000
+    - 0.00002
+    - 500
   - goodName: Fuel Pump
     description: The practical solution to supply hydrogen engines with absurd amounts
       of fuel and oxidizer per second.

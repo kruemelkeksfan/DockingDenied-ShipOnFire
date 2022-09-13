@@ -82,15 +82,22 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 		if(updateResourceDisplay)
 		{
 			textBuilder.Clear();
-			textBuilder.Append("Money - ");
 			textBuilder.Append(playerSpacecraftInventoryController.GetMoney());
-			textBuilder.Append("$ / Mass - ");
+			textBuilder.Append("$ / ");
 			textBuilder.Append(Mathf.RoundToInt(playerSpacecraftRigidbody.mass));
 			textBuilder.Append(" t / Energy - ");
 			textBuilder.Append(playerSpacecraftInventoryController.GetEnergyString(true));
+			textBuilder.Append(" / Xe - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Xenon"));
+			textBuilder.Append(" t / H2 - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Hydrogen"));
+			textBuilder.Append(" t / O2 - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Oxygen"));
+			textBuilder.Append(" t / Food - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Food"));
+			textBuilder.Append(" t / H2O - ");
+			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Water"));
 			resourceDisplay.text = textBuilder.ToString();
-			/* + " / Hydrogen - " + inventoryController.GetGoodAmount("Hydrogen") + " / Oxygen - " + inventoryController.GetGoodAmount("Oxygen")
-		+ " / Food - " + inventoryController.GetGoodAmount("Food") + " / Water - " + inventoryController.GetGoodAmount("Water")*/
 
 			updateResourceDisplay = false;
 		}
