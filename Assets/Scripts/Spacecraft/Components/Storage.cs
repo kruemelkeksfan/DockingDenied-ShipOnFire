@@ -13,10 +13,11 @@ public class Storage : ModuleComponent
 	{
 		if(load > 0)
 		{
+			InfoController.GetInstance().AddMessage("'" + GetName() + "'-Component can not be removed, because it is not empty!", true);
 			return false;
 		}
 
-		base.UpdateComponentData(componentName);
+		bool result = base.UpdateComponentData(componentName);
 
 		if(componentName != null)
 		{
@@ -29,7 +30,7 @@ public class Storage : ModuleComponent
 
 		load = 0;
 
-		return true;
+		return result;
 	}
 
 	public bool Deposit(uint volume)

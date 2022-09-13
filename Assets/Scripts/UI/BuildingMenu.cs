@@ -188,20 +188,30 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			{
 				if(module.GetModuleName() != "Command Module")
 				{
-					if(module.UninstallAllComponents())
+					List<GoodManager.Load> removedComponents = module.RemoveAllComponents();
+					if(removedComponents != null)
 					{
 						Vector3 position = module.GetTransform().position;
 						Constructor constructor = null;
-						if(cheaterMode || (constructor = FindDeconstructionConstructor(position, module.GetBuildingCosts(), localPlayerMainSpacecraft)) != null)
+						List<GoodManager.Load> deconstructionMaterials = new List<GoodManager.Load>(module.GetBuildingCosts());
+						deconstructionMaterials.AddRange(removedComponents);
+						if(cheaterMode || (constructor = FindDeconstructionConstructor(position, deconstructionMaterials.ToArray(), localPlayerMainSpacecraft)) != null)
 						{
 							constructor?.StartConstruction(position);
 
 							module.Deconstruct();
 						}
+						else
+						{
+							foreach(GoodManager.Load removedComponent in removedComponents)
+							{
+								module.InstallComponent(removedComponent.goodName);
+							}
+						}
 					}
 					else
 					{
-						infoController.AddMessage("Can't deconstruct Module, because there is no Storage Space to store the installed Components!", true);
+						infoController.AddMessage("Can't deconstruct Module, because its Components could not be removed!", true);
 					}
 				}
 				else

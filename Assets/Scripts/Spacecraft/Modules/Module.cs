@@ -307,24 +307,31 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return false;
 	}
 
-	public bool UninstallAllComponents()
+	public List<GoodManager.Load> RemoveAllComponents()
 	{
+		List<GoodManager.Load> removedComponents = new List<GoodManager.Load>();
 		foreach(GoodManager.ComponentType componentSlot in orderedComponentSlots)
 		{
 			if(componentSlots[componentSlot].IsSet())
 			{
-				if(inventoryController.Deposit(componentSlots[componentSlot].GetName(), 1))
+				string componentName = componentSlots[componentSlot].GetName();
+				if(RemoveComponent(componentSlot))
 				{
-					RemoveComponent(componentSlot);
+					removedComponents.Add(new GoodManager.Load(componentName, 1));
 				}
 				else
 				{
-					return false;
+					foreach(GoodManager.Load removedComponent in removedComponents)
+					{
+						InstallComponent(removedComponent.goodName);
+					}
+
+					return null;
 				}
 			}
 		}
 
-		return true;
+		return removedComponents;
 	}
 
 	private void UpdateComponentButtons()
@@ -406,13 +413,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 		if(componentSlots[slotType].IsSet())
 		{
-			if(inventoryController.Deposit(componentSlots[slotType].GetName(), 1))
+			string componentName = componentSlots[slotType].GetName();
+			if(RemoveComponent(slotType))
 			{
-				RemoveComponent(slotType);
-			}
-			else
-			{
-				infoController.AddMessage("Unable to remove " + componentSlots[slotType].GetName() + ", because there is to Space to store it!", true);
+				if(!inventoryController.Deposit(componentName, 1))
+				{
+					InstallComponent(componentName);
+					infoController.AddMessage("Unable to remove '" + componentName + "', because there is to Space to store it!", true);
+				}
 			}
 		}
 		else
@@ -508,7 +516,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public T GetModuleComponent<T>(GoodManager.ComponentType componentType) where T : ModuleComponent
 	{
-		return (T) componentSlots[componentType];
+		return (T)componentSlots[componentType];
 	}
 
 	public string GetModuleName()
