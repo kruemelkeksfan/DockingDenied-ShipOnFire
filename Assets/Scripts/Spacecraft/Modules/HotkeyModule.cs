@@ -33,7 +33,7 @@ public class HotkeyModule : Module, IHotkeyListener
 
 	public override void Deconstruct()
 	{
-		inputController.RemoveHotkey(hotkey, this);
+		inputController?.RemoveHotkey(hotkey, this);
 
 		base.Deconstruct();
 	}

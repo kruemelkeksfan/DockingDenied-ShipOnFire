@@ -97,6 +97,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			else if(timeController.GetTime() > questCompleteTime + despawnDelay && (transform.position - localPlayerSpacecraftTransform.position).sqrMagnitude > playerDespawnDistance)
 			{
 				timeController.StartCoroutine(SpawnController.GetInstance().DespawnObject(rigidbody), false);
+				timeController.RemoveUpdateListener(this);
 			}
 		}
 		else
@@ -278,10 +279,10 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 		{
 			hint = "Dock to interact! You will need a Battery!";
 			interactable = true;
-			interactionLabel = "Jump-Start with 5kWh";
+			interactionLabel = "Jump-Start with 10 kWh";
 			interaction = delegate
 					{
-						if(localPlayerMainInventory.TransferEnergy(-18000.0f))
+						if(localPlayerMainInventory.TransferEnergy(-10.0f))
 						{
 							quest.progress = 1.0f;
 						}

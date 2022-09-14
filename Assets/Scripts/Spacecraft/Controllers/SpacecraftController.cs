@@ -109,6 +109,9 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		toggleController?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 		toggleController?.RemoveToggleObject("COMIndicators", foreignCenterOfMassIndicator.gameObject);
 
+		// Deconstruct all Modules to make sure that all Deconstructors are called properly
+		DeconstructModules(false);
+
 		timeController?.RemoveUpdateListener(this);
 		timeController?.RemoveFixedUpdateListener(this);
 	}

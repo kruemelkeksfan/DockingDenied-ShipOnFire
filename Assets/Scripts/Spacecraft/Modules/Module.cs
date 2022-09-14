@@ -189,10 +189,10 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 		spacecraft.UpdateMass();
 
-		GameObject.Destroy(gameObject);
-
 		timeController.RemoveUpdateListener(this);
 		timeController.RemoveFixedUpdateListener(this);
+
+		GameObject.Destroy(gameObject);
 	}
 
 	public void Rotate(int direction)

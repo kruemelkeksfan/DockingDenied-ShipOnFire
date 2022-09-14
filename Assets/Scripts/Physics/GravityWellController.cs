@@ -607,7 +607,7 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 							}
 						}
 
-						infoController.AddMessage(collisionMessage.ToString(), false);
+						infoController.AddMessage(collisionMessage.ToString(), true);
 
 						return true;
 					}

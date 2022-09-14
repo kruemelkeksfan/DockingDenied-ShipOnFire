@@ -104,17 +104,17 @@ public class SpawnController : MonoBehaviour
 
 		despawnObject.gameObject.layer = 9;
 
-		Transform spawnObjectTransform = despawnObject.GetComponent<Transform>();
-		Vector3 spawnObjectSize = spawnObjectTransform.localScale;
+		Transform despawnObjectTransform = despawnObject.GetComponent<Transform>();
+		Vector3 despawnObjectSize = despawnObjectTransform.localScale;
 		float speed = 0.0f;
-		while(despawnObject.transform.position.z < spawnHeight)
+		while(despawnObjectTransform.position.z < spawnHeight)
 		{
 			// Add Sqrt(height) to Acceleration to accelerate Disappearance slightly
 			float deltaTime = timeController.GetDeltaTime();
 			speed += (disappearingAcceleration + Mathf.Sqrt(despawnObject.transform.position.z)) * deltaTime;
-			spawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * deltaTime);
+			despawnObjectTransform.position += new Vector3(0.0f, 0.0f, speed * deltaTime);
 			float currentSize = 1.0f - (despawnObject.transform.position.z / spawnHeight);
-			spawnObjectTransform.localScale = spawnObjectSize * currentSize;
+			despawnObjectTransform.localScale = despawnObjectSize * currentSize;
 
 			yield return -1.0f;
 		}
