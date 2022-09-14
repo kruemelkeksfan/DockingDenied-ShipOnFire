@@ -25,9 +25,10 @@ public class Teleporter : ModuleComponent
 		return true;
 	}
 
+	// Calculate Teleportation Energy Cost per Kilometer
 	public float CalculateTeleportationEnergyCost(Vector2 source, Vector2 destination, float mass)
 	{
-		return ((destination - source).magnitude * mass * teleportationEnergyCost) / energyCostReduction;
+		return (Mathf.Ceil((destination - source).magnitude / 1000.0f) * mass * teleportationEnergyCost) / energyCostReduction;
 	}
 
 	public bool Teleport(Vector2 source, Vector2 destination, float mass, EnergyStorage capacitor)

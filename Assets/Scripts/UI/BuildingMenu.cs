@@ -614,6 +614,11 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 				{
 					return constructor;
 				}
+
+				if(errorCode == 0)
+				{
+					constructor.RollbackConstruction();
+				}
 			}
 		}
 
@@ -670,6 +675,11 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 				else if((errorCode = constructor.TryConstruction(position, materials)) == 0 && constructor.GetInventoryController().DepositBulk(materials))
 				{
 					return constructor;
+				}
+				
+				if(errorCode == 0)
+				{
+					constructor.RollbackConstruction();
 				}
 			}
 		}

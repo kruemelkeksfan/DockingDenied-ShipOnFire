@@ -63,7 +63,12 @@ public class Constructor : Module
 
 	public int TryConstruction(Vector2 targetPosition, GoodManager.Load[] constructionCosts)
 	{
-		return constructionUnit.Construct(transform.position, position, constructionCosts,	teleporter, capacitor);
+		return constructionUnit.Construct(transform.position, targetPosition, constructionCosts,	teleporter, capacitor);
+	}
+
+	public void RollbackConstruction()
+	{
+		constructionUnit.Rollback(capacitor);
 	}
 
 	public void StartConstruction(Vector2 position)
@@ -74,7 +79,6 @@ public class Constructor : Module
 
 	private IEnumerator<float> Construction(Vector3 position)
 	{
-		// TODO: Object Pooling
 		LineRenderer constructionBeam = GameObject.Instantiate<LineRenderer>(constructionBeamPrefab, beamOrigin.position, beamOrigin.rotation, transform);
 		constructionBeam.SetPositions(new Vector3[]{Vector3.zero, transform.InverseTransformPoint(position)});
 

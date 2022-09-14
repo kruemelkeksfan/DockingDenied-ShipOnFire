@@ -57,7 +57,8 @@ public class ConstructionUnit : ModuleComponent
 		float energyCost = constructorTeleporter.CalculateTeleportationEnergyCost(constructorPosition, targetPosition, mass);
 		energyCost += (constructionEnergyCost * mass) / energyCostReduction;
 
-		if(constructorCapacitor.GetCharge() >= energyCost)
+		float charge = constructorCapacitor.GetCharge();
+		if(charge >= energyCost)
 		{
 			lastEnergyCost = energyCost;
 			if(constructorTeleporter.Teleport(constructorPosition, targetPosition, mass, constructorCapacitor)
@@ -65,14 +66,19 @@ public class ConstructionUnit : ModuleComponent
 			{
 				return 0;
 			}
+			else
+			{
+				Debug.LogWarning("Capacitor does not have " + energyCost + " kWh for Construction, although it should have " + charge + " kWh!");
+				return 4;
+			}
 		}
 		else
 		{
+			InfoController.GetInstance().AddMessage(energyCost.ToString("F2") + " kWh needed for Construction, but only "
+				+ charge.ToString("F2") + " are available in the Capacitor!", false);
 			lastEnergyCost = 0.0f;
 			return 4;
 		}
-
-		return 5;
 	}
 
 	public void Rollback(EnergyStorage constructionCapacitor)

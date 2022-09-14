@@ -277,11 +277,11 @@ public class InventoryController : MonoBehaviour, IListener
 			yield return energyUpdateInterval;
 
 			float energy = transferEnergy;
-			float deltaTime = (float)(timeController.GetTime() - lastUpdate);
+			double deltaTimeHours = (timeController.GetTime() - lastUpdate) / 3600.0;
 			lastUpdate = timeController.GetTime();
 			foreach(EnergyProducer producer in energyProducers)
 			{
-				energy += producer.GetProduction() * deltaTime;
+				energy += (float)(producer.GetProduction() * deltaTimeHours);
 			}
 
 			foreach(EnergyStorage battery in batteries)
@@ -330,7 +330,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 	public string GetEnergyString(bool showTotal = false)
 	{
-		return storedEnergy.ToString("F2") + (showTotal ? ("/" + energyCapacity.ToString("F2")) : "") + " kWs";
+		return storedEnergy.ToString("F2") + (showTotal ? ("/" + energyCapacity.ToString("F2")) : "") + " kWh";
 	}
 
 	public int GetMoney()

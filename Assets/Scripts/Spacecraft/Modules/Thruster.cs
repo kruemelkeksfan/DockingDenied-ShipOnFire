@@ -96,7 +96,7 @@ public class Thruster : Module
 				}
 			}
 
-			float finalThrottle = throttle * power * capacitor.DischargePartial(engine.GetPrimaryFuelConsumption() * throttle * power * deltaTime);
+			float finalThrottle = throttle * power * capacitor.DischargePartial((float)(engine.GetPrimaryFuelConsumption() * throttle * power * (deltaTime / 36000.0)));
 
 			fuelSupply -= engine.GetSecondaryFuelConsumption() * finalThrottle * deltaTime;
 

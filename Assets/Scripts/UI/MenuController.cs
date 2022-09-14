@@ -27,7 +27,7 @@ public class MenuController : MonoBehaviour, IListener
 	[SerializeField] private Color normalPriceColor = Color.white;
 	[SerializeField] private Color badPriceColor = Color.red;
 	[SerializeField] private float remoteTradeFeeFactor = 5.0f;
-	[SerializeField] private float remoteTradeFeeRecalculationDistance = 50.0f;
+	[SerializeField] private float remoteTradeFeeRecalculationDistance = 500.0f;
 	[SerializeField] private GameObject remoteTradeHint = null;
 	[SerializeField] private Text stationMoneyField = null;
 	[SerializeField] private RectTransform tradingContentPane = null;

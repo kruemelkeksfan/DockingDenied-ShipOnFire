@@ -6,7 +6,6 @@ using UnityEngine;
 [Serializable]
 public class EnergyProducer : ModuleComponent
 {
-	// Energy Production in kW, 1m^2 of SciFi Solar Panel in this Game is suppossed to produce 0.4kW, the 400m^2 of one Module therefore produce 160kW
 	private float production = 0.0f;
 	private float productionModifier = 1.0f;
 

@@ -124,6 +124,8 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * maxGoodStockFactor));
 		}
 
+		inventoryController.TransferEnergy(float.MaxValue);
+
 		timeController = TimeController.GetInstance();
 		timeController.AddUpdateListener(this);
 

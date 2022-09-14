@@ -3691,7 +3691,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 335905432}
   m_HandleRect: {fileID: 335905431}
   m_Direction: 2
-  m_Value: 0
+  m_Value: 1
   m_Size: 1
   m_NumberOfSteps: 0
   m_OnValueChanged:
@@ -7847,8 +7847,8 @@ MonoBehaviour:
   goodPriceColor: {r: 0.4, g: 1, b: 0.4, a: 1}
   normalPriceColor: {r: 0.7529412, g: 0.7529412, b: 0.7529412, a: 1}
   badPriceColor: {r: 1, g: 0.4, b: 0.4, a: 1}
-  remoteTradeFeeFactor: 5
-  remoteTradeFeeRecalculationDistance: 50
+  remoteTradeFeeFactor: 100
+  remoteTradeFeeRecalculationDistance: 500
   remoteTradeHint: {fileID: 1587523688}
   stationMoneyField: {fileID: 488042607}
   tradingContentPane: {fileID: 1286345669}
@@ -8404,7 +8404,7 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 20000
+    - 10
   - goodName: Power Cells
     description: A heavy but cheap mass energy storage.
     state: 0
@@ -8429,7 +8429,7 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 300000
+    - 80
   - goodName: Emergency Power Supply
     description: A small and lightweight battery for emergency use.
     state: 0
@@ -8454,7 +8454,7 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 60000
+    - 20
   - goodName: Solar Panel
     description: The classic way of generating free power in space.
     state: 0
@@ -8578,9 +8578,9 @@ MonoBehaviour:
     - Secondary Fuel Consumption
     - Thrust
     attributeValues:
-    - 6000
-    - 0.00002
-    - 500
+    - 12000
+    - 0.00004
+    - 1000
   - goodName: Fuel Pump
     description: The practical solution to supply hydrogen engines with absurd amounts
       of fuel and oxidizer per second.
@@ -14742,8 +14742,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f0e79669e09598f43a400c266c53c4c9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  teleportationEnergyCost: 0.0002
-  constructionEnergyCost: 2
+  teleportationEnergyCost: 0.02
+  constructionEnergyCost: 0.01
 --- !u!1001 &1435049328
 PrefabInstance:
   m_ObjectHideFlags: 0
