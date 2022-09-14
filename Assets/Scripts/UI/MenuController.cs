@@ -378,7 +378,8 @@ public class MenuController : MonoBehaviour, IListener
 				{
 					sellPrice -= remoteTrade ? Mathf.CeilToInt(requester.GetTeleporter().CalculateTeleportationEnergyCost(
 						requester.GetTransform().position, localPlayerMainTransform.position, (good.mass * amount)) * remoteTradeFeeFactor) : 0;
-					sellPriceLabel.text = Mathf.Max(sellPrice, 0) + "$";
+					sellPrice = Mathf.Max(sellPrice, 0);
+					sellPriceLabel.text = sellPrice + "$";
 
 					sellButton.gameObject.SetActive(true);
 					sellButton.onClick.AddListener(delegate
@@ -397,10 +398,12 @@ public class MenuController : MonoBehaviour, IListener
 				if((buyPrice / (float)amount) < good.price)
 				{
 					buyPriceLabel.color = goodPriceColor;
+					buyPriceLabel.text += " +";
 				}
 				else if((buyPrice / (float)amount) > good.price * expensiveGoodFactor)
 				{
 					buyPriceLabel.color = badPriceColor;
+					buyPriceLabel.text += " -";
 				}
 				else
 				{
@@ -409,10 +412,12 @@ public class MenuController : MonoBehaviour, IListener
 				if((sellPrice / (float)amount) < good.price)
 				{
 					sellPriceLabel.color = badPriceColor;
+					sellPriceLabel.text += " -";
 				}
 				else if((sellPrice / (float)amount) > good.price * expensiveGoodFactor)
 				{
 					sellPriceLabel.color = goodPriceColor;
+					sellPriceLabel.text += " +";
 				}
 				else
 				{
