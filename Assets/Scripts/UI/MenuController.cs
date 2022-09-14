@@ -350,6 +350,7 @@ public class MenuController : MonoBehaviour, IListener
 				tradingEntry.GetChild(1).GetComponent<Text>().text = good.state.ToString();
 				tradingEntry.GetChild(2).GetComponent<Text>().text = (good.volume * amount) + " m3";
 				tradingEntry.GetChild(3).GetComponent<Text>().text = (good.mass * amount).ToString("F2") + " t";
+				int localAmount = amount;
 				int buyPrice = requester.CalculateGoodPrice(goodName, stationAmount, -amount);
 				Text buyPriceLabel = tradingEntry.GetChild(5).GetComponentInChildren<Text>();
 				Button buyButton = tradingEntry.GetChild(5).GetComponent<Button>();
@@ -362,7 +363,7 @@ public class MenuController : MonoBehaviour, IListener
 					buyButton.gameObject.SetActive(true);
 					buyButton.onClick.AddListener(delegate
 					{
-						requester.Trade(goodName, (uint)amount, playerInventory, stationInventory, stationAmount, false, false, buyPrice);
+						requester.Trade(goodName, (uint)localAmount, playerInventory, stationInventory, stationAmount, false, false, buyPrice);
 					});
 				}
 				else
@@ -384,7 +385,7 @@ public class MenuController : MonoBehaviour, IListener
 					sellButton.gameObject.SetActive(true);
 					sellButton.onClick.AddListener(delegate
 					{
-						requester.Trade(goodName, (uint)amount, stationInventory, playerInventory, stationAmount, false, false, sellPrice);
+						requester.Trade(goodName, (uint)localAmount, stationInventory, playerInventory, stationAmount, false, false, sellPrice);
 					});
 				}
 				else
@@ -395,6 +396,7 @@ public class MenuController : MonoBehaviour, IListener
 				}
 
 				// Mark cheap and expensive Prices
+				amount = Mathf.Max(amount, 1);
 				if((buyPrice / (float)amount) < good.price)
 				{
 					buyPriceLabel.color = goodPriceColor;
