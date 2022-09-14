@@ -256,16 +256,25 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	public bool InstallComponent(string componentName)
 	{
-		GoodManager.ComponentType componentType = goodManager.GetComponentData(componentName).type;
+		GoodManager.ComponentData componentData = goodManager.GetComponentData(componentName);
+		GoodManager.ComponentType componentType = componentData.type;
 		if(componentSlots.ContainsKey(componentType))
 		{
 			if(!componentSlots[componentType].IsSet())
 			{
 				bool componentSwapSuccess = componentSlots[componentType].UpdateComponentData(componentName);
+
 				if(moduleMenu != null)
 				{
 					UpdateComponentButtons();
 				}
+
+				if(componentSwapSuccess)
+				{
+					mass += componentData.mass;
+					spacecraft.UpdateMass();
+				}
+
 				return componentSwapSuccess;
 			}
 			else
@@ -287,11 +296,20 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		{
 			if(componentSlots[componentType].IsSet())
 			{
+				string componentName = componentSlots[componentType].GetName();
 				bool componentSwapSuccess = componentSlots[componentType].UpdateComponentData(null);
+
 				if(moduleMenu != null)
 				{
 					UpdateComponentButtons();
 				}
+
+				if(componentSwapSuccess)
+				{
+					mass -= goodManager.GetComponentData(componentName).mass;
+					spacecraft.UpdateMass();
+				}
+
 				return componentSwapSuccess;
 			}
 			else
@@ -416,7 +434,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			string componentName = componentSlots[slotType].GetName();
 			if(RemoveComponent(slotType))
 			{
-				if(!inventoryController.Deposit(componentName, 1))
+				if(inventoryController.Deposit(componentName, 1))
+				{
+					infoController.AddMessage("Successfully removed '" + componentName + "'!", false);
+				}
+				else
 				{
 					InstallComponent(componentName);
 					infoController.AddMessage("Unable to remove '" + componentName + "', because there is to Space to store it!", true);

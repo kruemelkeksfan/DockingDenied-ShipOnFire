@@ -277,7 +277,6 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 				{
 					int massPositionCount = (moduleData.Value.HasOverlappingReservePositions() ? 1 : moduleData.Value.GetReservedPositionCount());
 					float positionMass = moduleData.Value.GetMass() / massPositionCount;
-					;
 
 					// Approximate Modules as Cubes and use Steiner's Theorem to calculate their Moment of Inertia around the Ships Center of Mass
 					// https://en.wikipedia.org/wiki/List_of_moments_of_inertia
