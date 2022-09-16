@@ -7,7 +7,7 @@ public class GameController : MonoBehaviour, IUpdateListener
 {
 	private static GameController instance = null;
 	private static string deathMessage = null;
-	
+
 	private TimeController timeController = null;
 	private MenuController menuController = null;
 	private ToggleController toggleController = null;
@@ -67,6 +67,14 @@ public class GameController : MonoBehaviour, IUpdateListener
 		}
 	}
 
+	public void RestartConfirmation()
+	{
+		InfoController.GetInstance().ActivateConfirmationPanel("Do you want to restart the Game?", delegate
+		{
+			Restart();
+		});
+	}
+
 	public void Restart(string message = null)
 	{
 		if(!string.IsNullOrEmpty(message))
@@ -79,6 +87,9 @@ public class GameController : MonoBehaviour, IUpdateListener
 
 	public void Quit()
 	{
-		Application.Quit();
+		InfoController.GetInstance().ActivateConfirmationPanel("Do you want to quit the Game?", delegate
+		{
+			Application.Quit();
+		});
 	}
 }

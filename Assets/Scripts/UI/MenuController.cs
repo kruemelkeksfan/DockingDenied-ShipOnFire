@@ -400,12 +400,18 @@ public class MenuController : MonoBehaviour, IListener
 				if((buyPrice / (float)amount) < good.price)
 				{
 					buyPriceLabel.color = goodPriceColor;
-					buyPriceLabel.text += " +";
+					if(infoController.IsColorblindModeActivated())
+					{
+						buyPriceLabel.text += " +";
+					}
 				}
 				else if((buyPrice / (float)amount) > good.price * expensiveGoodFactor)
 				{
 					buyPriceLabel.color = badPriceColor;
-					buyPriceLabel.text += " -";
+					if(infoController.IsColorblindModeActivated())
+					{
+						buyPriceLabel.text += " -";
+					}
 				}
 				else
 				{
@@ -414,12 +420,18 @@ public class MenuController : MonoBehaviour, IListener
 				if((sellPrice / (float)amount) < good.price)
 				{
 					sellPriceLabel.color = badPriceColor;
-					sellPriceLabel.text += " -";
+					if(infoController.IsColorblindModeActivated())
+					{
+						sellPriceLabel.text += " -";
+					}
 				}
 				else if((sellPrice / (float)amount) > good.price * expensiveGoodFactor)
 				{
 					sellPriceLabel.color = goodPriceColor;
-					sellPriceLabel.text += " +";
+					if(infoController.IsColorblindModeActivated())
+					{
+						sellPriceLabel.text += " +";
+					}
 				}
 				else
 				{

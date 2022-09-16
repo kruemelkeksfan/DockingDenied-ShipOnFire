@@ -26,6 +26,10 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 	[SerializeField] private GameObject keyBindingDisplay = null;
 	[SerializeField] private Text showFlightInfoButtonText = null;
 	[SerializeField] private AudioClip warningAudio = null;
+	[SerializeField] private Text colorblindModeText = null;
+	[SerializeField] private GameObject confirmationPanel = null;
+	[SerializeField] private Text confirmationPanelText = null;
+	[SerializeField] private Button confirmationPanelConfirmButton = null;
 	private TimeController timeController = null;
 	private AudioController audioController = null;
 	private GravityWellController gravityWellController = null;
@@ -44,6 +48,7 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 	private bool showFlightInfo = false;
 	private double expiryTime = -1.0;
 	private bool flightControls = true;
+	private bool colorblindMode = false;
 
 	public static InfoController GetInstance()
 	{
@@ -291,6 +296,22 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 		updateBuildingResourceDisplay = true;
 	}
 
+	public void ActivateConfirmationPanel(string text, UnityEngine.Events.UnityAction confirmationAction)
+	{
+		confirmationPanelText.text = text;
+
+		confirmationPanelConfirmButton.onClick.RemoveAllListeners();
+		confirmationPanelConfirmButton.onClick.AddListener(confirmationAction);
+		confirmationPanelConfirmButton.onClick.AddListener(delegate { DeactivateConfirmationPanel(); } );
+
+		confirmationPanel.SetActive(true);
+	}
+
+	public void DeactivateConfirmationPanel()
+	{
+		confirmationPanel.SetActive(false);
+	}
+
 	public void ToggleFlightInfo()
 	{
 		showFlightInfo = !showFlightInfo;
@@ -302,6 +323,20 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 		else
 		{
 			showFlightInfoButtonText.text = showFlightInfoButtonText.text.Replace("Hide", "Show");
+		}
+	}
+
+	public void ToggleColorblindMode()
+	{
+		colorblindMode = !colorblindMode;
+
+		if(colorblindMode)
+		{
+			colorblindModeText.text = colorblindModeText.text.Replace("Enable", "Disable");
+		}
+		else
+		{
+			colorblindModeText.text = colorblindModeText.text.Replace("Disable", "Enable");
 		}
 	}
 
@@ -322,6 +357,11 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 	public int GetMessageCount()
 	{
 		return messages.Count;
+	}
+
+	public bool IsColorblindModeActivated()
+	{
+		return colorblindMode;
 	}
 
 	public void SetShowBuildingResourceDisplay(bool showBuildingResourceDisplay)
