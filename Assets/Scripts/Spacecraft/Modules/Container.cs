@@ -1,14 +1,16 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class Container : Module
 {
-    [SerializeField] protected GoodManager.State state = GoodManager.State.solid;
+	[SerializeField] protected GoodManager.State state = GoodManager.State.solid;
 	[Tooltip("Cargo Racks or Tank System?")]
 	[SerializeField] private GoodManager.ComponentType storageComponentType = GoodManager.ComponentType.CargoRacks;
 	protected Storage storage = null;
 	protected Dictionary<string, uint> loads = null;
+	private float cargoMass = 0.0f;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -19,6 +21,8 @@ public class Container : Module
 		inventoryController.AddContainer(this);
 
 		loads = new Dictionary<string, uint>();
+
+		UpdateModuleMenuButtonText();
 	}
 
 	public override void Deconstruct()
@@ -37,7 +41,7 @@ public class Container : Module
 	public virtual bool Deposit(string goodName, uint amount)
 	{
 		GoodManager.Good good = goodManager.GetGood(goodName);
-		uint volume = (uint) Mathf.CeilToInt(good.volume) * amount;
+		uint volume = (uint)Mathf.CeilToInt(good.volume) * amount;
 
 		if(volume <= 0)
 		{
@@ -60,7 +64,9 @@ public class Container : Module
 				Debug.LogWarning("Depositing " + amount + " " + goodName + " in " + storageComponentType + " failed!");
 			}
 
-			mass += good.mass * amount;
+			float goodMass = good.mass * amount;
+			cargoMass += goodMass;
+			mass += goodMass;
 			spacecraft.UpdateMass();
 
 			return true;
@@ -74,7 +80,7 @@ public class Container : Module
 	public bool Withdraw(string goodName, uint amount)
 	{
 		GoodManager.Good good = goodManager.GetGood(goodName);
-		uint volume = (uint) Mathf.CeilToInt(good.volume) * amount;
+		uint volume = (uint)Mathf.CeilToInt(good.volume) * amount;
 
 		if(volume <= 0)
 		{
@@ -94,7 +100,9 @@ public class Container : Module
 				loads.Remove(goodName);
 			}
 
-			mass -= good.mass * amount;
+			float goodMass = good.mass * amount;
+			cargoMass -= goodMass;
+			mass -= goodMass;
 			spacecraft.UpdateMass();
 
 			return true;
@@ -103,6 +111,24 @@ public class Container : Module
 		{
 			return false;
 		}
+	}
+
+	public override Text UpdateModuleMenuButtonText()
+	{
+		Text barText = base.UpdateModuleMenuButtonText();
+
+		if(barText != null && storage != null && inventoryController != null)
+		{
+			float capacity = storage.GetCapacity();
+			float load = capacity > MathUtil.EPSILON ? storage.GetLoad() / capacity : 1.0f;
+			float cargoMass = GetCargoMass();
+			float totalCargoMass = Mathf.Max(inventoryController.GetHeaviestCargoMass(), MathUtil.EPSILON);
+
+			barText.text += "\n<color=" + moduleManager.GetVolumeColor() + ">Vol " + moduleManager.GetBarString(load)
+				+ "</color>\n<color=" + moduleManager.GetMassColor() + ">Mass " + moduleManager.GetBarString(cargoMass / totalCargoMass) + "</color>";
+		}
+
+		return barText;
 	}
 
 	public GoodManager.State GetState()
@@ -130,5 +156,10 @@ public class Container : Module
 	public Dictionary<string, uint> GetLoads()
 	{
 		return loads;
+	}
+
+	public float GetCargoMass()
+	{
+		return cargoMass;
 	}
 }

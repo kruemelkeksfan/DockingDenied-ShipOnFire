@@ -10,37 +10,37 @@ public class GravityWellController : MonoBehaviour, IFixedUpdateListener, IListe
 
 	private static GravityWellController instance = null;
 
-	[Tooltip("The Mass of this Gravity Well in kg")]
+	[Tooltip("The Mass of this Gravity Well in kg.")]
 	[SerializeField] private double mass = 6.2e+21;
-	[Tooltip("Determines how often the Heights of all Gravity Objects Orbits are checked in Ingame Seconds")]
+	[Tooltip("Determines how often the Heights of all Gravity Objects Orbits are checked in Ingame Seconds.")]
 	[SerializeField] private float positionCheckInterval = 5.0f;
-	[Tooltip("Sea level Height above the Planet Center")]
+	[Tooltip("Sea level Height above the Planet Center.")]
 	[SerializeField] private float surfaceAltitude = 500000.0f;
 	[SerializeField] private float tooHighWarningAltitude = 3000000.0f;
 	[SerializeField] private float tooLowWarningAltitude = 650000.0f;
-	[Tooltip("Height at which Asteroids should start burning up")]
+	[Tooltip("Height at which Asteroids should start burning up.")]
 	[SerializeField] private float atmosphereEntryAltitude = 650000.0f;
-	[Tooltip("Height at which Asteroids should be completely destroyed")]
+	[Tooltip("Height at which Asteroids should be completely destroyed.")]
 	[SerializeField] private float destructionAltitude = 590000.0f;
-	[Tooltip("Maximum Height for all Orbiters, regardless whether they were touched or not, unrailed Objects outside this Range will start decaying")]
+	[Tooltip("Maximum Height for all Orbiters, regardless whether they were touched or not, unrailed Objects outside this Range will start decaying.")]
 	[SerializeField] private float maximumAltitude = 4000000.0f;
-	[Tooltip("Atmospheric Density for Drag Calculation at Sea Level of the Planet in t/m^3")]
+	[Tooltip("Atmospheric Density for Drag Calculation at Sea Level of the Planet in t/m^3.")]
 	[SerializeField] private float atmosphericDensity = 0.0012f;
-	[Tooltip("Scale Height is the Height above Sea Level at which Air Pressure is 1/e of the Air Pressure on the Surface")]
+	[Tooltip("Scale Height is the Height above Sea Level at which Air Pressure is 1/e of the Air Pressure on the Surface.")]
 	[SerializeField] private float scaleAltitude = 8500.0f;
-	[Tooltip("A Particle System to visualize Re-Entry Heat and Plasma")]
+	[Tooltip("A Particle System to visualize Re-Entry Heat and Plasma.")]
 	[SerializeField] private ParticleSystem plasmaParticleSystemPrefab = null;
 	[Tooltip("Minimum Drag for Plasma Particles to be created")]
 	[SerializeField] private float plasmaMinDrag = 400.0f;
-	[Tooltip("Maximum Distance of the Player from the local Origin, before the Origin will be moved")]
+	[Tooltip("Maximum Distance of the Player from the local Origin, before the Origin will be moved.")]
 	[SerializeField] private float maxOriginDistance = 10000.0f;
-	[Tooltip("Distance to the Player at which all Objects are un-railed")]
+	[Tooltip("Distance to the Player at which all Objects are un-railed.")]
 	[SerializeField] private float unrailDistance = 10000.0f;
-	[Tooltip("Distance to the Player at which un-railed Objects are on-railed again")]
+	[Tooltip("Distance to the Player at which un-railed Objects are on-railed again.")]
 	[SerializeField] private float onrailDistance = 12000.0f;
-	[Tooltip("Update Frequency for Deorbit-Physics and -Particle Effect")]
+	[Tooltip("Update Frequency for Deorbit-Physics and -Particle Effect.")]
 	[SerializeField] private float deorbitUpdateInterval = 0.1f;
-	[Tooltip("Minimum Distance to the nearest Player above which Objects will disappear instantely instead of having a Deorbit- or Despawn-Animation")]
+	[Tooltip("Minimum Distance to the nearest Player above which Objects will disappear instantely instead of having a Deorbit- or Despawn-Animation.")]
 	[SerializeField] private double instantDespawnDistance = 20000.0;
 	private TimeController timeController = null;
 	private SpawnController spawnController = null;

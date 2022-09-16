@@ -189,7 +189,7 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 					else
 					{
 						textBuilder.Append("¯\\_(ツ)_/¯ / Apo - ");
-					}					
+					}
 					if(apoapsis > 0)
 					{
 						textBuilder.Append(apoapsis.ToString());
@@ -263,27 +263,31 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 
 	public void UpdateControlHint(Dictionary<string, string[]> keyBindings)
 	{
-		StringBuilder hint = new StringBuilder(256);
-		foreach(string key in keyBindings.Keys)
+		// Check if controlHint still exists to avoid Exceptions while quitting the Game
+		if(controlHint != null)
 		{
-			if(keyBindings[key].Length > 0)
+			StringBuilder hint = new StringBuilder(256);
+			foreach(string key in keyBindings.Keys)
 			{
-				hint.Append(key + " - \t");
-			}
-
-			bool first = true;
-			foreach(string action in keyBindings[key])
-			{
-				if(!first)
+				if(keyBindings[key].Length > 0)
 				{
-					hint.Append("\t\t");
+					hint.Append(key + " - \t");
 				}
-				hint.Append(action + "\n");
-				first = false;
-			}
-		}
 
-		controlHint.text = hint.ToString();
+				bool first = true;
+				foreach(string action in keyBindings[key])
+				{
+					if(!first)
+					{
+						hint.Append("\t\t");
+					}
+					hint.Append(action + "\n");
+					first = false;
+				}
+			}
+
+			controlHint.text = hint.ToString();
+		}
 	}
 
 	public void UpdateResourceDisplay()
@@ -302,7 +306,10 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 
 		confirmationPanelConfirmButton.onClick.RemoveAllListeners();
 		confirmationPanelConfirmButton.onClick.AddListener(confirmationAction);
-		confirmationPanelConfirmButton.onClick.AddListener(delegate { DeactivateConfirmationPanel(); } );
+		confirmationPanelConfirmButton.onClick.AddListener(delegate
+		{
+			DeactivateConfirmationPanel();
+		});
 
 		confirmationPanel.SetActive(true);
 	}

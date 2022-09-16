@@ -129,7 +129,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moduleName: Fluid Container
-  hp: 100
+  maxHp: 100
   pressurized: 0
   reservedPositions:
   - {x: 0, y: 0}
@@ -146,6 +146,7 @@ MonoBehaviour:
     amount: 0
   - goodName: Silicon
     amount: 0
-  description: "Container for up to 160m\xB3 of fluid or gaseous Cargo."
+  maxModuleMenuButtonCharacters: 24
+  moduleSettingPrefab: {fileID: 0}
   state: 1
   storageComponentType: 7

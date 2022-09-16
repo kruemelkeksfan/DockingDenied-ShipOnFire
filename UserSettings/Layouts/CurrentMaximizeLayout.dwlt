@@ -24,7 +24,7 @@ MonoBehaviour:
   m_MinSize: {x: 300, y: 200}
   m_MaxSize: {x: 24288, y: 16192}
   vertical: 0
-  controlID: 13566
+  controlID: 19104
 --- !u!114 &2
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -57,7 +57,7 @@ MonoBehaviour:
   m_SerializedViewNames:
   - UnityEditor.DeviceSimulation.SimulatorWindow
   m_SerializedViewValues:
-  - C:\UnityProjects\DockingDenied-ShipOnFire\Library\PlayModeViewStates\916d793a9b8c32446a9e7cf98ec6c040
+  - C:\UnityProjects\DockingDenied-ShipOnFire\Library\PlayModeViewStates\1836866f8cb45d64d8181cb07e360afa
   m_PlayModeViewName: GameView
   m_ShowGizmos: 0
   m_TargetDisplay: 0
@@ -144,7 +144,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 200}
   m_MaxSize: {x: 16192, y: 16192}
   vertical: 1
-  controlID: 13567
+  controlID: 19105
 --- !u!114 &4
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -169,7 +169,7 @@ MonoBehaviour:
   m_MinSize: {x: 200, y: 100}
   m_MaxSize: {x: 16192, y: 8096}
   vertical: 0
-  controlID: 13568
+  controlID: 19106
 --- !u!114 &5
 MonoBehaviour:
   m_ObjectHideFlags: 52
@@ -230,7 +230,7 @@ MonoBehaviour:
       scrollPos: {x: 0, y: 0}
       m_SelectedIDs: 
       m_LastClickedID: 0
-      m_ExpandedIDs: ecfaffff
+      m_ExpandedIDs: 62d6e8fff487e9ff56fdfeff565cffff26fbffff144d0000bc4e0000
       m_RenameOverlay:
         m_UserAcceptedRename: 0
         m_Name: 
@@ -507,9 +507,9 @@ MonoBehaviour:
   m_PlayAudio: 0
   m_AudioPlay: 0
   m_Position:
-    m_Target: {x: 660.91296, y: 321.30548, z: 22.692535}
+    m_Target: {x: 577.5, y: 329.37225, z: 0}
     speed: 2
-    m_Value: {x: 660.91296, y: 321.30548, z: 22.692535}
+    m_Value: {x: 577.5, y: 329.37225, z: 0}
   m_RenderMode: 0
   m_CameraMode:
     drawMode: 0
@@ -560,9 +560,9 @@ MonoBehaviour:
     speed: 2
     m_Value: {x: -0.08719583, y: 0.008066681, z: -0.00070545287, w: -0.9961583}
   m_Size:
-    m_Target: 258.50156
+    m_Target: 51.04427
     speed: 2
-    m_Value: 258.50156
+    m_Value: 51.04427
   m_Ortho:
     m_Target: 0
     speed: 2
@@ -656,22 +656,22 @@ MonoBehaviour:
     m_SkipHidden: 0
     m_SearchArea: 1
     m_Folders:
-    - Assets/Scripts/UI
+    - Assets/Prefabs/UI
     m_Globs: []
     m_OriginalText: 
   m_ViewMode: 1
   m_StartGridSize: 64
   m_LastFolders:
-  - Assets/Scripts/UI
+  - Assets/Prefabs/UI
   m_LastFoldersGridSize: -1
   m_LastProjectPath: C:\UnityProjects\DockingDenied-ShipOnFire
   m_LockTracker:
     m_IsLocked: 0
   m_FolderTreeState:
-    scrollPos: {x: 0, y: 327}
-    m_SelectedIDs: e0570000
-    m_LastClickedID: 22496
-    m_ExpandedIDs: 000000009e570000a0570000a2570000a4570000a6570000a857000000ca9a3b
+    scrollPos: {x: 0, y: 147}
+    m_SelectedIDs: de570000
+    m_LastClickedID: 22494
+    m_ExpandedIDs: 00000000ba570000bc570000be570000c0570000c2570000c457000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 
@@ -699,7 +699,7 @@ MonoBehaviour:
     scrollPos: {x: 0, y: 0}
     m_SelectedIDs: 
     m_LastClickedID: 0
-    m_ExpandedIDs: 000000009e570000a0570000a2570000a4570000a6570000a857000000ca9a3b
+    m_ExpandedIDs: 00000000ba570000bc570000be570000c0570000c2570000c457000000ca9a3b
     m_RenameOverlay:
       m_UserAcceptedRename: 0
       m_Name: 

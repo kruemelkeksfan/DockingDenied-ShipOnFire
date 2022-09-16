@@ -8,7 +8,7 @@ using UnityEngine.UI;
 public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 {
 	[SerializeField] protected string moduleName = "Module";
-	[SerializeField] protected int hp = 100;
+	[SerializeField] protected int maxHp = 100;
 	[SerializeField] protected bool pressurized = true;
 	[SerializeField] private Vector2Int[] reservedPositions = { Vector2Int.zero };
 	[Tooltip("Whether all reserved Positions after the First still provide valid Attachment Points.")]
@@ -26,8 +26,12 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	private MenuController menuController = null;
 	protected ToggleController toggleController = null;
 	protected InfoController infoController = null;
+	protected ModuleManager moduleManager = null;
 	protected InventoryController inventoryController = null;
 	protected CrewCabin crewCabin = null;
+	protected int hp = 0;
+	protected float temperature = 0.0f;
+	protected float maintenance = 1.0f;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
@@ -65,16 +69,26 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		audioController = AudioController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 		infoController = InfoController.GetInstance();
+		moduleManager = ModuleManager.GetInstance();
+
+		hp = maxHp;
+		if(moduleManager != null)
+		{
+			temperature = moduleManager.GetDefaultTemperature();
+		}
 	}
 
 	protected virtual void Start()
 	{
-		if(timeController == null || audioController == null || goodManager == null || infoController == null)
+		if(timeController == null || audioController == null || goodManager == null || infoController == null || moduleManager == null)
 		{
 			timeController = TimeController.GetInstance();
 			audioController = AudioController.GetInstance();
 			goodManager = GoodManager.GetInstance();
 			infoController = InfoController.GetInstance();
+			moduleManager = ModuleManager.GetInstance();
+
+			temperature = moduleManager.GetDefaultTemperature();
 		}
 	}
 
@@ -116,15 +130,6 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			camera = Camera.main;
 			cameraTransform = camera.GetComponent<Transform>();
 
-			Button moduleMenuButton = GameObject.Instantiate<Button>(menuController.GetModuleMenuButtonPrefab(), menuController.GetModuleMenuButtonParent());
-			this.moduleMenuButton = moduleMenuButton.gameObject;
-			moduleMenuButtonTransform = moduleMenuButton.GetComponent<RectTransform>();
-			UpdateModuleMenuButtonText();
-			moduleMenuButton.onClick.AddListener(delegate
-					{
-						ToggleModuleMenu();
-					});
-
 			moduleMenu = GameObject.Instantiate<GameObject>(menuController.GetModuleMenuPrefab(), menuController.GetModuleMenuParent());
 			moduleMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate
 					{
@@ -135,6 +140,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				{
 					SetCustomModuleName(moduleNameField.text);
 				});
+
 			componentPanel = (RectTransform)moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(3);
 			componentSlotEntries = new List<RectTransform>();
 
@@ -147,6 +153,15 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			{
 				moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(6).gameObject.SetActive(false);
 			}
+
+			Button moduleMenuButton = GameObject.Instantiate<Button>(menuController.GetModuleMenuButtonPrefab(), menuController.GetModuleMenuButtonParent());
+			this.moduleMenuButton = moduleMenuButton.gameObject;
+			moduleMenuButtonTransform = moduleMenuButton.GetComponent<RectTransform>();
+			UpdateModuleMenuButtonText();
+			moduleMenuButton.onClick.AddListener(delegate
+					{
+						ToggleModuleMenu();
+					});
 
 			toggleController.AddToggleObject("ModuleMenuButtons", this.moduleMenuButton);
 			this.moduleMenuButton.SetActive(toggleController.IsGroupToggled("ModuleMenuButtons"));
@@ -275,6 +290,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 					spacecraft.UpdateMass();
 				}
 
+				UpdateModuleMenuButtonText();
 				return componentSwapSuccess;
 			}
 			else
@@ -310,6 +326,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 					spacecraft.UpdateMass();
 				}
 
+				UpdateModuleMenuButtonText();
 				return componentSwapSuccess;
 			}
 			else
@@ -402,16 +419,82 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		}
 	}
 
-	public void UpdateModuleMenuButtonText()
+	// TODO: Call this when HP, Temp or Maintenance change
+	public virtual Text UpdateModuleMenuButtonText()
 	{
-		if(customModuleName.Length <= maxModuleMenuButtonCharacters)
+		if(moduleMenu != null)
 		{
-			moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName;
+			Text nameText = moduleMenuButton.GetComponentsInChildren<Text>()[0];
+			Text barText = moduleMenuButton.GetComponentsInChildren<Text>()[1];
+
+			float hpPercentage = (float) hp / (float) maxHp;
+
+			StringBuilder moduleMenuButtonLabelString = new StringBuilder();
+			bool bad = false;
+			bool critical = false;
+			if(customModuleName.Length <= maxModuleMenuButtonCharacters)
+			{
+				moduleMenuButtonLabelString.Append(customModuleName);
+			}
+			else
+			{
+				moduleMenuButtonLabelString.Append(customModuleName.Substring(0, maxModuleMenuButtonCharacters));
+				moduleMenuButtonLabelString.Append("...");
+			}
+			if(moduleManager != null)
+			{
+				if(temperature >= moduleManager.GetIgnitionTemperature())
+				{
+					moduleMenuButtonLabelString.Append("\nTEMP CRIT");
+					critical = true;
+				}
+				else if(temperature >= moduleManager.GetComfortableTemperature())
+				{
+					moduleMenuButtonLabelString.Append("\nOverheat");
+					bad = true;
+				}
+				if(maintenance <= moduleManager.GetCriticalMaintenanceThreshold())
+				{
+					moduleMenuButtonLabelString.Append("\nCONDITION CRIT");
+					critical = true;
+				}
+				else if(maintenance <= moduleManager.GetLowMaintenanceThreshold())
+				{
+					moduleMenuButtonLabelString.Append("\nBad Condition");
+					bad = true;
+				}
+				if(hpPercentage <= moduleManager.GetCriticalHpThreshold())
+				{
+					moduleMenuButtonLabelString.Append("\nHP CRIT");
+					critical = true;
+				}
+				else if(hpPercentage <= moduleManager.GetLowHpThreshold())
+				{
+					moduleMenuButtonLabelString.Append("\nLow HP");
+					bad = true;
+				}
+			}
+
+			nameText.text = moduleMenuButtonLabelString.ToString();
+			if(critical)
+			{
+				nameText.color = moduleManager.GetCriticalColor();
+			}
+			else if(bad)
+			{
+				nameText.color = moduleManager.GetBadColor();
+			}
+			else
+			{
+				nameText.color = moduleManager.GetNormalColor();
+			}
+
+			barText.text = "<color=" + moduleManager.GetHpColor() + ">HP " + moduleManager.GetBarString(hpPercentage) + "</color>";
+
+			return barText;
 		}
-		else
-		{
-			moduleMenuButton.GetComponentInChildren<Text>().text = customModuleName.Substring(0, maxModuleMenuButtonCharacters) + "...";
-		}
+
+		return null;
 	}
 
 	// Don't use ToggleController, since we only want to toggle 1 ModuleMenu, not all
@@ -606,9 +689,6 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public virtual void SetCustomModuleName(string customModuleName)
 	{
 		this.customModuleName = customModuleName;
-		if(moduleMenu != null)
-		{
-			UpdateModuleMenuButtonText();
-		}
+		UpdateModuleMenuButtonText();
 	}
 }
