@@ -11,6 +11,8 @@ public class Container : Module
 	protected Storage storage = null;
 	protected Dictionary<string, uint> loads = null;
 	private float cargoMass = 0.0f;
+	private RectTransform volumeBar = null;
+	private RectTransform massBar = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -113,22 +115,28 @@ public class Container : Module
 		}
 	}
 
-	public override Text UpdateModuleMenuButtonText()
+	public override void UpdateModuleMenuButtonText()
 	{
-		Text barText = base.UpdateModuleMenuButtonText();
-
-		if(barText != null && storage != null && inventoryController != null)
+		if(moduleMenu != null && storage != null && inventoryController != null)
 		{
+			base.UpdateModuleMenuButtonText();
+
 			float capacity = storage.GetCapacity();
-			float load = capacity > MathUtil.EPSILON ? storage.GetLoad() / capacity : 1.0f;
+			float load = (capacity > MathUtil.EPSILON) ? (storage.GetLoad() / capacity) : 1.0f;
 			float cargoMass = GetCargoMass();
 			float totalCargoMass = Mathf.Max(inventoryController.GetHeaviestCargoMass(), MathUtil.EPSILON);
 
-			barText.text += "\n<color=" + moduleManager.GetVolumeColor() + ">Vol " + moduleManager.GetBarString(load)
-				+ "</color>\n<color=" + moduleManager.GetMassColor() + ">Mass " + moduleManager.GetBarString(cargoMass / totalCargoMass) + "</color>";
+			if(volumeBar == null || massBar == null)
+			{
+				volumeBar = moduleManager.InstantiateStatusBar("Load", moduleManager.GetVolumeColor(), load, statusBarParent);
+				massBar = moduleManager.InstantiateStatusBar("Mass", moduleManager.GetMassColor(), (cargoMass / totalCargoMass), statusBarParent);
+			}
+			else
+			{
+				moduleManager.UpdateStatusBar(volumeBar, load);
+				moduleManager.UpdateStatusBar(massBar, (cargoMass / totalCargoMass));
+			}
 		}
-
-		return barText;
 	}
 
 	public GoodManager.State GetState()

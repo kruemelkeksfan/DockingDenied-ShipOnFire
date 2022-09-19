@@ -15,10 +15,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	[SerializeField] private bool attachableReservePositions = false;
 	[Tooltip("Whether all reserved Positions after the First can overlap with other reserved Positions which have this Flag enabled.")]
 	[SerializeField] private bool overlappingReservePositions = false;
-	[SerializeField]
-	private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
+	[SerializeField] private GoodManager.Load[] buildingCosts = { new GoodManager.Load("Steel", 0), new GoodManager.Load("Aluminium", 0),
 		new GoodManager.Load("Copper", 0), new GoodManager.Load("Gold", 0), new GoodManager.Load("Silicon", 0) };
-	[SerializeField] private int maxModuleMenuButtonCharacters = 24;
 	[SerializeField] private GameObject moduleSettingPrefab = null;
 	protected TimeController timeController = null;
 	protected AudioController audioController = null;
@@ -45,6 +43,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	// TODO: Save Custom Name in SpacecraftBlueprintController
 	protected string customModuleName = "unnamed";
 	private GameObject moduleMenuButton = null;
+	protected RectTransform statusBarParent = null;
+	private RectTransform hpBar = null;
 	protected GameObject moduleMenu = null;
 	private RectTransform uiTransform = null;
 	private new Camera camera = null;
@@ -157,6 +157,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			Button moduleMenuButton = GameObject.Instantiate<Button>(menuController.GetModuleMenuButtonPrefab(), menuController.GetModuleMenuButtonParent());
 			this.moduleMenuButton = moduleMenuButton.gameObject;
 			moduleMenuButtonTransform = moduleMenuButton.GetComponent<RectTransform>();
+			statusBarParent = moduleMenuButtonTransform.GetChild(1).GetComponent<RectTransform>();
 			UpdateModuleMenuButtonText();
 			moduleMenuButton.onClick.AddListener(delegate
 					{
@@ -420,59 +421,56 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	}
 
 	// TODO: Call this when HP, Temp or Maintenance change
-	public virtual Text UpdateModuleMenuButtonText()
+	public virtual void UpdateModuleMenuButtonText()
 	{
-		if(moduleMenu != null)
+		if(moduleMenu != null && moduleManager != null)
 		{
-			Text nameText = moduleMenuButton.GetComponentsInChildren<Text>()[0];
-			Text barText = moduleMenuButton.GetComponentsInChildren<Text>()[1];
+			Text nameText = moduleMenuButton.GetComponentInChildren<Text>();
 
-			float hpPercentage = (float) hp / (float) maxHp;
+			float hpPercentage = (float)hp / (float)maxHp;
 
 			StringBuilder moduleMenuButtonLabelString = new StringBuilder();
 			bool bad = false;
 			bool critical = false;
-			if(customModuleName.Length <= maxModuleMenuButtonCharacters)
+			if(customModuleName.Length <= moduleManager.GetMaxModuleMenuButtonCharacters())
 			{
 				moduleMenuButtonLabelString.Append(customModuleName);
 			}
 			else
 			{
-				moduleMenuButtonLabelString.Append(customModuleName.Substring(0, maxModuleMenuButtonCharacters));
+				moduleMenuButtonLabelString.Append(customModuleName.Substring(0, moduleManager.GetMaxModuleMenuButtonCharacters()));
 				moduleMenuButtonLabelString.Append("...");
 			}
-			if(moduleManager != null)
+
+			if(temperature >= moduleManager.GetIgnitionTemperature())
 			{
-				if(temperature >= moduleManager.GetIgnitionTemperature())
-				{
-					moduleMenuButtonLabelString.Append("\nTEMP CRIT");
-					critical = true;
-				}
-				else if(temperature >= moduleManager.GetComfortableTemperature())
-				{
-					moduleMenuButtonLabelString.Append("\nOverheat");
-					bad = true;
-				}
-				if(maintenance <= moduleManager.GetCriticalMaintenanceThreshold())
-				{
-					moduleMenuButtonLabelString.Append("\nCONDITION CRIT");
-					critical = true;
-				}
-				else if(maintenance <= moduleManager.GetLowMaintenanceThreshold())
-				{
-					moduleMenuButtonLabelString.Append("\nBad Condition");
-					bad = true;
-				}
-				if(hpPercentage <= moduleManager.GetCriticalHpThreshold())
-				{
-					moduleMenuButtonLabelString.Append("\nHP CRIT");
-					critical = true;
-				}
-				else if(hpPercentage <= moduleManager.GetLowHpThreshold())
-				{
-					moduleMenuButtonLabelString.Append("\nLow HP");
-					bad = true;
-				}
+				moduleMenuButtonLabelString.Append("\nTEMP CRIT");
+				critical = true;
+			}
+			else if(temperature >= moduleManager.GetComfortableTemperature())
+			{
+				moduleMenuButtonLabelString.Append("\nOverheat");
+				bad = true;
+			}
+			if(maintenance <= moduleManager.GetCriticalMaintenanceThreshold())
+			{
+				moduleMenuButtonLabelString.Append("\nCONDITION CRIT");
+				critical = true;
+			}
+			else if(maintenance <= moduleManager.GetLowMaintenanceThreshold())
+			{
+				moduleMenuButtonLabelString.Append("\nBad Condition");
+				bad = true;
+			}
+			if(hpPercentage <= moduleManager.GetCriticalHpThreshold())
+			{
+				moduleMenuButtonLabelString.Append("\nHP CRIT");
+				critical = true;
+			}
+			else if(hpPercentage <= moduleManager.GetLowHpThreshold())
+			{
+				moduleMenuButtonLabelString.Append("\nLow HP");
+				bad = true;
 			}
 
 			nameText.text = moduleMenuButtonLabelString.ToString();
@@ -489,12 +487,15 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				nameText.color = moduleManager.GetNormalColor();
 			}
 
-			barText.text = "<color=" + moduleManager.GetHpColor() + ">HP " + moduleManager.GetBarString(hpPercentage) + "</color>";
-
-			return barText;
+			if(hpBar == null)
+			{
+				hpBar = moduleManager.InstantiateStatusBar("HP", moduleManager.GetHpColor(), hpPercentage, statusBarParent);
+			}
+			else
+			{
+				moduleManager.UpdateStatusBar(hpBar, hpPercentage);
+			}
 		}
-
-		return null;
 	}
 
 	// Don't use ToggleController, since we only want to toggle 1 ModuleMenu, not all

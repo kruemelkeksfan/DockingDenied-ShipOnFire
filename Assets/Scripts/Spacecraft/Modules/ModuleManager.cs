@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class ModuleManager : MonoBehaviour
 {
 	private static ModuleManager instance = null;
 
-	[Tooltip("Number of Segments for Status Bars.")]
-	[SerializeField] private int barSegments = 10;
+	[SerializeField] private int maxModuleMenuButtonCharacters = 24;
 	[Tooltip("Temperature of newly spawned Objects.")]
 	[SerializeField] private float defaultTemperature = 120.0f;
 	[Tooltip("Maximum Temperature which is bearable for longer Durations for Crew Members.")]
@@ -33,10 +33,12 @@ public class ModuleManager : MonoBehaviour
 	[SerializeField] private Color colorblindBadColor = Color.yellow;
 	[Tooltip("Font Color for Modules in critical Condition in Colorblind Mode.")]
 	[SerializeField] private Color colorblindCriticalColor = Color.yellow;
-	[SerializeField] private string hpColor = "#FF0000";
-	[SerializeField] private string volumeColor = "#0000FF";
-	[SerializeField] private string massColor = "#884400";
+	[SerializeField] private Color hpColor = Color.red;
+	[SerializeField] private Color volumeColor = Color.cyan;
+	[SerializeField] private Color massColor = Color.gray;
+	[SerializeField] private GameObject statusBarPrefab = null;
 	private InfoController infoController = null;
+	private float barFillingImageStartWidth = 0.0f;
 
 	public static ModuleManager GetInstance()
 	{
@@ -53,22 +55,32 @@ public class ModuleManager : MonoBehaviour
 		infoController = InfoController.GetInstance();
 	}
 
-	public string GetBarString(float value)
+	public RectTransform InstantiateStatusBar(string title, Color color, float value, RectTransform parent)
 	{
-		StringBuilder barString = new StringBuilder();
-		int bars = Mathf.FloorToInt(value * barSegments);
-		barString.Append("[");
-		for(int i = 0; i < bars; ++i)
-		{
-			barString.Append("#");
-		}
-		for(int i = bars; i < barSegments; ++i)
-		{
-			barString.Append("....");
-		}
-		barString.Append("]");
+		GameObject statusBar = GameObject.Instantiate<GameObject>(statusBarPrefab, parent);
 
-		return barString.ToString();
+		statusBar.GetComponentInChildren<Text>().text = title;
+
+		Image barFillingImage = statusBar.GetComponentsInChildren<Image>()[1];
+		barFillingImage.color = color;
+		RectTransform barFillingTransform = barFillingImage.GetComponent<RectTransform>();
+		if(Mathf.Approximately(barFillingImageStartWidth, 0.0f))
+		{
+			barFillingImageStartWidth = barFillingTransform.sizeDelta.x;
+		}
+		UpdateStatusBar(barFillingTransform, value);
+
+		return barFillingTransform;
+	}
+
+	public void UpdateStatusBar(RectTransform barFillingTransform, float value)
+	{
+		barFillingTransform.sizeDelta = new Vector2(barFillingImageStartWidth * value, barFillingTransform.sizeDelta.y);
+	}
+
+	public int GetMaxModuleMenuButtonCharacters()
+	{
+		return maxModuleMenuButtonCharacters;
 	}
 
 	public float GetDefaultTemperature()
@@ -121,17 +133,17 @@ public class ModuleManager : MonoBehaviour
 		return (infoController == null || !infoController.IsColorblindModeActivated()) ? criticalColor : colorblindCriticalColor;
 	}
 
-	public string GetHpColor()
+	public Color GetHpColor()
 	{
 		return hpColor;
 	}
 
-	public string GetVolumeColor()
+	public Color GetVolumeColor()
 	{
 		return volumeColor;
 	}
 
-	public string GetMassColor()
+	public Color GetMassColor()
 	{
 		return massColor;
 	}
