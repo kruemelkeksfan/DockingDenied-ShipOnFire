@@ -7,6 +7,9 @@ public class InventoryController : MonoBehaviour, IListener
 	[SerializeField] private float energyUpdateInterval = 0.05f;
 	[SerializeField] private int startingMoney = 200;
 	private TimeController timeController = null;
+	private GoodManager goodManager = null;
+	private InfoController resourceDisplayController = null;
+	private InventoryScreenController inventoryScreenController = null;
 	private HashSet<EnergyProducer> energyProducers = null;
 	private List<EnergyStorage> energyConsumers = null;
 	private HashSet<EnergyStorage> batteries = null;
@@ -15,8 +18,6 @@ public class InventoryController : MonoBehaviour, IListener
 	private double energyCapacity = 0.0f;
 	private int money = 0;
 	private Dictionary<GoodManager.State, List<Container>> containers = null;
-	private InfoController resourceDisplayController = null;
-	private GoodManager goodManager = null;
 	private new Rigidbody2D rigidbody = null;
 	private float heaviestCargoMass = 0.0f;
 
@@ -40,18 +41,26 @@ public class InventoryController : MonoBehaviour, IListener
 		timeController = TimeController.GetInstance();
 		goodManager = GoodManager.GetInstance();
 
-		SpacecraftManager spacecraftManager = SpacecraftManager.GetInstance();
-		resourceDisplayController = spacecraftManager.GetLocalPlayerMainSpacecraft() == GetComponent<SpacecraftController>() ? InfoController.GetInstance() : null;
-		spacecraftManager.AddSpacecraftChangeListener(this);
+		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
+		Notify();
 
 		timeController.StartCoroutine(UpdateEnergy(), false);
 	}
 
 	public void Notify()
 	{
-		resourceDisplayController = SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<SpacecraftController>() ? InfoController.GetInstance() : null;
-		resourceDisplayController?.UpdateResourceDisplay();
-		resourceDisplayController?.UpdateBuildingResourceDisplay();
+		if(SpacecraftManager.GetInstance().GetLocalPlayerMainSpacecraft() == GetComponent<SpacecraftController>())
+		{
+			resourceDisplayController = InfoController.GetInstance();
+			resourceDisplayController.UpdateResourceDisplay();
+			resourceDisplayController.UpdateBuildingResourceDisplay();
+			inventoryScreenController = InventoryScreenController.GetInstance();
+		}
+		else
+		{
+			resourceDisplayController = null;
+			inventoryScreenController = null;
+		}
 	}
 
 	public bool TransferEnergy(float energy)
@@ -115,10 +124,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			if(container.Deposit(goodName, amount))
 			{
-				resourceDisplayController?.UpdateResourceDisplay();
-				resourceDisplayController?.UpdateBuildingResourceDisplay();
-
-				UpdateCargoMasses();
+				UpdateInventoryDisplays();
 				return true;
 			}
 			else
@@ -139,17 +145,14 @@ public class InventoryController : MonoBehaviour, IListener
 
 				if(amount <= 0)
 				{
-					resourceDisplayController?.UpdateResourceDisplay();
-					resourceDisplayController?.UpdateBuildingResourceDisplay();
-
-					UpdateCargoMasses();
+					UpdateInventoryDisplays();
 					return true;
 				}
 			}
 
 			Debug.LogError("Could not completely deposit a Load of " + goodName + " in Inventory of " + gameObject + ", although enough Space should have been available!");
 
-			UpdateCargoMasses();
+			UpdateInventoryDisplays();
 			return false;       // Some Cargo would have been stored already, so avoid storing only a Part but subtracting full Costs for something
 		}
 		else
@@ -215,10 +218,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			if(container.Withdraw(goodName, amount))
 			{
-				resourceDisplayController?.UpdateResourceDisplay();
-				resourceDisplayController?.UpdateBuildingResourceDisplay();
-
-				UpdateCargoMasses();
+				UpdateInventoryDisplays();
 				return true;
 			}
 			else
@@ -239,17 +239,14 @@ public class InventoryController : MonoBehaviour, IListener
 
 				if(amount <= 0)
 				{
-					resourceDisplayController?.UpdateResourceDisplay();
-					resourceDisplayController?.UpdateBuildingResourceDisplay();
-
-					UpdateCargoMasses();
+					UpdateInventoryDisplays();
 					return true;
 				}
 			}
 
 			Debug.LogError("Could not completely withdraw a Load of " + goodName + " from Inventory of " + gameObject + ", although enough Cargo should have been available!");
 
-			UpdateCargoMasses();
+			UpdateInventoryDisplays();
 			return true;        // Some Cargo would have been deleted already, so avoid deleting partial Costs of something and then give nothing in return
 		}
 		else
@@ -281,7 +278,7 @@ public class InventoryController : MonoBehaviour, IListener
 		return true;
 	}
 
-	private void UpdateCargoMasses()
+	private void UpdateInventoryDisplays()
 	{
 		// Update cargoMass
 		heaviestCargoMass = 0.0f;
@@ -305,6 +302,13 @@ public class InventoryController : MonoBehaviour, IListener
 				container.UpdateModuleMenuButtonText();
 			}
 		}
+
+		// Update Resource Display
+		resourceDisplayController?.UpdateResourceDisplay();
+		resourceDisplayController?.UpdateBuildingResourceDisplay();
+
+		// Update Inventory Screen
+		inventoryScreenController?.UpdateInventory();
 	}
 
 	private IEnumerator<float> UpdateEnergy()

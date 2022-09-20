@@ -4,14 +4,29 @@ using UnityEngine.UI;
 
 public class InventoryScreenController : MonoBehaviour, IListener
 {
+	private static InventoryScreenController instance = null;
+
 	[SerializeField] private RectTransform inventoryEntryPrefab = null;
 	[SerializeField] private RectTransform inventoryContentPane = null;
 	[SerializeField] private GameObject emptyListIndicator = null;
+	private GoodManager goodManager = null;
 	private MenuController menuController = null;
 	private InventoryController localPlayerMainInventory = null;
+	private int currentCategory = 0;
+
+	public static InventoryScreenController GetInstance()
+	{
+		return instance;
+	}
+
+	private void Awake()
+	{
+		instance = this;
+	}
 
 	private void Start()
 	{
+		goodManager = GoodManager.GetInstance();
 		menuController = MenuController.GetInstance();
 
 		SpacecraftManager.GetInstance().AddSpacecraftChangeListener(this);
@@ -41,30 +56,38 @@ public class InventoryScreenController : MonoBehaviour, IListener
 
 	public void UpdateInventory()
 	{
-		Dictionary<string, string> amountSettings = new Dictionary<string, string>(inventoryContentPane.childCount - 1);
+		if(goodManager == null)
+		{
+			goodManager = GoodManager.GetInstance();
+		}
+
 		for(int i = 1; i < inventoryContentPane.childCount; ++i)
 		{
-			Transform child = inventoryContentPane.GetChild(i);
-			amountSettings[child.GetChild(0).GetComponent<Text>().text] = child.GetChild(2).GetComponent<InputField>().text;
-			GameObject.Destroy(child.gameObject);
+			GameObject.Destroy(inventoryContentPane.GetChild(i).gameObject);
 		}
 
 		Dictionary<string, uint> inventoryContents = localPlayerMainInventory.GetInventoryContents();
+		bool odd = true;
 		foreach(string goodName in inventoryContents.Keys)
 		{
-			RectTransform inventoryEntryRectTransform = GameObject.Instantiate<RectTransform>(inventoryEntryPrefab, inventoryContentPane);
-			inventoryEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodName;
-			inventoryEntryRectTransform.GetChild(1).GetComponent<Text>().text = inventoryContents[goodName].ToString();
-			string localGoodName = goodName;
-			InputField localAmountField = inventoryEntryRectTransform.GetChild(2).GetComponent<InputField>();
-			if(amountSettings.ContainsKey(goodName))
+			GoodManager.Good good = goodManager.GetGood(goodName);
+
+			if((currentCategory == 0 && good.state == GoodManager.State.solid && !(good is GoodManager.ComponentData))
+				|| (currentCategory == 1 && good.state == GoodManager.State.fluid)
+				|| (currentCategory == 2 && (good is GoodManager.ComponentData)))
 			{
-				localAmountField.text = amountSettings[goodName];
+				RectTransform inventoryEntryRectTransform = GameObject.Instantiate<RectTransform>(inventoryEntryPrefab, inventoryContentPane);
+				inventoryEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodName;
+				inventoryEntryRectTransform.GetChild(1).GetComponent<Text>().text = inventoryContents[goodName].ToString();
+				inventoryEntryRectTransform.GetChild(2).GetComponent<Text>().text = (good.volume * inventoryContents[goodName]) + " m3";
+				inventoryEntryRectTransform.GetChild(3).GetComponent<Text>().text = (good.mass * inventoryContents[goodName]) + " t";
+
+				if(!odd)
+				{
+					inventoryEntryRectTransform.GetComponent<Image>().enabled = false;
+				}
+				odd = !odd;
 			}
-			inventoryEntryRectTransform.GetChild(3).GetComponent<Button>().onClick.AddListener(delegate
-			{
-				Dump(localGoodName, localAmountField);
-			});
 		}
 
 		if(inventoryContentPane.childCount <= 1)
@@ -77,22 +100,9 @@ public class InventoryScreenController : MonoBehaviour, IListener
 		}
 	}
 
-	public void Dump(string goodName, InputField amountField)
+	public void SetCategory(int categoryId)
 	{
-		if(amountField.text.StartsWith("-"))
-		{
-			amountField.text = amountField.text.Remove(0, 1);
-		}
-		uint dumpAmount = uint.Parse(amountField.text);
-		uint availableAmount = localPlayerMainInventory.GetGoodAmount(goodName);
-		if(dumpAmount > availableAmount)
-		{
-			amountField.text = availableAmount.ToString();
-		}
-		else
-		{
-			localPlayerMainInventory.Withdraw(goodName, dumpAmount);
-			UpdateInventory();
-		}
+		currentCategory = categoryId;
+		UpdateInventory();
 	}
 }

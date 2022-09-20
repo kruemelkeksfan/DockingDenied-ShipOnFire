@@ -712,6 +712,11 @@ PrefabInstance:
       propertyPath: m_Text
       value: Really Long Goodname
       objectReference: {fileID: 0}
+    - target: {fileID: 8633029733411174568, guid: d739d2c748e404e4488852f095a58554,
+        type: 3}
+      propertyPath: m_FontData.m_HorizontalOverflow
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519970, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_Name
