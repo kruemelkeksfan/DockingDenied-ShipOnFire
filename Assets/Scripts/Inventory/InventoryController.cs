@@ -278,6 +278,28 @@ public class InventoryController : MonoBehaviour, IListener
 		return true;
 	}
 
+	public void UpdateModuleMenuInventories()
+	{
+		foreach(List<Container> containerList in containers.Values)
+		{
+			foreach(Container container in containerList)
+			{
+				container.UpdateModuleMenuInventory();
+			}
+		}
+	}
+
+	public void SetCustomTradeAmountFieldTexts()
+	{
+		foreach(List<Container> containerList in containers.Values)
+		{
+			foreach(Container container in containerList)
+			{
+				container.SetCustomTradeAmountFieldText();
+			}
+		}
+	}
+
 	private void UpdateInventoryDisplays()
 	{
 		// Update cargoMass

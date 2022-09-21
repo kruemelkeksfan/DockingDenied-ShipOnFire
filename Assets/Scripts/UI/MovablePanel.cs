@@ -7,7 +7,6 @@ public class MovablePanel : MonoBehaviour, IDragHandler
 {
 	private new RectTransform transform = null;
 	private RectTransform canvasTransform = null;
-	private Vector2 oldMousePosition = Vector2.zero;
 
 	private void Start()
 	{

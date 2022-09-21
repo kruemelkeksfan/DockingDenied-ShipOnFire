@@ -623,6 +623,16 @@ public class MenuController : MonoBehaviour, IListener
 		return moduleComponentSelectionPanel;
 	}
 
+	public ColorBlock GetAmountButtonColors()
+	{
+		return amountButtonColors;
+	}
+
+	public ColorBlock GetAmountButtonHighlightedColors()
+	{
+		return amountButtonHighlightedColors;
+	}
+
 	public bool StationIsQuesting(SpaceStationController requester)
 	{
 		return requester == activeStation && stationQuestMenu.activeSelf;

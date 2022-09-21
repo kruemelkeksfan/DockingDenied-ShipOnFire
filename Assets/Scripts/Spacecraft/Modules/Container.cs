@@ -5,6 +5,9 @@ using UnityEngine.UI;
 
 public class Container : Module
 {
+	private static int transferAmount = 1;
+	private static int highlightedAmountButton = 0;
+
 	[SerializeField] protected GoodManager.State state = GoodManager.State.solid;
 	[Tooltip("Cargo Racks or Tank System?")]
 	[SerializeField] private GoodManager.ComponentType storageComponentType = GoodManager.ComponentType.CargoRacks;
@@ -16,6 +19,10 @@ public class Container : Module
 	private RectTransform inventoryContentPane = null;
 	private RectTransform inventoryEntryPrefab = null;
 	private GameObject emptyListIndicator = null;
+	private Button[] amountButtons = null;
+	private InputField customAmountField = null;
+	private ColorBlock amountButtonColors = ColorBlock.defaultColorBlock;
+	private ColorBlock amountButtonHighlightedColors = ColorBlock.defaultColorBlock;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -30,9 +37,19 @@ public class Container : Module
 		if(moduleMenu != null)
 		{
 			RectTransform moduleMenuContent = moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>();
+			RectTransform inventoryHeader = (RectTransform)moduleMenuContent.GetChild(2);
 			inventoryContentPane = (RectTransform)moduleMenuContent.GetChild(3);
 			inventoryEntryPrefab = InventoryScreenController.GetInstance().GetInventoryEntryPrefab();
 			emptyListIndicator = inventoryContentPane.GetChild(0).gameObject;
+
+			moduleMenu.GetComponent<ContainerMenuController>().SetContainer(this);
+
+			amountButtons = inventoryHeader.GetComponentsInChildren<Button>();
+			customAmountField = inventoryHeader.GetComponentInChildren<InputField>();
+
+			MenuController menuController = MenuController.GetInstance();
+			amountButtonColors = menuController.GetAmountButtonColors();
+			amountButtonHighlightedColors = menuController.GetAmountButtonHighlightedColors();
 
 			moduleMenuContent.GetChild(2).gameObject.SetActive(true);
 			inventoryContentPane.gameObject.SetActive(true);
@@ -187,6 +204,17 @@ public class Container : Module
 					inventoryEntryRectTransform.GetComponent<Image>().enabled = false;
 				}
 				odd = !odd;
+
+				int transferAmount = Container.transferAmount;
+				if(transferAmount == -1)
+				{
+					transferAmount = Mathf.FloorToInt(loads[goodName] * 0.5f);
+				}
+				else if(transferAmount == -2)
+				{
+					transferAmount = (int)loads[goodName];
+				}
+				inventoryEntryRectTransform.GetComponent<InventoryEntryController>().SetContents(this, goodName, (uint)transferAmount);
 			}
 
 			if(inventoryContentPane.childCount <= 1)
@@ -200,6 +228,27 @@ public class Container : Module
 			}
 
 			inventoryContentPane.sizeDelta = new Vector2(inventoryContentPane.sizeDelta.x, listHeight);
+
+			for(int i = 0; i < amountButtons.Length; ++i)
+			{
+				if(i == highlightedAmountButton)
+				{
+					amountButtons[i].colors = amountButtonHighlightedColors;
+				}
+				else
+				{
+					amountButtons[i].colors = amountButtonColors;
+				}
+			}
+
+			if(highlightedAmountButton < 0)
+			{
+				customAmountField.colors = amountButtonHighlightedColors;
+			}
+			else
+			{
+				customAmountField.colors = amountButtonColors;
+			}
 		}
 	}
 
@@ -233,5 +282,35 @@ public class Container : Module
 	public float GetCargoMass()
 	{
 		return cargoMass;
+	}
+
+	public void SetTransferAmount(int transferAmount)
+	{
+		Container.transferAmount = transferAmount;
+		inventoryController.UpdateModuleMenuInventories();
+	}
+
+	public void SetCustomTradeAmount()
+	{
+		if(customAmountField.text.StartsWith("-"))
+		{
+			customAmountField.text = customAmountField.text.Remove(0, 1);
+		}
+		SetTransferAmount(int.Parse(customAmountField.text));
+
+		SetHighlightedAmountButton(-1);
+		inventoryController.UpdateModuleMenuInventories();
+		inventoryController.SetCustomTradeAmountFieldTexts();
+	}
+
+	public void SetCustomTradeAmountFieldText()
+	{
+		customAmountField.text = Container.transferAmount.ToString();
+	}
+
+	public void SetHighlightedAmountButton(int id)
+	{
+		Container.highlightedAmountButton = id;
+		inventoryController.UpdateModuleMenuInventories();
 	}
 }
