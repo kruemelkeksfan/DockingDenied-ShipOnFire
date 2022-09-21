@@ -153,7 +153,7 @@ public class InventoryController : MonoBehaviour, IListener
 			Debug.LogError("Could not completely deposit a Load of " + goodName + " in Inventory of " + gameObject + ", although enough Space should have been available!");
 
 			UpdateInventoryDisplays();
-			return false;       // Some Cargo would have been stored already, so avoid storing only a Part but subtracting full Costs for something
+			return false;				// Some Cargo would have been stored already, so avoid storing only a Part but subtracting full Costs for something
 		}
 		else
 		{
@@ -247,7 +247,7 @@ public class InventoryController : MonoBehaviour, IListener
 			Debug.LogError("Could not completely withdraw a Load of " + goodName + " from Inventory of " + gameObject + ", although enough Cargo should have been available!");
 
 			UpdateInventoryDisplays();
-			return true;        // Some Cargo would have been deleted already, so avoid deleting partial Costs of something and then give nothing in return
+			return true;				// Some Cargo would have been deleted already, so avoid deleting partial Costs of something and then give nothing in return
 		}
 		else
 		{
@@ -294,12 +294,13 @@ public class InventoryController : MonoBehaviour, IListener
 			}
 		}
 
-		// Update cargoMass Text in Component Buttons
+		// Update Container UIs
 		foreach(List<Container> containerList in containers.Values)
 		{
 			foreach(Container container in containerList)
 			{
 				container.UpdateModuleMenuButtonText();
+				container.UpdateModuleMenuInventory();
 			}
 		}
 

@@ -13,6 +13,9 @@ public class Container : Module
 	private float cargoMass = 0.0f;
 	private RectTransform volumeBar = null;
 	private RectTransform massBar = null;
+	private RectTransform inventoryContentPane = null;
+	private RectTransform inventoryEntryPrefab = null;
+	private GameObject emptyListIndicator = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -23,6 +26,17 @@ public class Container : Module
 		inventoryController.AddContainer(this);
 
 		loads = new Dictionary<string, uint>();
+
+		if(moduleMenu != null)
+		{
+			RectTransform moduleMenuContent = moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>();
+			inventoryContentPane = (RectTransform)moduleMenuContent.GetChild(3);
+			inventoryEntryPrefab = InventoryScreenController.GetInstance().GetInventoryEntryPrefab();
+			emptyListIndicator = inventoryContentPane.GetChild(0).gameObject;
+
+			moduleMenuContent.GetChild(2).gameObject.SetActive(true);
+			inventoryContentPane.gameObject.SetActive(true);
+		}
 
 		UpdateModuleMenuButtonText();
 	}
@@ -115,6 +129,13 @@ public class Container : Module
 		}
 	}
 
+	public override void ToggleModuleMenu()
+	{
+		base.ToggleModuleMenu();
+
+		UpdateModuleMenuInventory();
+	}
+
 	public override void UpdateModuleMenuButtonText()
 	{
 		if(moduleMenu != null && storage != null && inventoryController != null)
@@ -136,6 +157,49 @@ public class Container : Module
 				moduleManager.UpdateStatusBar(volumeBar, load);
 				moduleManager.UpdateStatusBar(massBar, (cargoMass / totalCargoMass));
 			}
+		}
+	}
+
+	public void UpdateModuleMenuInventory()
+	{
+		if(moduleMenu != null && moduleMenu.activeSelf)
+		{
+			for(int i = 1; i < inventoryContentPane.childCount; ++i)
+			{
+				GameObject.Destroy(inventoryContentPane.GetChild(i).gameObject);
+			}
+
+			float listHeight = 0.0f;
+			bool odd = true;
+			foreach(string goodName in loads.Keys)
+			{
+				GoodManager.Good good = goodManager.GetGood(goodName);
+
+				RectTransform inventoryEntryRectTransform = GameObject.Instantiate<RectTransform>(inventoryEntryPrefab, inventoryContentPane);
+				listHeight += inventoryEntryRectTransform.sizeDelta.y;
+				inventoryEntryRectTransform.GetChild(0).GetComponent<Text>().text = goodName;
+				inventoryEntryRectTransform.GetChild(1).GetComponent<Text>().text = loads[goodName].ToString();
+				inventoryEntryRectTransform.GetChild(2).GetComponent<Text>().text = (good.volume * loads[goodName]) + " m3";
+				inventoryEntryRectTransform.GetChild(3).GetComponent<Text>().text = (good.mass * loads[goodName]) + " t";
+
+				if(!odd)
+				{
+					inventoryEntryRectTransform.GetComponent<Image>().enabled = false;
+				}
+				odd = !odd;
+			}
+
+			if(inventoryContentPane.childCount <= 1)
+			{
+				listHeight += emptyListIndicator.GetComponent<RectTransform>().sizeDelta.y;
+				emptyListIndicator.SetActive(true);
+			}
+			else
+			{
+				emptyListIndicator.SetActive(false);
+			}
+
+			inventoryContentPane.sizeDelta = new Vector2(inventoryContentPane.sizeDelta.x, listHeight);
 		}
 	}
 

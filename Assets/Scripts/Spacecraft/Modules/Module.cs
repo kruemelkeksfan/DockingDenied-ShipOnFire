@@ -130,6 +130,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			camera = Camera.main;
 			cameraTransform = camera.GetComponent<Transform>();
 
+			// Module Menu
+			// Header
 			moduleMenu = GameObject.Instantiate<GameObject>(menuController.GetModuleMenuPrefab(), menuController.GetModuleMenuParent());
 			moduleMenu.GetComponentInChildren<Button>().onClick.AddListener(delegate
 					{
@@ -140,20 +142,28 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				{
 					SetCustomModuleName(moduleNameField.text);
 				});
+			RectTransform content = moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>();
 
-			componentPanel = (RectTransform)moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(3);
+			// Inventory
+			content.GetChild(2).gameObject.SetActive(false);
+			content.GetChild(3).gameObject.SetActive(false);
+
+			// Components
+			componentPanel = (RectTransform)content.GetChild(5);
 			componentSlotEntries = new List<RectTransform>();
 
+			// Settings
 			if(moduleSettingPrefab != null)
 			{
-				settingPanel = (RectTransform)moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(7);
+				settingPanel = (RectTransform)content.GetChild(9);
 				GameObject.Instantiate<GameObject>(moduleSettingPrefab, settingPanel);
 			}
 			else
 			{
-				moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>().GetChild(6).gameObject.SetActive(false);
+				content.GetChild(8).gameObject.SetActive(false);
 			}
 
+			// Module Menu Button
 			Button moduleMenuButton = GameObject.Instantiate<Button>(menuController.GetModuleMenuButtonPrefab(), menuController.GetModuleMenuButtonParent());
 			this.moduleMenuButton = moduleMenuButton.gameObject;
 			moduleMenuButtonTransform = moduleMenuButton.GetComponent<RectTransform>();
@@ -499,7 +509,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	}
 
 	// Don't use ToggleController, since we only want to toggle 1 ModuleMenu, not all
-	public void ToggleModuleMenu()
+	public virtual void ToggleModuleMenu()
 	{
 		moduleMenu.GetComponentInChildren<InputField>().text = customModuleName;
 		UpdateComponentButtons();
