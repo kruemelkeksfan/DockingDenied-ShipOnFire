@@ -4,13 +4,21 @@ using UnityEngine;
 
 public class Battery : Module
 {
-	[SerializeField] private EnergyStorage powerCells = null;
+	private EnergyStorage powerCells = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
-		base.Build(position, listenUpdates, listenFixedUpdates);
+		base.Build(position, moduleMenu != null, false);
 
-		inventoryController.AddBattery(powerCells);
+		powerCells = new EnergyStorage();
+		AddComponentSlot(GoodManager.ComponentType.PowerCells, powerCells);
+		inventoryController.AddEnergyConsumer(powerCells);
+
+		if(moduleMenu != null)
+		{
+			// Status
+			AddStatusField("Battery Charge", (powerCells.GetCharge().ToString("F2") + "/" + powerCells.GetCapacity().ToString("F2") + " kWh"));
+		}
 	}
 
 	public override void Deconstruct()
@@ -18,5 +26,13 @@ public class Battery : Module
 		inventoryController.RemoveBattery(powerCells);
 
 		base.Deconstruct();
+	}
+
+	public override void UpdateNotify()
+	{
+		base.UpdateNotify();
+
+		// Status
+		UpdateStatusField("Battery Charge", (powerCells.GetCharge().ToString("F2") + "/" + powerCells.GetCapacity().ToString("F2") + " kWh"));
 	}
 }

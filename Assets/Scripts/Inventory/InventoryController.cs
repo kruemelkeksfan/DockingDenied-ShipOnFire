@@ -321,7 +321,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			foreach(Container container in containerList)
 			{
-				container.UpdateModuleMenuButtonText();
+				container.UpdateModuleStatus();
 				container.UpdateModuleMenuInventory();
 			}
 		}

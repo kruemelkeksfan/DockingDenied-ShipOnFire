@@ -45,6 +45,11 @@ public class Thruster : Module
 
 		if(moduleMenu != null)
 		{
+			// Status
+			AddStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
+			AddStatusField("Internal Fuel", (fuelSupply.ToString("F4") + " m3"));
+
+			// Settings
 			powerSlider = settingPanel.GetComponentInChildren<Slider>();
 			powerInputField = settingPanel.GetComponentInChildren<InputField>();
 
@@ -106,6 +111,12 @@ public class Thruster : Module
 
 			rigidbody.AddForceAtPosition(spacecraftTransform.rotation * thrustDirection * engine.GetThrust() * finalThrottle * deltaTime,
 				transform.position, ForceMode2D.Impulse);
+		}
+
+		if(moduleMenu != null)
+		{
+			UpdateStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
+			UpdateStatusField("Internal Fuel", (fuelSupply.ToString("F4") + " m3"));
 		}
 	}
 

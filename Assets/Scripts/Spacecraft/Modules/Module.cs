@@ -29,7 +29,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected CrewCabin crewCabin = null;
 	protected int hp = 0;
 	protected float temperature = 0.0f;
-	protected float maintenance = 1.0f;
+	protected float condition = 1.0f;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
 	protected bool constructed = false;
@@ -50,6 +50,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	private new Camera camera = null;
 	private Transform cameraTransform = null;
 	private RectTransform moduleMenuButtonTransform = null;
+	private RectTransform statusPanel = null;
+	private Dictionary<string, Text> statusEntries = null;
 	private RectTransform componentPanel = null;
 	private List<RectTransform> componentSlotEntries = null;
 	private RectTransform moduleComponentSelectionPanel = null;
@@ -58,6 +60,8 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected virtual void Awake()
 	{
 		transform = gameObject.GetComponent<Transform>();
+
+		statusEntries = new Dictionary<string, Text>();
 
 		componentSlots = new Dictionary<GoodManager.ComponentType, ModuleComponent>();
 		orderedComponentSlots = new List<GoodManager.ComponentType>();
@@ -144,6 +148,12 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				});
 			RectTransform content = moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>();
 
+			// Status
+			statusPanel = (RectTransform)content.GetChild(1);
+			AddStatusField("HP", (hp + "/" + maxHp));
+			AddStatusField("Temperature", (Mathf.FloorToInt(temperature) + " K"));
+			AddStatusField("Condition", (Mathf.FloorToInt(condition * 100.0f) + "%"));
+
 			// Inventory
 			content.GetChild(2).gameObject.SetActive(false);
 			content.GetChild(3).gameObject.SetActive(false);
@@ -168,7 +178,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			this.moduleMenuButton = moduleMenuButton.gameObject;
 			moduleMenuButtonTransform = moduleMenuButton.GetComponent<RectTransform>();
 			statusBarParent = moduleMenuButtonTransform.GetChild(1).GetComponent<RectTransform>();
-			UpdateModuleMenuButtonText();
+			UpdateModuleStatus();
 			moduleMenuButton.onClick.AddListener(delegate
 					{
 						ToggleModuleMenu();
@@ -260,6 +270,28 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 	}
 
+	protected void AddStatusField(string title, string value)
+	{
+		RectTransform statusEntry = GameObject.Instantiate<RectTransform>(menuController.GetStatusFieldPrefab(), statusPanel);
+		statusPanel.sizeDelta = statusPanel.sizeDelta + new Vector2(0.0f, statusEntry.sizeDelta.y);
+
+		Text[] statusEntryTexts = statusEntry.GetComponentsInChildren<Text>();
+		statusEntryTexts[0].text = title + ":";
+		statusEntryTexts[1].text = value;
+
+		statusEntries.Add(title, statusEntryTexts[1]);
+
+		if(statusEntries.Count % 2 == 0)
+		{
+			statusEntry.GetComponentInChildren<Image>().enabled = false;
+		}
+	}
+
+	protected void UpdateStatusField(string title, string value)
+	{
+		statusEntries[title].text = value;
+	}
+
 	protected void AddComponentSlot(GoodManager.ComponentType componentType, ModuleComponent component)
 	{
 		componentSlots.Add(componentType, component);
@@ -301,7 +333,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 					spacecraft.UpdateMass();
 				}
 
-				UpdateModuleMenuButtonText();
+				UpdateModuleStatus();
 				return componentSwapSuccess;
 			}
 			else
@@ -337,7 +369,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 					spacecraft.UpdateMass();
 				}
 
-				UpdateModuleMenuButtonText();
+				UpdateModuleStatus();
 				return componentSwapSuccess;
 			}
 			else
@@ -431,7 +463,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	}
 
 	// TODO: Call this when HP, Temp or Maintenance change
-	public virtual void UpdateModuleMenuButtonText()
+	public virtual void UpdateModuleStatus()
 	{
 		if(moduleMenu != null && moduleManager != null)
 		{
@@ -462,12 +494,12 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				moduleMenuButtonLabelString.Append("\nOverheat");
 				bad = true;
 			}
-			if(maintenance <= moduleManager.GetCriticalMaintenanceThreshold())
+			if(condition <= moduleManager.GetCriticalMaintenanceThreshold())
 			{
 				moduleMenuButtonLabelString.Append("\nCONDITION CRIT");
 				critical = true;
 			}
-			else if(maintenance <= moduleManager.GetLowMaintenanceThreshold())
+			else if(condition <= moduleManager.GetLowMaintenanceThreshold())
 			{
 				moduleMenuButtonLabelString.Append("\nBad Condition");
 				bad = true;
@@ -505,6 +537,10 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			{
 				moduleManager.UpdateStatusBar(hpBar, hpPercentage);
 			}
+
+			UpdateStatusField("HP", (hp + "/" + maxHp));
+			UpdateStatusField("Temperature", (Mathf.FloorToInt(temperature) + " K"));
+			UpdateStatusField("Condition", (Mathf.FloorToInt(condition * 100.0f) + "%"));
 		}
 	}
 
@@ -700,6 +736,6 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public virtual void SetCustomModuleName(string customModuleName)
 	{
 		this.customModuleName = customModuleName;
-		UpdateModuleMenuButtonText();
+		UpdateModuleStatus();
 	}
 }

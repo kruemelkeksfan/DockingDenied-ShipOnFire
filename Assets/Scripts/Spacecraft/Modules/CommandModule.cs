@@ -17,6 +17,12 @@ public class CommandModule : Module
 		emergencyPowerSupply = new EnergyStorage();
 		AddComponentSlot(GoodManager.ComponentType.EmergencyPowerSupply, emergencyPowerSupply);
 		inventoryController.AddBattery(emergencyPowerSupply);
+
+		if(moduleMenu != null)
+		{
+			// Status
+			AddStatusField("Battery Charge", (emergencyPowerSupply.GetCharge().ToString("F2") + "/" + emergencyPowerSupply.GetCapacity().ToString("F2") + " kWh"));
+		}
 	}
 
 	public override void Deconstruct()
@@ -31,5 +37,11 @@ public class CommandModule : Module
 		base.UpdateNotify();
 
 		radarDish.Rotate(0.0f, 0.0f, radarDishSpeed * timeController.GetDeltaTime());
+
+		if(moduleMenu != null)
+		{
+			// Status
+			UpdateStatusField("Battery Charge", (emergencyPowerSupply.GetCharge().ToString("F2") + "/" + emergencyPowerSupply.GetCapacity().ToString("F2") + " kWh"));
+		}
 	}
 }

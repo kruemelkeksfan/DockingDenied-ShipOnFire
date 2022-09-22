@@ -44,6 +44,7 @@ public class MenuController : MonoBehaviour, IListener
 	// Keep these Module Variables here instead of in Module so that we don't have to set them manually for each Module Prefab
 	[SerializeField] private Button moduleMenuButtonPrefab = null;
 	[SerializeField] private GameObject moduleMenuPrefab = null;
+	[SerializeField] private RectTransform statusFieldPrefab = null;
 	[SerializeField] private RectTransform moduleComponentEntryPrefab = null;
 	[SerializeField] private RectTransform moduleMenuButtonParent = null;
 	[SerializeField] private RectTransform moduleMenuParent = null;
@@ -601,6 +602,11 @@ public class MenuController : MonoBehaviour, IListener
 	public GameObject GetModuleMenuPrefab()
 	{
 		return moduleMenuPrefab;
+	}
+
+	public RectTransform GetStatusFieldPrefab()
+	{
+		return statusFieldPrefab;
 	}
 
 	public RectTransform GetModuleComponentEntryPrefab()

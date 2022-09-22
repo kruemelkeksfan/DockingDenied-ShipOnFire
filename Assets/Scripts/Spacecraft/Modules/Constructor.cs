@@ -28,7 +28,7 @@ public class Constructor : Module
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
-		base.Build(position, listenUpdates, listenFixedUpdates);
+		base.Build(position, moduleMenu != null, false);
 
 		spaceStationController = GetComponentInParent<SpaceStationController>();
 
@@ -42,6 +42,12 @@ public class Constructor : Module
 		constructionUnit = new ConstructionUnit();
 		AddComponentSlot(GoodManager.ComponentType.ConstructionUnit, constructionUnit);
 
+		if(moduleMenu != null)
+		{
+			// Status
+			AddStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
+		}
+
 		SpacecraftManager.GetInstance().AddConstructor(this);
 		ToggleController.GetInstance().AddToggleObject("BuildAreaIndicators", constructionAreaIndicator.gameObject);
 	}
@@ -52,6 +58,14 @@ public class Constructor : Module
 		SpacecraftManager.GetInstance().RemoveConstructor(this);
 
 		base.Deconstruct();
+	}
+
+	public override void UpdateNotify()
+	{
+		base.UpdateNotify();
+
+		// Status
+		UpdateStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
 	}
 
 	public bool PositionInRange(Vector2 position)

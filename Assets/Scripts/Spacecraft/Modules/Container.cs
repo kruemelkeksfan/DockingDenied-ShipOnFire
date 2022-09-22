@@ -37,6 +37,12 @@ public class Container : Module
 		if(moduleMenu != null)
 		{
 			RectTransform moduleMenuContent = moduleMenu.GetComponentInChildren<VerticalLayoutGroup>().GetComponent<RectTransform>();
+
+			// Status
+			AddStatusField("Cargo Volume", (storage.GetLoad() + "/" + storage.GetCapacity() + " m3"));
+			AddStatusField("Cargo Mass", (cargoMass.ToString("F2") + " t"));
+
+			// Inventory
 			RectTransform inventoryHeader = (RectTransform)moduleMenuContent.GetChild(2);
 			inventoryContentPane = (RectTransform)moduleMenuContent.GetChild(3);
 			inventoryEntryPrefab = InventoryScreenController.GetInstance().GetInventoryEntryPrefab();
@@ -55,7 +61,7 @@ public class Container : Module
 			inventoryContentPane.gameObject.SetActive(true);
 		}
 
-		UpdateModuleMenuButtonText();
+		UpdateModuleStatus();
 	}
 
 	public override void Deconstruct()
@@ -153,11 +159,11 @@ public class Container : Module
 		UpdateModuleMenuInventory();
 	}
 
-	public override void UpdateModuleMenuButtonText()
+	public override void UpdateModuleStatus()
 	{
 		if(moduleMenu != null && storage != null && inventoryController != null)
 		{
-			base.UpdateModuleMenuButtonText();
+			base.UpdateModuleStatus();
 
 			float capacity = storage.GetCapacity();
 			float load = (capacity > MathUtil.EPSILON) ? (storage.GetLoad() / capacity) : 1.0f;
@@ -174,6 +180,9 @@ public class Container : Module
 				moduleManager.UpdateStatusBar(volumeBar, load);
 				moduleManager.UpdateStatusBar(massBar, (cargoMass / totalCargoMass));
 			}
+
+			UpdateStatusField("Cargo Volume", (storage.GetLoad() + "/" + storage.GetCapacity() + " m3"));
+			UpdateStatusField("Cargo Mass", (cargoMass.ToString("F2") + " t"));
 		}
 	}
 
