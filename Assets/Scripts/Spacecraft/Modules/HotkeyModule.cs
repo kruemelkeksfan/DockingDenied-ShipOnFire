@@ -11,7 +11,7 @@ public class HotkeyModule : Module, IHotkeyListener
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
-		base.Build(position);
+		base.Build(position, listenUpdates, listenFixedUpdates);
 
 		inputController = spacecraft.gameObject.GetComponent<InputController>();
 

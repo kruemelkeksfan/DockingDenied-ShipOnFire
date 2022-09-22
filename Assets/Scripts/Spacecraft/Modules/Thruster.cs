@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class Thruster : Module
+public class Thruster : HotkeyModule
 {
 	[SerializeField] private string fuelName = "Xenon";
 	private Transform spacecraftTransform = null;
@@ -20,6 +20,9 @@ public class Thruster : Module
 	private float power = 1.0f;
 	private Slider powerSlider = null;
 	private InputField powerInputField = null;
+	private Button toggleButton = null;
+	private Text toggleButtonText = null;
+	private bool active = true;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -48,6 +51,7 @@ public class Thruster : Module
 			// Status
 			AddStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
 			AddStatusField("Internal Fuel", (fuelSupply.ToString("F4") + " m3"));
+			AddStatusField("Activated", active.ToString());
 
 			// Settings
 			powerSlider = settingPanel.GetComponentInChildren<Slider>();
@@ -65,6 +69,13 @@ public class Thruster : Module
 			int power = 100;
 			powerSlider.value = power;
 			powerInputField.text = power.ToString();
+
+			toggleButton = settingPanel.GetComponentInChildren<Button>();
+			toggleButtonText = toggleButton.GetComponentInChildren<Text>();
+			toggleButton.onClick.AddListener(delegate
+			{
+				HotkeyDown();
+			});
 		}
 	}
 
@@ -81,7 +92,7 @@ public class Thruster : Module
 		// Don't apply Thrust during a Frame in which the Origin shifted,
 		// because the Physics freak out when moving transform.position while Forces are being applied
 		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
-		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && !gravityWellController.IsOriginShifted())
+		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && active && !gravityWellController.IsOriginShifted())
 		{
 			float deltaTime = timeController.GetFixedDeltaTime();
 			if((engine.GetSecondaryFuelConsumption() * throttle * power * deltaTime) > fuelSupply)
@@ -117,7 +128,15 @@ public class Thruster : Module
 		{
 			UpdateStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
 			UpdateStatusField("Internal Fuel", (fuelSupply.ToString("F4") + " m3"));
+			UpdateStatusField("Activated", active.ToString());
 		}
+	}
+
+	public override void HotkeyDown()
+	{
+		active = !active;
+
+		toggleButtonText.text = active ? "Deactivate" : "Activate";
 	}
 
 	public Vector2 GetThrustDirection()
@@ -127,7 +146,7 @@ public class Thruster : Module
 
 	public bool SetThrottle(float throttle)
 	{
-		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON)
+		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && active)
 		{
 			if(fuelSupply < MathUtil.EPSILON && inventoryController.Withdraw(fuelName, 1))
 			{
