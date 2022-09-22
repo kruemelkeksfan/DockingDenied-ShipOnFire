@@ -18,6 +18,7 @@ public class InventoryController : MonoBehaviour, IListener
 	private double energyCapacity = 0.0f;
 	private int money = 0;
 	private Dictionary<GoodManager.State, List<Container>> containers = null;
+	private Dictionary<string, int> roundRobinWithdrawalIndices = null;
 	private new Rigidbody2D rigidbody = null;
 	private float heaviestCargoMass = 0.0f;
 
@@ -32,6 +33,7 @@ public class InventoryController : MonoBehaviour, IListener
 		containers = new Dictionary<GoodManager.State, List<Container>>(2);
 		containers[GoodManager.State.solid] = new List<Container>();
 		containers[GoodManager.State.fluid] = new List<Container>();
+		roundRobinWithdrawalIndices = new Dictionary<string, int>();
 
 		rigidbody = GetComponent<Rigidbody2D>();
 	}
@@ -153,7 +155,7 @@ public class InventoryController : MonoBehaviour, IListener
 			Debug.LogError("Could not completely deposit a Load of " + goodName + " in Inventory of " + gameObject + ", although enough Space should have been available!");
 
 			UpdateInventoryDisplays();
-			return false;				// Some Cargo would have been stored already, so avoid storing only a Part but subtracting full Costs for something
+			return false;               // Some Cargo would have been stored already, so avoid storing only a Part but subtracting full Costs for something
 		}
 		else
 		{
@@ -199,7 +201,7 @@ public class InventoryController : MonoBehaviour, IListener
 		return true;
 	}
 
-	public bool Withdraw(string goodName, uint amount)
+	public bool Withdraw(string goodName, uint amount, bool roundRobin = false)
 	{
 		if(amount == 0)
 		{
@@ -216,7 +218,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 		foreach(Container container in containers[state])
 		{
-			if(container.Withdraw(goodName, amount))
+			if(!roundRobin && container.Withdraw(goodName, amount))
 			{
 				UpdateInventoryDisplays();
 				return true;
@@ -229,16 +231,46 @@ public class InventoryController : MonoBehaviour, IListener
 
 		if(availableAmount >= amount)
 		{
-			foreach(Container container in containers[state])
+			if(!roundRobin)
 			{
-				uint partialAmount = (uint)Mathf.Min((int)container.GetGoodAmount(goodName), (int)amount);
-				if(amount > 0 && container.Withdraw(goodName, partialAmount))
+				foreach(Container container in containers[state])
 				{
-					amount -= partialAmount;
+					uint partialAmount = (uint)Mathf.Min((int)container.GetGoodAmount(goodName), (int)amount);
+					if(amount > 0 && container.Withdraw(goodName, partialAmount))
+					{
+						amount -= partialAmount;
+					}
+
+					if(amount <= 0)
+					{
+						UpdateInventoryDisplays();
+						return true;
+					}
+				}
+			}
+			else
+			{
+				List<Container> containers = this.containers[state];
+				int containerIndex = roundRobinWithdrawalIndices.ContainsKey(goodName) ? roundRobinWithdrawalIndices[goodName] : 0;
+				int emptyContainers = 0;
+				while(amount > 0 && emptyContainers < containers.Count)
+				{
+					containerIndex = (containerIndex + 1) % containers.Count;
+					if(containers[containerIndex].Withdraw(goodName, 1))
+					{
+						--amount;
+						emptyContainers = 0;
+					}
+					else
+					{
+						++emptyContainers;
+					}
 				}
 
 				if(amount <= 0)
 				{
+					roundRobinWithdrawalIndices[goodName] = containerIndex;
+
 					UpdateInventoryDisplays();
 					return true;
 				}
@@ -247,7 +279,7 @@ public class InventoryController : MonoBehaviour, IListener
 			Debug.LogError("Could not completely withdraw a Load of " + goodName + " from Inventory of " + gameObject + ", although enough Cargo should have been available!");
 
 			UpdateInventoryDisplays();
-			return true;				// Some Cargo would have been deleted already, so avoid deleting partial Costs of something and then give nothing in return
+			return true;                // Some Cargo would have been deleted already, so avoid deleting partial Costs of something and then give nothing in return
 		}
 		else
 		{
