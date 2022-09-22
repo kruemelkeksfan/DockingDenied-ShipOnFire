@@ -332,9 +332,8 @@ public class InventoryController : MonoBehaviour, IListener
 		}
 	}
 
-	private void UpdateInventoryDisplays()
+	public void UpdateHeaviestMass()
 	{
-		// Update cargoMass
 		heaviestCargoMass = 0.0f;
 		foreach(List<Container> containerList in containers.Values)
 		{
@@ -347,7 +346,10 @@ public class InventoryController : MonoBehaviour, IListener
 				}
 			}
 		}
+	}
 
+	private void UpdateInventoryDisplays()
+	{
 		// Update Container UIs
 		foreach(List<Container> containerList in containers.Values)
 		{

@@ -107,6 +107,7 @@ public class Container : Module
 			cargoMass += goodMass;
 			mass += goodMass;
 			spacecraft.UpdateMass();
+			inventoryController.UpdateHeaviestMass();
 
 			return true;
 		}
@@ -143,6 +144,7 @@ public class Container : Module
 			cargoMass -= goodMass;
 			mass -= goodMass;
 			spacecraft.UpdateMass();
+			inventoryController.UpdateHeaviestMass();
 
 			return true;
 		}

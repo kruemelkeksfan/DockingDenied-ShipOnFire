@@ -24,7 +24,9 @@ public class InventoryEntryController : DraggableEntry
 					{
 						if(destinationContainer.Deposit(goodName, amount))
 						{
+							sourceContainer.UpdateModuleStatus();
 							sourceContainer.UpdateModuleMenuInventory();
+							destinationContainer.UpdateModuleStatus();
 							destinationContainer.UpdateModuleMenuInventory();
 							return true;
 						}
@@ -39,6 +41,7 @@ public class InventoryEntryController : DraggableEntry
 							Debug.LogWarning("Only " + destinationContainer.GetFreeCapacity(goodName) + "/" + amount + " " + goodName
 							+ " can be stored in " + destinationContainer.GetCustomModuleName() + "!");
 
+							sourceContainer.UpdateModuleStatus();
 							sourceContainer.UpdateModuleMenuInventory();
 							return false;
 						}
@@ -48,6 +51,7 @@ public class InventoryEntryController : DraggableEntry
 						Debug.LogWarning("Only " + sourceContainer.GetGoodAmount(goodName) + "/" + amount + " " + goodName
 							+ " available in " + sourceContainer.GetCustomModuleName() + "!");
 
+						sourceContainer.UpdateModuleStatus();
 						sourceContainer.UpdateModuleMenuInventory();
 						return false;
 					}
@@ -55,6 +59,7 @@ public class InventoryEntryController : DraggableEntry
 			}
 		}
 
+		sourceContainer.UpdateModuleStatus();
 		sourceContainer.UpdateModuleMenuInventory();
 		Dump();
 		return false;
