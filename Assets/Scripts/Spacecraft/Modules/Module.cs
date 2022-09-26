@@ -592,19 +592,26 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 			Text[] assembleComponentEntryTexts = assembleComponentEntry.GetComponentsInChildren<Text>();
 			StringBuilder assembleString = new StringBuilder();
-			assembleString.Append("Assemble Component: \n");
+			assembleString.Append("Assemble Component:\n");
 			bool first = true;
+			int itemsOnLine = 0;
 			foreach(GoodManager.Load cost in crudeComponentData.buildingCosts)
 			{
 				if(!first)
 				{
 					assembleString.Append(", ");
 				}
+				if(itemsOnLine >= 2)
+				{
+					assembleString.Append("\n");
+					itemsOnLine = 0;
+				}
 				assembleString.Append(cost.amount);
 				assembleString.Append(" ");
 				assembleString.Append(cost.goodName);
 
 				first = false;
+				++itemsOnLine;
 			}
 			assembleComponentEntryTexts[0].text = assembleString.ToString();
 			assembleComponentEntryTexts[1].text = ModuleComponent.GetAttributeList(crudeComponentData);

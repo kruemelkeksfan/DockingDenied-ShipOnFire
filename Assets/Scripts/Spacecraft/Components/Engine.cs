@@ -14,8 +14,8 @@ public class Engine : ModuleComponent
 
 		if(componentName != null)
 		{
-			primaryFuelConsumption = GetAttribute("Primary Fuel Consumption");
-			secondaryFuelConsumption = GetAttribute("Secondary Fuel Consumption");
+			primaryFuelConsumption = GetAttribute("Primary Fuel Use");
+			secondaryFuelConsumption = GetAttribute("Secondary Fuel Use");
 			thrust = GetAttribute("Thrust");
 		}
 		else

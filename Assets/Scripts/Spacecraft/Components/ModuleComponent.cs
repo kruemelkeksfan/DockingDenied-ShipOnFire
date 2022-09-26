@@ -1,4 +1,3 @@
-using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
@@ -23,12 +22,15 @@ public class ModuleComponent
 				attributeList.Append("\n");
 			}
 			attributeList.Append(componentData.attributeNames[i]);
-			attributeList.Append(" ");
-			if(componentData.attributeValues[i] > 0.0f)
-			{
-				attributeList.Append("+");
-			}
-			attributeList.Append(componentData.attributeValues[i]);
+			attributeList.Append(":\t");
+
+			// Cut Value after 6 decimal Digits (including Separator and leading 0)
+			string valueString = componentData.attributeValues[i].ToString();
+			int integerDigits = Mathf.FloorToInt(componentData.attributeValues[i]).ToString().Length;
+			valueString = valueString.Substring(0, Mathf.Min(Mathf.Max(integerDigits, 6), valueString.Length));
+			valueString = valueString.TrimEnd(',', '.', ' ');
+
+			attributeList.Append(valueString);
 		}
 
 		return attributeList.ToString();
@@ -108,12 +110,15 @@ public class ModuleComponent
 				attributeList.Append("\n");
 			}
 			attributeList.Append(attributeName);
-			attributeList.Append(" ");
-			if(attributes[attributeName] > 0.0f)
-			{
-				attributeList.Append("+");
-			}
-			attributeList.Append(attributes[attributeName].ToString("F6"));
+			attributeList.Append(":\t");
+
+			// Cut Value after 6 decimal Digits (including Separator and leading 0)
+			string valueString = attributes[attributeName].ToString();
+			int integerDigits = Mathf.FloorToInt(attributes[attributeName]).ToString().Length;
+			valueString = valueString.Substring(0, Mathf.Min(Mathf.Max(integerDigits, 6), valueString.Length));
+			valueString = valueString.TrimEnd(',', '.', ' ');
+
+			attributeList.Append(valueString);
 
 			first = false;
 		}
