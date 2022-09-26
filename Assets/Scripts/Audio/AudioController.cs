@@ -168,6 +168,11 @@ public class AudioController : MonoBehaviour, IListener
 			if(audioData.playCounter <= 0)
 			{
 				loopedAudios.Remove(audio);
+
+				if(audioData.playCounter < 0)
+				{
+					Debug.LogWarning("Looped Audio " + audio + " was stopped " + (-audioData.playCounter) + " Times more often than it was started!");
+				}
 			}
 		}
 	}
