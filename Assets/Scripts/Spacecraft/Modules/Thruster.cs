@@ -21,7 +21,6 @@ public class Thruster : HotkeyModule
 	private InputField powerInputField = null;
 	private Button toggleButton = null;
 	private Text toggleButtonText = null;
-	private bool active = true;
 	private bool needRefuel = true;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
@@ -46,7 +45,7 @@ public class Thruster : HotkeyModule
 		{
 			// Status
 			AddStatusField("Internal Fuel", (fuelSupply.ToString("F4") + " m3"));
-			AddStatusField("Activated", active.ToString());
+			AddStatusField("Activated", IsActive().ToString());
 
 			// Settings
 			powerSlider = settingPanel.GetComponentInChildren<Slider>();
@@ -72,6 +71,9 @@ public class Thruster : HotkeyModule
 				HotkeyDown();
 			});
 		}
+
+		// Activate Thruster
+		HotkeyDown();
 	}
 
 	public override void Deconstruct()
@@ -86,7 +88,7 @@ public class Thruster : HotkeyModule
 		// Don't apply Thrust during a Frame in which the Origin shifted,
 		// because the Physics freak out when moving transform.position while Forces are being applied
 		// TODO: Check for Origin Shift in Spacecraft (instead of here) to avoid unnecessary Method Calls
-		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && active && !gravityWellController.IsOriginShifted())
+		if(throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && IsActive() && !gravityWellController.IsOriginShifted())
 		{
 			float deltaTime = timeController.GetFixedDeltaTime();
 			if((engine.GetSecondaryFuelConsumption() * throttle * power * deltaTime) > fuelSupply)
@@ -122,7 +124,7 @@ public class Thruster : HotkeyModule
 		if(moduleMenu != null)
 		{
 			UpdateStatusField("Internal Fuel", (fuelSupply.ToString("F4") + " m3"));
-			UpdateStatusField("Activated", active.ToString());
+			UpdateStatusField("Activated", IsActive().ToString());
 		}
 	}
 
@@ -146,9 +148,12 @@ public class Thruster : HotkeyModule
 
 	public override void HotkeyDown()
 	{
-		active = !active;
+		base.HotkeyDown();
 
-		toggleButtonText.text = active ? "Deactivate" : "Activate";
+		if(moduleMenu != null)
+		{
+			toggleButtonText.text = IsActive() ? "Deactivate" : "Activate";
+		}
 	}
 
 	public Vector2 GetThrustDirection()
@@ -163,7 +168,7 @@ public class Thruster : HotkeyModule
 
 	public bool SetThrottle(float throttle)
 	{
-		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && active)
+		if(throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && IsActive())
 		{
 			if((needRefuel || fuelSupply <= MathUtil.EPSILON) && inventoryController.Withdraw(fuelName, 1, true))
 			{

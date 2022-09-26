@@ -32,7 +32,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	protected float condition = 1.0f;
 	protected float mass = MathUtil.EPSILON;
 	private Vector2Int[] bufferedReservedPositions = { Vector2Int.zero };
-	protected bool constructed = false;
+	private bool constructed = false;
 	protected new Transform transform = null;
 	protected SpacecraftController spacecraft = null;
 	protected Vector2Int position = Vector2Int.zero;

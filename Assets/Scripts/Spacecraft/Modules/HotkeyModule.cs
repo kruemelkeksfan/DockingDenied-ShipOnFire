@@ -8,6 +8,7 @@ public class HotkeyModule : Module, IHotkeyListener
 	private InputController inputController = null;
 	private Dropdown hotkeySelection = null;
 	private int hotkey = 0;
+	private bool active = false;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -40,12 +41,13 @@ public class HotkeyModule : Module, IHotkeyListener
 
 	public virtual void HotkeyDown()
 	{
-
+		active = !active;
+		SetCustomModuleName(customModuleName);
 	}
 
 	public virtual void HotkeyUp()
 	{
-
+		
 	}
 
 	public int GetHotkey()
@@ -53,11 +55,16 @@ public class HotkeyModule : Module, IHotkeyListener
 		return hotkey;
 	}
 
+	public bool IsActive()
+	{
+		return active;
+	}
+
 	public override void SetCustomModuleName(string customModuleName)
 	{
 		base.SetCustomModuleName(customModuleName);
 
-		(inputController as KeyboardInputController)?.UpdateActionName(hotkey, this, customModuleName);
+		(inputController as KeyboardInputController)?.UpdateActionName(hotkey, this, customModuleName + " " + (active ? "[on]" : "[off]"));
 	}
 
 	public void SetHotkey(int hotkey)
@@ -65,7 +72,7 @@ public class HotkeyModule : Module, IHotkeyListener
 		// TODO: Clean up the ?.-Operators by figuring out a Software Architecture that does not need Hotkeys when no KeyboardInputController is present
 		inputController?.RemoveHotkey(this.hotkey, this);
 		this.hotkey = hotkey;
-		inputController?.AddHotkey(hotkey, this, customModuleName);
+		inputController?.AddHotkey(hotkey, this, customModuleName + " " + (active ? "[on]" : "[off]"));
 		if(moduleMenu != null)
 		{
 			hotkeySelection.value = hotkey;

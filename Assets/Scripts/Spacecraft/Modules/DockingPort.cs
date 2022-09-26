@@ -15,7 +15,6 @@ public class DockingPort : HotkeyModule
 	[SerializeField] private AudioClip dockingSuccessAudio = null;
 	private Transform spacecraftTransform = null;
 	private ParticleSystem magnetParticles = null;
-	private bool active = false;
 	private DockingPort connectedPort = null;
 	private FixedJoint2D joint = null;
 	private List<IDockingListener> dockingListeners = null;
@@ -45,6 +44,7 @@ public class DockingPort : HotkeyModule
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
 		base.Build(position, listenUpdates, listenFixedUpdates);
+
 		spacecraftTransform = spacecraft.GetTransform();
 		ToggleController.GetInstance().AddToggleObject("PortNameplates", portNameField.gameObject);
 		portNameField.text = customModuleName;
@@ -63,7 +63,8 @@ public class DockingPort : HotkeyModule
 
 	public override void HotkeyDown()
 	{
-		if(!active)
+		// TODO: What to do with Audio if there are multiple Docking Ports?
+		if(!IsActive())
 		{
 			audioController.LoopAudioStart(dockingAudio, spacecraft.gameObject);
 		}
@@ -71,7 +72,8 @@ public class DockingPort : HotkeyModule
 		{
 			audioController.LoopAudioStop(dockingAudio, spacecraft.gameObject);
 		}
-		active = !active;
+		
+		base.HotkeyDown();
 
 		if(connectedPort != null)
 		{
@@ -103,7 +105,7 @@ public class DockingPort : HotkeyModule
 
 	private void ToggleParticles()
 	{
-		if(active && connectedPort == null)
+		if(IsActive() && connectedPort == null)
 		{
 			magnetParticles.Play();
 			magnetParticles.Simulate(8.0f);
@@ -117,10 +119,10 @@ public class DockingPort : HotkeyModule
 
 	private void Dock(Collider2D other)
 	{
-		if(active && connectedPort == null && other.isTrigger)
+		if(IsActive() && connectedPort == null && other.isTrigger)
 		{
 			DockingPort otherPort = other.GetComponent<DockingPort>();
-			if(otherPort != null && otherPort.active && otherPort.connectedPort == null)
+			if(otherPort != null && otherPort.IsActive() && otherPort.connectedPort == null)
 			{
 				Rigidbody2D otherRigidbody = other.GetComponentInParent<Rigidbody2D>();
 				if(rigidbody.mass <= otherRigidbody.mass)
@@ -172,11 +174,6 @@ public class DockingPort : HotkeyModule
 	public void AddDockingListener(IDockingListener listener)
 	{
 		dockingListeners.Add(listener);
-	}
-
-	public bool IsActive()
-	{
-		return active;
 	}
 
 	public bool IsFree()
