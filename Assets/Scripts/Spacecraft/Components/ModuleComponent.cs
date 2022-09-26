@@ -113,7 +113,7 @@ public class ModuleComponent
 			{
 				attributeList.Append("+");
 			}
-			attributeList.Append(attributes[attributeName]);
+			attributeList.Append(attributes[attributeName].ToString("F6"));
 
 			first = false;
 		}

@@ -4,22 +4,19 @@ using UnityEngine;
 
 public class Teleporter : ModuleComponent
 {
-	private float teleportationEnergyCost = 1.0f;
-	private float energyCostReduction = 1.0f;
+	private float energyCost = 1.0f;
 
 	public override bool UpdateComponentData(string componentName)
 	{
 		base.UpdateComponentData(componentName);
 
-		teleportationEnergyCost = ComponentManager.GetInstance().GetTeleportationEnergyCost();
-
 		if(componentName != null)
 		{
-			energyCostReduction = GetAttribute("Energy Cost Reduction");
+			energyCost = GetAttribute("Energy Cost");
 		}
 		else
 		{
-			energyCostReduction = 1.0f;
+			energyCost = float.MaxValue;
 		}
 
 		return true;
@@ -28,7 +25,7 @@ public class Teleporter : ModuleComponent
 	// Calculate Teleportation Energy Cost per Kilometer
 	public float CalculateTeleportationEnergyCost(Vector2 source, Vector2 destination, float mass)
 	{
-		return (Mathf.Ceil((destination - source).magnitude / 1000.0f) * mass * teleportationEnergyCost) / energyCostReduction;
+		return (Mathf.Ceil((destination - source).magnitude / 1000.0f) * mass * energyCost);
 	}
 
 	public bool Teleport(Vector2 source, Vector2 destination, float mass, EnergyStorage capacitor)

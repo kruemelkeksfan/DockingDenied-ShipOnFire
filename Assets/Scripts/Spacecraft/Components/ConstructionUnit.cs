@@ -4,39 +4,36 @@ using UnityEngine;
 
 public class ConstructionUnit : ModuleComponent
 {
-	private float constructionEnergyCost = 1.0f;
-	private float energyCostReduction = 1.0f;
+	private float energyCost = float.MaxValue;
 	private float lastEnergyCost = 0.0f;
 
 	public override bool UpdateComponentData(string componentName)
 	{
 		base.UpdateComponentData(componentName);
 
-		constructionEnergyCost = ComponentManager.GetInstance().GetConstructionEnergyCost();
-
 		if(componentName != null)
 		{
-			energyCostReduction = GetAttribute("Energy Cost Reduction");
+			energyCost = GetAttribute("Energy Cost");
 		}
 		else
 		{
-			energyCostReduction = 1.0f;
+			energyCost = float.MaxValue;
 		}
 
 		return true;
 	}
 
 	public int Construct(Vector2 constructorPosition, Vector2 targetPosition, GoodManager.Load[] constructionCosts,
-		Teleporter constructorTeleporter, EnergyStorage constructorCapacitor)
+		Teleporter teleporter, EnergyStorage capacitor)
 	{
 		// TODO: Limit buildable Blueprints by Construction Unit Quality?
 
-		if(!constructorTeleporter.IsSet())
+		if(!teleporter.IsSet())
 		{
 			lastEnergyCost = 0.0f;
 			return 1;
 		}
-		if(!constructorCapacitor.IsSet())
+		if(!capacitor.IsSet())
 		{
 			lastEnergyCost = 0.0f;
 			return 2;
@@ -54,15 +51,15 @@ public class ConstructionUnit : ModuleComponent
 			mass += goodManager.GetGood(cost.goodName).mass * cost.amount;
 		}
 
-		float energyCost = constructorTeleporter.CalculateTeleportationEnergyCost(constructorPosition, targetPosition, mass);
-		energyCost += (constructionEnergyCost * mass) / energyCostReduction;
+		float energyCost = teleporter.CalculateTeleportationEnergyCost(constructorPosition, targetPosition, mass);
+		energyCost += (this.energyCost * mass);
 
-		float charge = constructorCapacitor.GetCharge();
+		float charge = capacitor.GetCharge();
 		if(charge >= energyCost)
 		{
 			lastEnergyCost = energyCost;
-			if(constructorTeleporter.Teleport(constructorPosition, targetPosition, mass, constructorCapacitor)
-				&& constructorCapacitor.Discharge(constructionEnergyCost / energyCostReduction))
+			if(teleporter.Teleport(constructorPosition, targetPosition, mass, capacitor)
+				&& capacitor.Discharge(energyCost))
 			{
 				return 0;
 			}

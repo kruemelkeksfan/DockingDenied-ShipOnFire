@@ -3046,7 +3046,7 @@ PrefabInstance:
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_RootOrder
-      value: 18
+      value: 17
       objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204190, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
@@ -3376,7 +3376,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 10
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &438357388
 GameObject:
@@ -3512,7 +3512,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 9
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &452516120
 GameObject:
@@ -4021,7 +4021,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 13
+  m_RootOrder: 12
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &488042605
 GameObject:
@@ -4340,7 +4340,7 @@ RectTransform:
   - {fileID: 7380941616949859132}
   - {fileID: 817186073}
   m_Father: {fileID: 0}
-  m_RootOrder: 14
+  m_RootOrder: 13
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -6099,7 +6099,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 12
+  m_RootOrder: 11
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &705507993
 GameObject:
@@ -6193,7 +6193,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 15
+  m_RootOrder: 14
   m_LocalEulerAnglesHint: {x: 0, y: -20, z: 0}
 --- !u!1001 &724742951
 PrefabInstance:
@@ -8056,7 +8056,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &899978991 stripped
 GameObject:
@@ -8317,6 +8317,7 @@ MonoBehaviour:
       amount: 4
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Crew Cabin
     description: A self-sustained resting place for crew members, including bunks,
       sanitation and life-support-systems.
@@ -8343,6 +8344,7 @@ MonoBehaviour:
     - Crew Capacity
     attributeValues:
     - 1
+    attributeScaleModes: 04000000
   - goodName: Radiator
     description: A simple radiative cooling solution for all systems which produce
       an excessive amount of heat.
@@ -8367,6 +8369,7 @@ MonoBehaviour:
       amount: 1
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Access Control Unit
     description: Just a fancy space door lock.
     state: 0
@@ -8390,6 +8393,7 @@ MonoBehaviour:
       amount: 2
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Hacking Unit
     description: Whats that? A space lockpick?
     state: 0
@@ -8413,6 +8417,7 @@ MonoBehaviour:
       amount: 3
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Cargo Racks
     description: A simple storage solution for solid goods.
     state: 0
@@ -8438,6 +8443,7 @@ MonoBehaviour:
     - Capacity
     attributeValues:
     - 100
+    attributeScaleModes: 00000000
   - goodName: Tank System
     description: Pressurizable tanks and pipes for fluid and gaseous goods.
     state: 0
@@ -8463,6 +8469,7 @@ MonoBehaviour:
     - Capacity
     attributeValues:
     - 60
+    attributeScaleModes: 00000000
   - goodName: Capacitor
     description: An energy storage which can handle rapid charging and discharging.
     state: 0
@@ -8488,6 +8495,7 @@ MonoBehaviour:
     - Capacity
     attributeValues:
     - 10
+    attributeScaleModes: 00000000
   - goodName: Power Cells
     description: A heavy but cheap mass energy storage.
     state: 0
@@ -8512,7 +8520,8 @@ MonoBehaviour:
     attributeNames:
     - Capacity
     attributeValues:
-    - 80
+    - 100
+    attributeScaleModes: 00000000
   - goodName: Emergency Power Supply
     description: A small and lightweight battery for emergency use.
     state: 0
@@ -8538,6 +8547,7 @@ MonoBehaviour:
     - Capacity
     attributeValues:
     - 20
+    attributeScaleModes: 00000000
   - goodName: Solar Panel
     description: The classic way of generating free power in space.
     state: 0
@@ -8563,6 +8573,7 @@ MonoBehaviour:
     - Energy Production
     attributeValues:
     - 40
+    attributeScaleModes: 00000000
   - goodName: Breech
     description: The loading mechanism for a classical cannon.
     state: 0
@@ -8586,6 +8597,7 @@ MonoBehaviour:
       amount: 1
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Barrel
     description: Basically a pipe for accelerating projectiles using extreme pressures
       and temperatures.
@@ -8610,6 +8622,7 @@ MonoBehaviour:
       amount: 0
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Force Field Generator
     description: A 21st century person would not have deemed this possible, but this
       handy gadget stops projectiles which are flying towards it.
@@ -8634,6 +8647,7 @@ MonoBehaviour:
       amount: 4
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Ion Engine
     description: This engine uses electrical power and noble gases (but mostly electrical
       power) to provide extremly efficient but weak propulsion.
@@ -8662,8 +8676,9 @@ MonoBehaviour:
     - Thrust
     attributeValues:
     - 12000
-    - 0.4
+    - 0.0004
     - 1000
+    attributeScaleModes: 010000000100000000000000
   - goodName: Fuel Pump
     description: The practical solution to supply hydrogen engines with absurd amounts
       of fuel and oxidizer per second.
@@ -8688,6 +8703,7 @@ MonoBehaviour:
       amount: 1
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Hydrogen Engine
     description: The reliable, powerful and downright archaic way of moving spacecraft.
     state: 0
@@ -8711,6 +8727,7 @@ MonoBehaviour:
       amount: 1
     attributeNames: []
     attributeValues: []
+    attributeScaleModes: 
   - goodName: Teleporter
     description: An immensely practical gadget for transporting inanimate objects
       over short distances.
@@ -8734,9 +8751,10 @@ MonoBehaviour:
     - goodName: Silicon
       amount: 4
     attributeNames:
-    - Energy Cost Reduction
+    - Energy Cost
     attributeValues:
-    - 1
+    - 0.02
+    attributeScaleModes: 02000000
   - goodName: Construction Unit
     description: A combined CNC- and cold-welding-machine which can autonomously
       construct structures.
@@ -8760,9 +8778,10 @@ MonoBehaviour:
     - goodName: Silicon
       amount: 3
     attributeNames:
-    - Energy Cost Reduction
+    - Energy Cost
     attributeValues:
-    - 1
+    - 0.01
+    attributeScaleModes: 02000000
   - goodName: Assembler Unit
     description: A precision machine for assembling the most delicate circuits and
       gadgets. Sadly, it wastes a lot of material.
@@ -8786,9 +8805,10 @@ MonoBehaviour:
     - goodName: Silicon
       amount: 4
     attributeNames:
-    - Energy Cost Reduction
+    - Energy Cost
     attributeValues:
-    - 1
+    - 0.01
+    attributeScaleModes: 02000000
   componentCostFactor: 2
   componentPowerFactor: 1.5
   moduleComponentPriceFactor: 0.2
@@ -14423,7 +14443,7 @@ Transform:
   - {fileID: 32073811}
   - {fileID: 22031117}
   m_Father: {fileID: 0}
-  m_RootOrder: 16
+  m_RootOrder: 15
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1372876022
 MonoBehaviour:
@@ -14952,52 +14972,6 @@ RectTransform:
   m_AnchoredPosition: {x: 0, y: -50}
   m_SizeDelta: {x: 500, y: 20}
   m_Pivot: {x: 0.5, y: 0.5}
---- !u!1 &1429713920
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1429713921}
-  - component: {fileID: 1429713922}
-  m_Layer: 0
-  m_Name: ComponentManager
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1429713921
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429713920}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_RootOrder: 6
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1429713922
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1429713920}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f0e79669e09598f43a400c266c53c4c9, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  teleportationEnergyCost: 0.02
-  constructionEnergyCost: 0.01
 --- !u!1001 &1435049328
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -15835,7 +15809,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 11
+  m_RootOrder: 10
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1466514765 stripped
 MonoBehaviour:
@@ -19060,7 +19034,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1821346603 stripped
 MonoBehaviour:
@@ -22779,7 +22753,7 @@ PrefabInstance:
     - target: {fileID: 8025485152524623507, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}
       propertyPath: m_RootOrder
-      value: 17
+      value: 16
       objectReference: {fileID: 0}
     - target: {fileID: 8025485152524623507, guid: 6f59274365b6eb449a06ee16f4007538,
         type: 3}

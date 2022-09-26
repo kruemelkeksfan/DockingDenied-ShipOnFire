@@ -16,6 +16,7 @@ public class GoodManager : MonoBehaviour
 		IonEngine, FuelPump, HydrogenEngine,
 		Teleporter, ConstructionUnit, AssemblerUnit };
 	public enum ComponentQuality { crude = 0, basic = 1, good = 2, excellent = 3, legendary = 4 };
+	public enum ComponentAttributeScaleMode { IncreaseFull, IncreaseHalf, DecreaseFull, DecreaseHalf, AddOne };
 
 	[Serializable]
 	public class Good
@@ -45,6 +46,7 @@ public class GoodManager : MonoBehaviour
 			new Load("Copper", 0), new Load("Gold", 0), new Load("Silicon", 0) };
 		public string[] attributeNames = { };
 		public float[] attributeValues = { };
+		public ComponentAttributeScaleMode[] attributeScaleModes = { };
 	}
 
 	[Serializable]
@@ -116,8 +118,7 @@ public class GoodManager : MonoBehaviour
 				ComponentData qualityComponent = new ComponentData();
 
 				int componentCostFactor = Mathf.CeilToInt(Mathf.Pow(this.componentCostFactor, ((int) quality)));
-				float componentPowerFactor = Mathf.Pow(this.componentPowerFactor, ((int) quality));
-
+	
 				qualityComponent.goodName = component.goodName + " [" + quality.ToString() + "]";
 				qualityComponent.description = component.description;
 				qualityComponent.state = component.state;
@@ -142,10 +143,32 @@ public class GoodManager : MonoBehaviour
 				}
 				qualityComponent.attributeNames = new string[component.attributeNames.Length];
 				qualityComponent.attributeValues = new float[component.attributeValues.Length];
+				qualityComponent.attributeScaleModes = new ComponentAttributeScaleMode[component.attributeScaleModes.Length];
 				for(int i = 0; i < component.attributeNames.Length; ++i)
 				{
 					qualityComponent.attributeNames[i] = component.attributeNames[i];
-					qualityComponent.attributeValues[i] = component.attributeValues[i] * componentPowerFactor;
+					qualityComponent.attributeScaleModes[i] = component.attributeScaleModes[i];
+
+					if(qualityComponent.attributeScaleModes[i] == ComponentAttributeScaleMode.IncreaseFull)
+					{
+						qualityComponent.attributeValues[i] = component.attributeValues[i] * Mathf.Pow(this.componentPowerFactor, ((int) quality));
+					}
+					else if(qualityComponent.attributeScaleModes[i] == ComponentAttributeScaleMode.IncreaseHalf)
+					{
+						qualityComponent.attributeValues[i] = component.attributeValues[i] * Mathf.Pow(((this.componentPowerFactor - 1.0f) * 0.5f) + 1.0f, ((int) quality));
+					}
+					else if(qualityComponent.attributeScaleModes[i] == ComponentAttributeScaleMode.DecreaseFull)
+					{
+						qualityComponent.attributeValues[i] = component.attributeValues[i] / Mathf.Pow(this.componentPowerFactor, ((int) quality));
+					}
+					else if(qualityComponent.attributeScaleModes[i] == ComponentAttributeScaleMode.DecreaseHalf)
+					{
+						qualityComponent.attributeValues[i] = component.attributeValues[i] / Mathf.Pow(((this.componentPowerFactor - 1.0f) * 0.5f) + 1.0f, ((int) quality));
+					}
+					else if(qualityComponent.attributeScaleModes[i] == ComponentAttributeScaleMode.AddOne)
+					{
+						qualityComponent.attributeValues[i] = component.attributeValues[i] + ((int) quality);
+					}
 				}
 
 				goodDictionary.Add(qualityComponent.goodName, qualityComponent);
