@@ -312,7 +312,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		}
 	}
 
-	public bool InstallComponent(string componentName)
+	public virtual bool InstallComponent(string componentName)
 	{
 		GoodManager.ComponentData componentData = goodManager.GetComponentData(componentName);
 		GoodManager.ComponentType componentType = componentData.type;
@@ -349,7 +349,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		return false;
 	}
 
-	public bool RemoveComponent(GoodManager.ComponentType componentType)
+	public virtual bool RemoveComponent(GoodManager.ComponentType componentType)
 	{
 		if(componentSlots.ContainsKey(componentType))
 		{

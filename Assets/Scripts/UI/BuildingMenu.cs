@@ -170,6 +170,13 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 				Constructor constructor = null;
 				if(cheaterMode || (constructor = FindBuildingConstructor(currentModule.transform.position, currentModule.module.GetBuildingCosts())) != null)
 				{
+					// Colliders should not get bigger during Time Speedup, since they are only checked during on-railing
+					if(timeController.IsScaled())
+					{
+						infoController.AddMessage("Building is not allowed during Time Speedup!", true);
+						timeController.SetTimeScale(0);
+					}
+
 					currentModule.module.Build(gridPosition);
 					currentModule.transform.localScale = currentModule.scale;
 
@@ -428,6 +435,13 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			Constructor constructor = null;
 			if(cheaterMode || (constructor = FindBuildingConstructor(localPlayerMainSpacecraftTransform.position, selectedBlueprintCosts)) != null)
 			{
+				// Colliders should not get bigger during Time Speedup, since they are only checked during on-railing
+				if(timeController.IsScaled())
+				{
+					infoController.AddMessage("Blueprint Loading is not allowed during Time Speedup!", true);
+					timeController.SetTimeScale(0);
+				}
+
 				constructor?.StartConstruction(localPlayerMainSpacecraftTransform.position);
 
 				SpacecraftBlueprintController.InstantiateModules(selectedBlueprintData, localPlayerMainSpacecraftTransform);

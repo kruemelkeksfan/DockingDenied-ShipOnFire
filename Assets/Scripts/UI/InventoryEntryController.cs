@@ -18,7 +18,30 @@ public class InventoryEntryController : DraggableEntry
 				Container destinationContainer = hoveredObject.gameObject.GetComponent<ContainerMenuController>()?.GetContainer();
 				if(destinationContainer != null)
 				{
-					amount = (uint)Mathf.Min((int)amount, (int)destinationContainer.GetFreeCapacity(goodName));
+					int destinationFreeCapacity = (int)destinationContainer.GetFreeCapacity(goodName);
+					if(destinationFreeCapacity <= 0)
+					{
+						Dictionary<string, uint> destinationLoads = destinationContainer.GetLoads();
+						if(destinationLoads.Count <= 0)
+						{
+							infoController.AddMessage("No Storage Space in " + destinationContainer.GetCustomModuleName() + ", did you forget to install Components?", true);
+						}
+						else if(destinationContainer.GetState() != GoodManager.GetInstance().GetGood(goodName).state)
+						{
+							infoController.AddMessage(destinationContainer.GetCustomModuleName() + " can only store "
+								+ destinationContainer.GetState() + " Goods and " + goodName + " is " + GoodManager.GetInstance().GetGood(goodName).state + "!", true);
+						}
+						else if(destinationContainer.GetState() == GoodManager.State.fluid && !destinationLoads.ContainsKey(goodName))
+						{
+							infoController.AddMessage("Fluids can't be mixed and " + destinationContainer.GetCustomModuleName() + " already contains another Fluid!", true);
+						}
+						else
+						{
+							infoController.AddMessage(destinationContainer.GetCustomModuleName() + " is already full!", true);
+						}
+					}
+
+					amount = (uint)Mathf.Min((int)amount, destinationFreeCapacity);
 
 					if(sourceContainer.Withdraw(goodName, amount))
 					{

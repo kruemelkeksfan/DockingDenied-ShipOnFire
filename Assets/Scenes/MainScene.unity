@@ -3033,6 +3033,11 @@ PrefabInstance:
       propertyPath: m_RootOrder
       value: 2
       objectReference: {fileID: 0}
+    - target: {fileID: 4919132876304603898, guid: 563dc166c0dffa8498e07f185cb0614a,
+        type: 3}
+      propertyPath: m_RootOrder
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 5754137889621204188, guid: 563dc166c0dffa8498e07f185cb0614a,
         type: 3}
       propertyPath: m_Name
@@ -8657,7 +8662,7 @@ MonoBehaviour:
     - Thrust
     attributeValues:
     - 12000
-    - 0.00004
+    - 0.4
     - 1000
   - goodName: Fuel Pump
     description: The practical solution to supply hydrogen engines with absurd amounts
@@ -19105,7 +19110,7 @@ PrefabInstance:
       propertyPath: m_Text
       value: 'Show
 
-        Center Of Mass'
+        Center of Mass/Thrust'
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519968, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
@@ -19156,7 +19161,7 @@ PrefabInstance:
     - target: {fileID: 8633029733610519970, guid: d739d2c748e404e4488852f095a58554,
         type: 3}
       propertyPath: m_Name
-      value: ShowCOM
+      value: ShowCOMCOT
       objectReference: {fileID: 0}
     - target: {fileID: 8633029733610519971, guid: d739d2c748e404e4488852f095a58554,
         type: 3}

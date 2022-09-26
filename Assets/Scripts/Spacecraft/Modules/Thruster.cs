@@ -23,6 +23,7 @@ public class Thruster : HotkeyModule
 	private Button toggleButton = null;
 	private Text toggleButtonText = null;
 	private bool active = true;
+	private bool needRefuel = true;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -103,10 +104,7 @@ public class Thruster : HotkeyModule
 				}
 				else
 				{
-					if(infoController.GetMessageCount() < 1)
-					{
-						infoController.AddMessage("Out of " + fuelName + " for Propulsion!", true);
-					}
+					needRefuel = true;
 
 					return;
 				}
@@ -115,6 +113,10 @@ public class Thruster : HotkeyModule
 			float finalThrottle = throttle * power * capacitor.DischargePartial((float)(engine.GetPrimaryFuelConsumption() * throttle * power * (deltaTime / 36000.0)));
 
 			fuelSupply -= engine.GetSecondaryFuelConsumption() * finalThrottle * deltaTime;
+			if(fuelSupply < 0.0f)
+			{
+				Debug.LogWarning("Negative fuelSupply detected in " + this + " from " + gameObject + "!");
+			}
 
 			thrustParticlesMain.startSizeXMultiplier = initialParticleSize.x * finalThrottle;
 			thrustParticlesMain.startSizeYMultiplier = initialParticleSize.y * finalThrottle;
@@ -132,6 +134,24 @@ public class Thruster : HotkeyModule
 		}
 	}
 
+	public override bool InstallComponent(string componentName)
+	{
+		bool result = base.InstallComponent(componentName);
+
+		spacecraft.UpdateCenterOfThrust();
+
+		return result;
+	}
+
+	public override bool RemoveComponent(GoodManager.ComponentType componentType)
+	{
+		bool result = base.RemoveComponent(componentType);
+
+		spacecraft.UpdateCenterOfThrust();
+
+		return result;
+	}
+
 	public override void HotkeyDown()
 	{
 		active = !active;
@@ -144,16 +164,22 @@ public class Thruster : HotkeyModule
 		return thrustDirection;
 	}
 
+	public float GetThrust()
+	{
+		return engine.GetThrust() * power;
+	}
+
 	public bool SetThrottle(float throttle)
 	{
 		if(constructed && throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && active)
 		{
-			if(fuelSupply < MathUtil.EPSILON && inventoryController.Withdraw(fuelName, 1, true))
+			if((needRefuel || fuelSupply <= MathUtil.EPSILON) && inventoryController.Withdraw(fuelName, 1, true))
 			{
 				fuelSupply += 1.0f;
+				needRefuel = false;
 			}
 
-			if(fuelSupply > MathUtil.EPSILON && capacitor.GetCharge() > MathUtil.EPSILON)
+			if(!needRefuel && fuelSupply > MathUtil.EPSILON && capacitor.GetCharge() > MathUtil.EPSILON)
 			{
 				if(this.throttle <= 0.0f)
 				{
@@ -166,6 +192,11 @@ public class Thruster : HotkeyModule
 				this.throttle = Mathf.Clamp(throttle, 0.0f, 1.0f);
 
 				return true;
+			}
+
+			if((needRefuel || fuelSupply <= MathUtil.EPSILON) && infoController.GetMessageCount() < 1)
+			{
+				infoController.AddMessage("Out of " + fuelName + " for Propulsion!", true);
 			}
 		}
 
@@ -180,6 +211,8 @@ public class Thruster : HotkeyModule
 		powerInputField.text = power.ToString();
 
 		this.power = power / 100.0f;
+
+		spacecraft.UpdateCenterOfThrust();
 	}
 
 	public void PowerInputFieldChanged()
@@ -189,5 +222,7 @@ public class Thruster : HotkeyModule
 		powerInputField.text = power.ToString();
 
 		this.power = power / 100.0f;
+
+		spacecraft.UpdateCenterOfThrust();
 	}
 }

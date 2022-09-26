@@ -20,6 +20,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	[SerializeField] private Module commandModulePrefab = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
+	[SerializeField] private Transform[] centerOfThrustIndicators = { };
 	[SerializeField] private Transform foreignCenterOfMassIndicator = null;
 	[Tooltip("Minimum Fraction of Force which must be exerted by a Thruster in a Direction to add it to the corresponding Direction Thruster Group")]
 	[SerializeField] private float directionalForceThreshold = 0.2f;
@@ -35,7 +36,6 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	private BuildingMenu buildingMenu = null;
 	private InventoryController inventoryController = null;
 	private float inertiaFactor = 1.0f;
-	private Vector2 foreignCenterOfMass = Vector2.zero;
 	private HashSet<Thruster>[] thrusters = null;
 	private HashSet<Thruster> inactiveThrusters = null;
 	private bool calculateCollider = false;
@@ -90,6 +90,10 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		ToggleController toggleController = ToggleController.GetInstance();
 		toggleController.AddToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 		toggleController.AddToggleObject("COMIndicators", foreignCenterOfMassIndicator.gameObject);
+		foreach(Transform centerOfThrustIndicator in centerOfThrustIndicators)
+		{
+			toggleController.AddToggleObject("COMIndicators", centerOfThrustIndicator.gameObject);
+		}
 		centerOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled("COMIndicators"));
 		foreignCenterOfMassIndicator.gameObject.SetActive(toggleController.IsGroupToggled("COMIndicators"));
 
@@ -108,6 +112,10 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		ToggleController toggleController = ToggleController.GetInstance();
 		toggleController?.RemoveToggleObject("COMIndicators", centerOfMassIndicator.gameObject);
 		toggleController?.RemoveToggleObject("COMIndicators", foreignCenterOfMassIndicator.gameObject);
+		foreach(Transform centerOfThrustIndicator in centerOfThrustIndicators)
+		{
+			toggleController?.RemoveToggleObject("COMIndicators", centerOfThrustIndicator.gameObject);
+		}
 
 		// Deconstruct all Modules to make sure that all Deconstructors are called properly
 		DeconstructModules(false);
@@ -143,8 +151,15 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 			otherSpacecraft.dockedSpacecraft.Add(this, transform);
 
 			// UpdateForeignMass() automatically updates the own and all docked Spacecraft
-			UpdateForeignMass();
+			// Delay Execution, because Spacecraft will move violently during the first Physics-Frames after establishing the Joint and the Indicator would be displaced
+			timeController.StartCoroutine(UpdateForeignMassDelayed(), false);
 		}
+	}
+
+	private IEnumerator<float> UpdateForeignMassDelayed()
+	{
+		yield return 0.5f;
+		UpdateForeignMass();
 	}
 
 	public void Undocked(DockingPort port, DockingPort otherPort)
@@ -309,41 +324,52 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	public void UpdateForeignMass()
 	{
-		// Short Circuit Check, all Code below could handle an empty dockedSpacecraft-Dictionary, but we can save Performance by skipping to the relevant Part
+		// Check to avoid Division by Zero in totalMass Calculation
 		if(dockedSpacecraft.Count > 0)
 		{
 			// GetRecursivelyDockedSpacecraft() includes this Spacecraft
 			HashSet<SpacecraftController> recursivelyDockedSpacecraft = GetDockedSpacecraftRecursively();
-			Vector2 centerOfMass = Vector2.zero;
+			Vector2 globalCenterOfMass = Vector2.zero;
 			float totalMass = 0.0f;
 			foreach(SpacecraftController dockedSpacecraft in recursivelyDockedSpacecraft)
 			{
 				float spacecraftMass = dockedSpacecraft.rigidbody.mass;
 
 				// Convert other Spacecrafts Center of Mass to World Coordinates and then to this Spacecrafts local Coordinates
-				centerOfMass += (Vector2)transform.InverseTransformPoint(dockedSpacecraft.transform.TransformPoint(dockedSpacecraft.rigidbody.centerOfMass)) * spacecraftMass;
+				globalCenterOfMass += (Vector2)dockedSpacecraft.transform.TransformPoint(dockedSpacecraft.rigidbody.centerOfMass) * spacecraftMass;
 				totalMass += spacecraftMass;
 			}
-			centerOfMass /= totalMass;
+			globalCenterOfMass /= totalMass;
 
 			foreach(SpacecraftController dockedSpacecraft in recursivelyDockedSpacecraft)
 			{
-				Vector2 otherCenterOfMass = centerOfMass;
-				if(dockedSpacecraft != this)
-				{
-					otherCenterOfMass = dockedSpacecraft.transform.InverseTransformPoint(transform.TransformPoint(centerOfMass));
-				}
-
-				dockedSpacecraft.foreignCenterOfMass = otherCenterOfMass;
-				dockedSpacecraft.foreignCenterOfMassIndicator.localPosition = otherCenterOfMass;
-				dockedSpacecraft.CalculateThrusterTurningGroups();
+				dockedSpacecraft.foreignCenterOfMassIndicator.position = globalCenterOfMass;
 			}
 		}
 		else
 		{
-			foreignCenterOfMass = rigidbody.centerOfMass;
-			foreignCenterOfMassIndicator.localPosition = foreignCenterOfMass;
-			CalculateThrusterTurningGroups();
+			foreignCenterOfMassIndicator.localPosition = rigidbody.centerOfMass;
+		}
+	}
+
+	public void UpdateCenterOfThrust()
+	{
+		for(int i = 0; i < 4; ++i)
+		{
+			Vector2 centerOfThrust = Vector2.zero;
+			float totalThrust = 0.0f;
+			foreach(Thruster thruster in thrusters[i])
+			{
+				float thrust = thruster.GetThrust();
+				centerOfThrust += ((Vector2)thruster.GetTransform().localPosition) * thrust;
+				totalThrust += thrust;
+			}
+			if(totalThrust > MathUtil.EPSILON)
+			{
+				centerOfThrust /= totalThrust;
+			}
+
+			centerOfThrustIndicators[i].localPosition = centerOfThrust;
 		}
 	}
 
@@ -676,9 +702,8 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		}
 		foreach(SpacecraftController dockedSpacecraft in dockedSpacecraft.Keys)
 		{
-			if(!recursivelyDockedSpacecraft.Contains(dockedSpacecraft))
+			if(recursivelyDockedSpacecraft.Add(dockedSpacecraft))
 			{
-				recursivelyDockedSpacecraft.Add(dockedSpacecraft);
 				dockedSpacecraft.GetDockedSpacecraftRecursively(recursivelyDockedSpacecraft);
 			}
 		}
