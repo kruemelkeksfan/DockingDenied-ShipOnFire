@@ -91,7 +91,7 @@ public class InfoController : MonoBehaviour, IUpdateListener, IListener
 			textBuilder.Append("$ / ");
 			textBuilder.Append(Mathf.RoundToInt(playerSpacecraftRigidbody.mass));
 			textBuilder.Append(" t / Energy - ");
-			textBuilder.Append(playerSpacecraftInventoryController.GetEnergyString(true));
+			textBuilder.Append(playerSpacecraftInventoryController.GetEnergyChargeString(true));
 			textBuilder.Append(" / Xe - ");
 			textBuilder.Append(playerSpacecraftInventoryController.GetGoodAmount("Xenon"));
 			textBuilder.Append(" t / H2 - ");

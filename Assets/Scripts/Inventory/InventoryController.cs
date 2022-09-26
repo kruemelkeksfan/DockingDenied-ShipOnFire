@@ -13,9 +13,8 @@ public class InventoryController : MonoBehaviour, IListener
 	private HashSet<EnergyProducer> energyProducers = null;
 	private List<EnergyStorage> energyConsumers = null;
 	private HashSet<EnergyStorage> batteries = null;
-	private float transferEnergy = 0.0f;
-	private double storedEnergy = 0.0f;
-	private double energyCapacity = 0.0f;
+	private float energyCharge = 0.0f;
+	private float energyCapacity = 0.0f;
 	private int money = 0;
 	private Dictionary<GoodManager.State, List<Container>> containers = null;
 	private Dictionary<string, int> roundRobinWithdrawalIndices = null;
@@ -67,28 +66,14 @@ public class InventoryController : MonoBehaviour, IListener
 
 	public bool TransferEnergy(float energy)
 	{
-		if(storedEnergy + energy >= 0.0f)
+		if(energyCharge + energy >= 0.0f)
 		{
-			transferEnergy = energy;
+			energyCharge += energy;
 			return true;
 		}
 		else
 		{
-			float production = 0.0f;
-			foreach(EnergyProducer producer in energyProducers)
-			{
-				production += producer.GetProduction();
-			}
-
-			if(storedEnergy + production + energy >= 0.0f)
-			{
-				transferEnergy = energy;
-				return true;
-			}
-			else
-			{
-				return false;
-			}
+			return false;
 		}
 	}
 
@@ -376,7 +361,7 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			yield return energyUpdateInterval;
 
-			float energy = transferEnergy;
+			float energy = energyCharge;
 			double deltaTimeHours = (timeController.GetTime() - lastUpdate) / 3600.0;
 			lastUpdate = timeController.GetTime();
 			foreach(EnergyProducer producer in energyProducers)
@@ -386,7 +371,7 @@ public class InventoryController : MonoBehaviour, IListener
 
 			foreach(EnergyStorage battery in batteries)
 			{
-				energy += battery.DischargeAll();
+				battery.DischargeAll();
 			}
 
 			int consumerCounter = 0;
@@ -398,7 +383,7 @@ public class InventoryController : MonoBehaviour, IListener
 				++consumerCounter;
 			}
 
-			storedEnergy = 0.0f;
+			energyCharge = 0.0f;
 			energyCapacity = 0.0f;
 			foreach(EnergyStorage battery in batteries)
 			{
@@ -407,7 +392,7 @@ public class InventoryController : MonoBehaviour, IListener
 					energy = battery.Charge(energy);
 				}
 
-				storedEnergy += battery.GetCharge();
+				energyCharge += battery.GetCharge();
 				energyCapacity += battery.GetCapacity();
 			}
 
@@ -417,20 +402,58 @@ public class InventoryController : MonoBehaviour, IListener
 				Debug.LogWarning("Negative Energy " + energy + " at the End of Energy Distribution Cycle of " + gameObject.name + "!");
 			}
 
-			transferEnergy = 0.0f;
-
 			resourceDisplayController?.UpdateResourceDisplay();
 		}
 	}
 
-	public double GetEnergy()
+	public bool DischargeEnergy(float amount)
 	{
-		return storedEnergy;
+		if(amount <= energyCharge)
+		{
+			energyCharge -= amount;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 
-	public string GetEnergyString(bool showTotal = false)
+	public float DischargeEnergyPartially(float amount)
 	{
-		return storedEnergy.ToString("F2") + (showTotal ? ("/" + energyCapacity.ToString("F2")) : "") + " kWh";
+		if(amount <= energyCharge)
+		{
+			energyCharge -= amount;
+			return 1.0f;
+		}
+		else
+		{
+			float percentage = energyCharge / amount;
+			energyCharge = 0.0f;
+			return percentage;
+		}
+	}
+
+	public float DischargeAllEnergy()
+	{
+		float previousCharge = energyCharge;
+		energyCharge = 0.0f;
+		return previousCharge;
+	}
+
+	public float GetEnergyCapacity()
+	{
+		return energyCapacity;
+	}
+
+	public float GetEnergyCharge()
+	{
+		return energyCharge;
+	}
+
+	public string GetEnergyChargeString(bool showTotal = false)
+	{
+		return energyCharge.ToString("F2") + (showTotal ? ("/" + energyCapacity.ToString("F2")) : "") + " kWh";
 	}
 
 	public int GetMoney()

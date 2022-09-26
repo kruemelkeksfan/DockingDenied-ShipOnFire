@@ -9,7 +9,6 @@ public class Thruster : HotkeyModule
 	private Transform spacecraftTransform = null;
 	private new Rigidbody2D rigidbody = null;
 	private GravityWellController gravityWellController = null;
-	private EnergyStorage capacitor = null;
 	private Engine engine = null;
 	private Vector2 thrustDirection = Vector2.zero;
 	private float throttle = 0.0f;
@@ -40,17 +39,12 @@ public class Thruster : HotkeyModule
 		thrustParticlesMain = thrustParticles.main;
 		initialParticleSize = new Vector3(thrustParticlesMain.startSizeXMultiplier, thrustParticlesMain.startSizeYMultiplier, thrustParticlesMain.startSizeZMultiplier);
 
-		capacitor = new EnergyStorage();
-		AddComponentSlot(GoodManager.ComponentType.Capacitor, capacitor);
-		inventoryController.AddEnergyConsumer(capacitor);
-
 		engine = new Engine();
 		AddComponentSlot(GoodManager.ComponentType.IonEngine, engine);
 
 		if(moduleMenu != null)
 		{
 			// Status
-			AddStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
 			AddStatusField("Internal Fuel", (fuelSupply.ToString("F4") + " m3"));
 			AddStatusField("Activated", active.ToString());
 
@@ -82,7 +76,6 @@ public class Thruster : HotkeyModule
 
 	public override void Deconstruct()
 	{
-		inventoryController.RemoveEnergyConsumer(capacitor);
 		spacecraft.RemoveThruster(this);
 
 		base.Deconstruct();
@@ -110,7 +103,7 @@ public class Thruster : HotkeyModule
 				}
 			}
 
-			float finalThrottle = throttle * power * capacitor.DischargePartial((float)(engine.GetPrimaryFuelConsumption() * throttle * power * (deltaTime / 36000.0)));
+			float finalThrottle = throttle * power * inventoryController.DischargeEnergyPartially((float)(engine.GetPrimaryFuelConsumption() * throttle * power * (deltaTime / 36000.0)));
 
 			fuelSupply -= engine.GetSecondaryFuelConsumption() * finalThrottle * deltaTime;
 			if(fuelSupply < 0.0f)
@@ -128,7 +121,6 @@ public class Thruster : HotkeyModule
 
 		if(moduleMenu != null)
 		{
-			UpdateStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
 			UpdateStatusField("Internal Fuel", (fuelSupply.ToString("F4") + " m3"));
 			UpdateStatusField("Activated", active.ToString());
 		}
@@ -179,7 +171,7 @@ public class Thruster : HotkeyModule
 				needRefuel = false;
 			}
 
-			if(!needRefuel && fuelSupply > MathUtil.EPSILON && capacitor.GetCharge() > MathUtil.EPSILON)
+			if(!needRefuel && fuelSupply > MathUtil.EPSILON && inventoryController.GetEnergyCharge() > MathUtil.EPSILON)
 			{
 				if(this.throttle <= 0.0f)
 				{

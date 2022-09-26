@@ -54,7 +54,7 @@ public class EnergyStorage : ModuleComponent
 		}
 	}
 
-	public float DischargePartial(float amount)
+	public float DischargePartially(float amount)
 	{
 		if(amount <= charge)
 		{
