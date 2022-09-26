@@ -12,7 +12,7 @@ public class Battery : Module
 
 		powerCells = new EnergyStorage();
 		AddComponentSlot(GoodManager.ComponentType.PowerCells, powerCells);
-		inventoryController.AddEnergyConsumer(powerCells);
+		inventoryController.AddBattery(powerCells);
 
 		if(moduleMenu != null)
 		{
