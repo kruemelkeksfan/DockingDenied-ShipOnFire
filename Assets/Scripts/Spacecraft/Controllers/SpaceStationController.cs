@@ -765,7 +765,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 	public Teleporter GetTeleporter()
 	{
-		return GetComponentInChildren<Constructor>().GetModuleComponent<Teleporter>(GoodManager.ComponentType.Teleporter);
+		return spacecraft.GetTeleporter();
 	}
 
 	public void SetStationName(string stationName)

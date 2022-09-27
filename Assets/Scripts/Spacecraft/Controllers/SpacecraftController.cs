@@ -18,7 +18,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		all
 	};
 
-	[SerializeField] private Module commandModulePrefab = null;
+	[SerializeField] private CommandModule commandModulePrefab = null;
 	[SerializeField] private Transform centerOfMassIndicator = null;
 	[SerializeField] private Transform[] centerOfThrustIndicators = { };
 	[SerializeField] private Transform foreignCenterOfMassIndicator = null;
@@ -35,6 +35,7 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	private Dictionary<Vector2Int, Module> modulesPositions = null;
 	private BuildingMenu buildingMenu = null;
 	private InventoryController inventoryController = null;
+	private Teleporter teleporter = null;
 	private float inertiaFactor = 1.0f;
 	private HashSet<Thruster>[] thrusters = null;
 	private HashSet<Thruster> inactiveThrusters = null;
@@ -84,7 +85,13 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 		// If no Blueprint was loaded during Awake()
 		if(modules.Count <= 0)
 		{
-			GameObject.Instantiate<Module>(commandModulePrefab, transform).Build(Vector2Int.zero);
+			CommandModule commandModule = GameObject.Instantiate<CommandModule>(commandModulePrefab, transform);
+			commandModule.Build(Vector2Int.zero);
+			teleporter = commandModule.GetTeleporter();
+		}
+		else
+		{
+			teleporter = GetComponentInChildren<CommandModule>().GetTeleporter();
 		}
 
 		ToggleController toggleController = ToggleController.GetInstance();
@@ -686,6 +693,11 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 	public Dictionary<Vector2Int, Module> GetModules()
 	{
 		return modulesPositions;
+	}
+
+	public Teleporter GetTeleporter()
+	{
+		return teleporter;
 	}
 
 	public int GetDockedSpacecraftCount()

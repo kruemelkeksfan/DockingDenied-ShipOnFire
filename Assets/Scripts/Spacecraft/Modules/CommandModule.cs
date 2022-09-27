@@ -7,6 +7,7 @@ public class CommandModule : Module
 	[SerializeField] private Transform radarDish = null;
 	[SerializeField] private float radarDishSpeed = 1.0f;
 	private EnergyStorage emergencyPowerSupply = null;
+	private Teleporter teleporter = null;
 
 	public override void Build(Vector2Int position, bool listenUpdates = false, bool listenFixedUpdates = false)
 	{
@@ -17,6 +18,9 @@ public class CommandModule : Module
 		emergencyPowerSupply = new EnergyStorage();
 		AddComponentSlot(GoodManager.ComponentType.EmergencyPowerSupply, emergencyPowerSupply);
 		inventoryController.AddBattery(emergencyPowerSupply);
+
+		teleporter = new Teleporter();
+		AddComponentSlot(GoodManager.ComponentType.Teleporter, teleporter);
 
 		if(moduleMenu != null)
 		{
@@ -43,5 +47,10 @@ public class CommandModule : Module
 			// Status
 			UpdateStatusField("Battery Charge", (emergencyPowerSupply.GetCharge().ToString("F2") + "/" + emergencyPowerSupply.GetCapacity().ToString("F2") + " kWh"));
 		}
+	}
+
+	public Teleporter GetTeleporter()
+	{
+		return teleporter;
 	}
 }

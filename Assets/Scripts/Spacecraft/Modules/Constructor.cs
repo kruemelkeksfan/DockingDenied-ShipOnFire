@@ -14,8 +14,8 @@ public class Constructor : Module
 	private Color startColor = Color.white;
 	private Color endColor = Color.white;
 	private EnergyStorage capacitor = null;
-	private Teleporter teleporter = null;
 	private ConstructionUnit constructionUnit = null;
+	private Teleporter spacecraftTeleporter = null;
 
 	protected override void Start()
 	{
@@ -35,9 +35,6 @@ public class Constructor : Module
 		capacitor = new EnergyStorage();
 		AddComponentSlot(GoodManager.ComponentType.Capacitor, capacitor);
 		inventoryController.AddEnergyConsumer(capacitor);
-
-		teleporter = new Teleporter();
-		AddComponentSlot(GoodManager.ComponentType.Teleporter, teleporter);
 
 		constructionUnit = new ConstructionUnit();
 		AddComponentSlot(GoodManager.ComponentType.ConstructionUnit, constructionUnit);
@@ -77,7 +74,12 @@ public class Constructor : Module
 
 	public int TryConstruction(Vector2 targetPosition, GoodManager.Load[] constructionCosts)
 	{
-		return constructionUnit.Construct(transform.position, targetPosition, constructionCosts,	teleporter, capacitor);
+		if(spacecraftTeleporter == null)
+		{
+			spacecraftTeleporter = spacecraft.GetTeleporter();
+		}
+
+		return constructionUnit.Construct(transform.position, targetPosition, constructionCosts, spacecraftTeleporter, capacitor);
 	}
 
 	public void RollbackConstruction()
