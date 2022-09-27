@@ -11,18 +11,20 @@ public class ModuleComponent
 	// Attributes are private instead of protected to keep them read-only
 	private Dictionary<string, float> attributes = null;
 
-	public static string GetAttributeList(GoodManager.ComponentData componentData)
+	public static string[] GetAttributeList(GoodManager.ComponentData componentData)
 	{
-		StringBuilder attributeList = new StringBuilder();
+		StringBuilder attributeNames = new StringBuilder();
+		StringBuilder attributeValues = new StringBuilder();
 
 		for(int i = 0; i < componentData.attributeNames.Length && i < componentData.attributeValues.Length; ++i)
 		{
 			if(i > 0)
 			{
-				attributeList.Append("\n");
+				attributeNames.Append("\n");
+				attributeValues.Append("\n");
 			}
-			attributeList.Append(componentData.attributeNames[i]);
-			attributeList.Append(":\t");
+			attributeNames.Append(componentData.attributeNames[i]);
+			attributeNames.Append(":");
 
 			// Cut Value after 6 decimal Digits (including Separator and leading 0)
 			string valueString = componentData.attributeValues[i].ToString();
@@ -30,10 +32,10 @@ public class ModuleComponent
 			valueString = valueString.Substring(0, Mathf.Min(Mathf.Max(integerDigits, 6), valueString.Length));
 			valueString = valueString.TrimEnd(',', '.', ' ');
 
-			attributeList.Append(valueString);
+			attributeValues.Append(valueString);
 		}
 
-		return attributeList.ToString();
+		return new string[] { attributeNames.ToString(), attributeValues.ToString() };
 	}
 
 	public ModuleComponent()
@@ -98,19 +100,21 @@ public class ModuleComponent
 		return quality;
 	}
 
-	public string GetAttributeList()
+	public string[] GetAttributeList()
 	{
-		StringBuilder attributeList = new StringBuilder();
+		StringBuilder attributeNames = new StringBuilder();
+		StringBuilder attributeValues = new StringBuilder();
 
 		bool first = true;
 		foreach(string attributeName in attributes.Keys)
 		{
 			if(!first)
 			{
-				attributeList.Append("\n");
+				attributeNames.Append("\n");
+				attributeValues.Append("\n");
 			}
-			attributeList.Append(attributeName);
-			attributeList.Append(":\t");
+			attributeNames.Append(attributeName);
+			attributeNames.Append(":");
 
 			// Cut Value after 6 decimal Digits (including Separator and leading 0)
 			string valueString = attributes[attributeName].ToString();
@@ -118,11 +122,11 @@ public class ModuleComponent
 			valueString = valueString.Substring(0, Mathf.Min(Mathf.Max(integerDigits, 6), valueString.Length));
 			valueString = valueString.TrimEnd(',', '.', ' ');
 
-			attributeList.Append(valueString);
+			attributeValues.Append(valueString);
 
 			first = false;
 		}
 
-		return attributeList.ToString();
+		return new string[] { attributeNames.ToString(), attributeValues.ToString() };
 	}
 }

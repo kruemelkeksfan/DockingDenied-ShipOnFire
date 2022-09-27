@@ -424,11 +424,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			{
 				componentSlotEntryTexts[0].text = goodManager.GetComponentName(componentType);
 				componentSlotEntryTexts[1].text = "<empty>";
+				componentSlotEntryTexts[2].text = string.Empty;
 			}
 			else
 			{
+				string[] attributeStrings = componentSlots[componentType].GetAttributeList();
 				componentSlotEntryTexts[0].text = componentSlots[componentType].GetName();
-				componentSlotEntryTexts[1].text = componentSlots[componentType].GetAttributeList();
+				componentSlotEntryTexts[1].text = attributeStrings[0];
+				componentSlotEntryTexts[2].text = attributeStrings[1];
 			}
 		}
 	}
@@ -592,7 +595,7 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 
 			Text[] assembleComponentEntryTexts = assembleComponentEntry.GetComponentsInChildren<Text>();
 			StringBuilder assembleString = new StringBuilder();
-			assembleString.Append("Assemble Component:\n");
+			assembleString.Append("Assemble Component\n");
 			bool first = true;
 			int itemsOnLine = 0;
 			foreach(GoodManager.Load cost in crudeComponentData.buildingCosts)
@@ -613,8 +616,10 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				first = false;
 				++itemsOnLine;
 			}
+			string[] attributeStrings = ModuleComponent.GetAttributeList(crudeComponentData);
 			assembleComponentEntryTexts[0].text = assembleString.ToString();
-			assembleComponentEntryTexts[1].text = ModuleComponent.GetAttributeList(crudeComponentData);
+			assembleComponentEntryTexts[1].text = attributeStrings[0];
+			assembleComponentEntryTexts[2].text = attributeStrings[1];
 
 			assembleComponentEntry.GetComponent<Button>().onClick.AddListener(delegate
 			{
@@ -636,8 +641,10 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				RectTransform componentSlotEntry = GameObject.Instantiate<RectTransform>(menuController.GetModuleComponentEntryPrefab(), selectionList);
 
 				Text[] componentSlotEntryTexts = componentSlotEntry.GetComponentsInChildren<Text>();
-				componentSlotEntryTexts[0].text = componentData.type.ToString() + " [" + componentData.quality + "]";
-				componentSlotEntryTexts[1].text = ModuleComponent.GetAttributeList(componentData);
+				attributeStrings = ModuleComponent.GetAttributeList(componentData);
+				componentSlotEntryTexts[0].text = componentData.goodName;
+				componentSlotEntryTexts[1].text = attributeStrings[0];
+				componentSlotEntryTexts[2].text = attributeStrings[1];
 
 				int localComponentData = orderedComponentSlots.Count - 1;
 				componentSlotEntry.GetComponent<Button>().onClick.AddListener(delegate
