@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class QuestManager : MonoBehaviour, IListener
 {
-	public enum TaskType { /* TODO: Destroy, */Bribe, JumpStart, Supply, Plunder, Tow, Trade };
+	public enum TaskType { /* TODO: Destroy, */Bribe, JumpStart, Supply, Plunder, Tow };
 	public enum VesselType { Unknown, Fugitive, Customs, Pirate, Combat, Helpless, Trading };
 
 	[Serializable]
@@ -167,10 +167,6 @@ public class QuestManager : MonoBehaviour, IListener
 			else if(tasks[i].description.StartsWith("Tow"))
 			{
 				taskTypes[TaskType.Tow].Add(i);
-			}
-			else if(tasks[i].description.StartsWith("Sell"))
-			{
-				taskTypes[TaskType.Trade].Add(i);
 			}
 		}
 
@@ -413,17 +409,6 @@ public class QuestManager : MonoBehaviour, IListener
 			quest.infoString = null;
 			quest.infoInt = 0;
 		}
-		else if(tasks[quest.task].description.StartsWith("Sell"))
-		{
-			quest.taskType = TaskType.Trade;
-			quest.vesselType = VesselType.Unknown;
-			string[] taskItems = tasks[quest.task].description.Split(' ');
-			quest.infoString = taskItems[2] == "Sanitary" ? (taskItems[2] + " " + taskItems[3]) : taskItems[2];         // Quick and dirty Solutions for Good Names with Spaces
-			quest.infoInt = -int.Parse(taskItems[1]);
-
-			InventoryController inventoryController = quest.destination.GetInventoryController();
-			inventoryController.Withdraw(quest.infoString, (uint)(inventoryController.GetGoodAmount(quest.infoString) * 0.5f));
-		}
 
 		return quest;
 	}
@@ -455,7 +440,7 @@ public class QuestManager : MonoBehaviour, IListener
 			else
 			{
 				int amount = Mathf.Min(quest.rewards[i].Value, (int)localPlayerMainInventory.GetFreeCapacity(goodManager.GetGood(quest.rewards[i].Key)));
-				if(localPlayerMainInventory.Deposit(quest.rewards[i].Key, (uint)amount))
+				if(localPlayerMainInventory.Deposit(quest.rewards[i].Key, (uint)amount, null))
 				{
 					quest.rewards[i] = new KeyValuePair<string, int>(quest.rewards[i].Key, quest.rewards[i].Value - amount);
 				}
@@ -485,17 +470,6 @@ public class QuestManager : MonoBehaviour, IListener
 		activeQuests[spaceStation].progress = 1.0f;
 
 		activeQuests.Remove(spaceStation);
-	}
-
-	public void NotifyTrade(SpaceStationController questStation, string goodName, int amount, int price)
-	{
-		if(activeQuests.ContainsKey(questStation) && activeQuests[questStation].taskType == TaskType.Trade && activeQuests[questStation].infoInt < 0)
-		{
-			if(activeQuests[questStation].infoString == goodName)
-			{
-				activeQuests[questStation].progress += (float)amount / (float)activeQuests[questStation].infoInt;
-			}
-		}
 	}
 
 	public string GetBackstoryDescription(int backstoryIndex)

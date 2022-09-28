@@ -697,6 +697,11 @@ public class SpacecraftController : GravityObjectController, IUpdateListener, IF
 
 	public Teleporter GetTeleporter()
 	{
+		if(teleporter == null)
+		{
+			teleporter = GetComponentInChildren<CommandModule>().GetTeleporter();
+		}
+
 		return teleporter;
 	}
 

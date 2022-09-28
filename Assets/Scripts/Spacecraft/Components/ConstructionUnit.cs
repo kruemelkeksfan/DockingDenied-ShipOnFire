@@ -5,6 +5,8 @@ using UnityEngine;
 public class ConstructionUnit : ModuleComponent
 {
 	private float energyCost = float.MaxValue;
+	private EnergyStorage capacitor = null;
+	private Teleporter teleporter = null;
 	private float lastEnergyCost = 0.0f;
 
 	public override bool UpdateComponentData(string componentName)
@@ -23,8 +25,7 @@ public class ConstructionUnit : ModuleComponent
 		return true;
 	}
 
-	public int Construct(Vector2 constructorPosition, Vector2 targetPosition, GoodManager.Load[] constructionCosts,
-		Teleporter teleporter, EnergyStorage capacitor)
+	public int Construct(Vector2 constructorPosition, Vector2 targetPosition, GoodManager.Load[] constructionCosts)
 	{
 		// TODO: Limit buildable Blueprints by Construction Unit Quality?
 
@@ -51,22 +52,25 @@ public class ConstructionUnit : ModuleComponent
 			mass += goodManager.GetGood(cost.goodName).mass * cost.amount;
 		}
 
-		float energyCost = teleporter.CalculateTeleportationEnergyCost(constructorPosition, targetPosition, mass);
-		energyCost += (this.energyCost * mass);
-
+		float energyCost = this.energyCost * mass;
 		float charge = capacitor.GetCharge();
 		if(charge >= energyCost)
 		{
+			if(!teleporter.Teleport(constructorPosition, targetPosition, mass))
+			{
+				return 4;
+			}
+
 			lastEnergyCost = energyCost;
-			if(teleporter.Teleport(constructorPosition, targetPosition, mass, capacitor)
-				&& capacitor.Discharge(energyCost))
+			if(capacitor.Discharge(energyCost))
 			{
 				return 0;
 			}
 			else
 			{
 				Debug.LogWarning("Capacitor does not have " + energyCost + " kWh for Construction, although it should have " + charge + " kWh!");
-				return 4;
+				teleporter.Rollback();
+				return 5;
 			}
 		}
 		else
@@ -74,12 +78,18 @@ public class ConstructionUnit : ModuleComponent
 			InfoController.GetInstance().AddMessage(energyCost.ToString("F2") + " kWh needed for Construction, but only "
 				+ charge.ToString("F2") + " are available in the Capacitor!", false);
 			lastEnergyCost = 0.0f;
-			return 4;
+			return 5;
 		}
 	}
 
 	public void Rollback(EnergyStorage constructionCapacitor)
 	{
 		constructionCapacitor.Charge(lastEnergyCost);
+	}
+
+	public void SetComponents(EnergyStorage capacitor, Teleporter teleporter)
+	{
+		this.capacitor = capacitor;
+		this.teleporter = teleporter;
 	}
 }

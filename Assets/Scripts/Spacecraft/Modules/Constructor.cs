@@ -14,8 +14,9 @@ public class Constructor : Module
 	private Color startColor = Color.white;
 	private Color endColor = Color.white;
 	private EnergyStorage capacitor = null;
+	private Teleporter teleporter = null;
 	private ConstructionUnit constructionUnit = null;
-	private Teleporter spacecraftTeleporter = null;
+	private bool componentsSet = false;
 
 	protected override void Start()
 	{
@@ -42,7 +43,7 @@ public class Constructor : Module
 		if(moduleMenu != null)
 		{
 			// Status
-			AddStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
+			AddStatusField("Capacitor Charge", capacitor.GetChargeString());
 		}
 
 		SpacecraftManager.GetInstance().AddConstructor(this);
@@ -62,7 +63,7 @@ public class Constructor : Module
 		base.UpdateNotify();
 
 		// Status
-		UpdateStatusField("Capacitor Charge", (capacitor.GetCharge().ToString("F2") + "/" + capacitor.GetCapacity().ToString("F2") + " kWh"));
+		UpdateStatusField("Capacitor Charge", capacitor.GetChargeString());
 	}
 
 	public bool PositionInRange(Vector2 position)
@@ -74,12 +75,18 @@ public class Constructor : Module
 
 	public int TryConstruction(Vector2 targetPosition, GoodManager.Load[] constructionCosts)
 	{
-		if(spacecraftTeleporter == null)
+		if(teleporter == null)
 		{
-			spacecraftTeleporter = spacecraft.GetTeleporter();
+			teleporter = spacecraft.GetTeleporter();
 		}
 
-		return constructionUnit.Construct(transform.position, targetPosition, constructionCosts, spacecraftTeleporter, capacitor);
+		if(!componentsSet)
+		{
+			constructionUnit.SetComponents(capacitor, teleporter);
+			componentsSet = true;
+		}
+		
+		return constructionUnit.Construct(transform.position, targetPosition, constructionCosts);
 	}
 
 	public void RollbackConstruction()

@@ -93,7 +93,7 @@ public class Thruster : HotkeyModule
 			float deltaTime = timeController.GetFixedDeltaTime();
 			if((engine.GetSecondaryFuelConsumption() * throttle * power * deltaTime) > fuelSupply)
 			{
-				if(inventoryController.Withdraw(fuelName, 1, true))
+				if(inventoryController.Withdraw(fuelName, 1, transform.position, true))
 				{
 					fuelSupply += 1.0f;
 				}
@@ -170,7 +170,7 @@ public class Thruster : HotkeyModule
 	{
 		if(throttle > MathUtil.EPSILON && power > MathUtil.EPSILON && IsActive())
 		{
-			if((needRefuel || fuelSupply <= MathUtil.EPSILON) && inventoryController.Withdraw(fuelName, 1, true))
+			if((needRefuel || fuelSupply <= MathUtil.EPSILON) && inventoryController.Withdraw(fuelName, 1, transform.position, true))
 			{
 				fuelSupply += 1.0f;
 				needRefuel = false;

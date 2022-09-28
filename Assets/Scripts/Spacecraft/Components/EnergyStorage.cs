@@ -85,4 +85,9 @@ public class EnergyStorage : ModuleComponent
 	{
 		return charge;
 	}
+
+	public string GetChargeString()
+	{
+		return (charge.ToString("F2") + "/" + capacity.ToString("F2") + " kWh");
+	}
 }

@@ -74,7 +74,6 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 	private Dictionary<DockingPort, SpacecraftController> expectedDockings = null;
 	private HashSet<SpacecraftController> dockedSpacecraft = null;
 	private QuestManager.TaskType[] firstTasks = null;
-	private QuestManager.TaskType[] secondaryTasks = null;
 	private QuestManager.TaskType[] allTasks = null;
 	private QuestManager.Quest[] questSelection = null;
 	private bool updateQuestSelection = true;
@@ -115,13 +114,12 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		Notify();
 
 		firstTasks = new QuestManager.TaskType[] { QuestManager.TaskType.Bribe, QuestManager.TaskType.JumpStart, QuestManager.TaskType.Tow };
-		secondaryTasks = new QuestManager.TaskType[] { QuestManager.TaskType.Trade };
 		allTasks = (QuestManager.TaskType[])Enum.GetValues(typeof(QuestManager.TaskType));
 
 		Dictionary<string, GoodManager.Good> goods = goodManager.GetGoodDictionary();
 		foreach(string goodName in goods.Keys)
 		{
-			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * maxGoodStockFactor));
+			inventoryController.Deposit(goodName, (uint)Mathf.CeilToInt(goods[goodName].consumption * maxGoodStockFactor), null);
 		}
 
 		inventoryController.TransferEnergy(float.MaxValue);
@@ -347,7 +345,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 			{
 				if(updateQuestSelection)
 				{
-					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this, firstTasks), questManager.GenerateQuest(this, secondaryTasks), null };
+					questSelection = new QuestManager.Quest[] { questManager.GenerateQuest(this, firstTasks), questManager.GenerateQuest(this, firstTasks), null };
 					QuestManager.TaskType[] thirdTasks = questSelection[0].task == questSelection[1].task ? new QuestManager.TaskType[allTasks.Length - 1] : new QuestManager.TaskType[allTasks.Length - 2];
 					int i = 0;
 					foreach(QuestManager.TaskType taskType in allTasks)
@@ -425,7 +423,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		}
 	}
 
-	public bool Trade(string goodName, uint tradeAmount, InventoryController buyer, InventoryController seller, uint stationAmount,
+	public bool Trade(string goodName, uint tradeAmount, InventoryController buyer, InventoryController seller, uint stationAmount, bool useTeleporter,
 		bool dumpGoods = false, bool hollowSale = false, int price = int.MinValue)
 	{
 		int money = buyer.GetMoney();
@@ -435,24 +433,23 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 		{
 			if(hollowSale || availableAmount >= tradeAmount)
 			{
-				if(dumpGoods || buyer.Deposit(goodName, tradeAmount))
+				if(dumpGoods
+					|| ((!useTeleporter || buyer == localPlayerMainInventory) ? buyer.Deposit(goodName, tradeAmount, null) : buyer.Deposit(goodName, tradeAmount, seller.GetPosition())))
 				{
 					if(!hollowSale)
 					{
-						seller.Withdraw(goodName, tradeAmount);
+						if(!useTeleporter || seller == localPlayerMainInventory)
+						{
+							seller.Withdraw(goodName, tradeAmount, null);
+						}
+						else
+						{
+							seller.Withdraw(goodName, tradeAmount, buyer.GetPosition());
+						}
 					}
 
 					buyer.TransferMoney(-totalPrice);
 					seller.TransferMoney(totalPrice);
-
-					if(buyer == localPlayerMainInventory)
-					{
-						questManager.NotifyTrade(this, goodName, (int)tradeAmount, -totalPrice);
-					}
-					else
-					{
-						questManager.NotifyTrade(this, goodName, (int)-tradeAmount, totalPrice);
-					}
 
 					UpdateTrading();
 
@@ -467,11 +464,11 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				{
 					if(buyer == localPlayerMainInventory)
 					{
-						infoController.AddMessage("Not enough Storage Capacity on your Vessel, all Lavatories are full!", true);
+						infoController.AddMessage("Not enough Storage Capacity on your Vessel or Station is out of Energy!", true);
 					}
 					else if(seller == localPlayerMainInventory)
 					{
-						infoController.AddMessage("Not enough Storage Capacity on their tiny Station!", true);
+						infoController.AddMessage("Not enough Storage Capacity or Energy on their tiny Station!", true);
 					}
 				}
 			}
@@ -536,7 +533,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		for(int i = 0; i < materials.Length; ++i)
 		{
-			if(!Trade(materials[i].goodName, materials[i].amount, localPlayerMainInventory, inventoryController, supplyAmounts[i], true, false, materialPrices[i] + constructorFees[i]))
+			if(!Trade(materials[i].goodName, materials[i].amount, localPlayerMainInventory, inventoryController, supplyAmounts[i], false, true, false, materialPrices[i] + constructorFees[i]))
 			{
 				Debug.LogWarning("Construction Materials could not be bought, although they should be!");
 				return false;
@@ -599,7 +596,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 
 		for(int i = 0; i < materials.Length; ++i)
 		{
-			if(!Trade(materials[i].goodName, materials[i].amount, inventoryController, localPlayerMainInventory, supplyAmounts[i], false, true, materialPrices[i] - constructorFees[i]))
+			if(!Trade(materials[i].goodName, materials[i].amount, inventoryController, localPlayerMainInventory, supplyAmounts[i], false, false, true, materialPrices[i] - constructorFees[i]))
 			{
 				Debug.LogWarning("Deconstruction Materials could not be sold, although they should be!");
 				return false;
@@ -644,7 +641,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				// Consume Goods
 				if(!spawnProtection)
 				{
-					inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, goodAmount));
+					inventoryController.Withdraw(goodName, (uint)Mathf.Min(goods[goodName].consumption, goodAmount), null);
 				}
 				else if(localPlayerMainSpacecraft.GetModuleCount() > 6)
 				{
@@ -654,7 +651,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				// Generate new Goods
 				if(goodAmount < goods[goodName].consumption * maxGoodStockFactor)
 				{
-					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(goods[goodName].consumption * 0.5f, goods[goodName].consumption * 2));
+					inventoryController.Deposit(goodName, (uint)UnityEngine.Random.Range(goods[goodName].consumption * 0.5f, goods[goodName].consumption * 2), null);
 				}
 
 				// Remove crude Components and count leftover Components
@@ -666,7 +663,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 						// Remove all crude Components
 						if(componentData.quality == GoodManager.ComponentQuality.crude)
 						{
-							inventoryController.Withdraw(goodName, goodAmount);
+							inventoryController.Withdraw(goodName, goodAmount, null);
 						}
 						// Track current Amount of Components
 						else
@@ -688,7 +685,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 					uint componentAmount = inventoryController.GetGoodAmount(componentName);
 					GoodManager.ComponentData componentData = goodManager.GetComponentData(componentName);
 
-					inventoryController.Withdraw(componentName, componentAmount);
+					inventoryController.Withdraw(componentName, componentAmount, null);
 				}
 
 				// Generate new Components
@@ -697,7 +694,7 @@ public class SpaceStationController : MonoBehaviour, IUpdateListener, IDockingLi
 				{
 					for(int j = 0; j < componentQualityCounts[quality - 1]; ++j)
 					{
-						inventoryController.Deposit(goodManager.GetRandomComponentName((GoodManager.ComponentQuality)quality), 1);
+						inventoryController.Deposit(goodManager.GetRandomComponentName((GoodManager.ComponentQuality)quality), 1, null);
 					}
 				}
 			}

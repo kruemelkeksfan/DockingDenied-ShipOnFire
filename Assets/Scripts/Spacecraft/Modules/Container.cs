@@ -12,6 +12,7 @@ public class Container : Module
 	[Tooltip("Cargo Racks or Tank System?")]
 	[SerializeField] private GoodManager.ComponentType storageComponentType = GoodManager.ComponentType.CargoRacks;
 	protected Storage storage = null;
+	private Teleporter teleporter = null;
 	protected Dictionary<string, uint> loads = null;
 	private float cargoMass = 0.0f;
 	private RectTransform volumeBar = null;
@@ -70,14 +71,14 @@ public class Container : Module
 		List<string> loadKeys = new List<string>(loads.Keys);
 		foreach(string loadName in loadKeys)
 		{
-			Withdraw(loadName, loads[loadName]);
+			Withdraw(loadName, loads[loadName], null);
 		}
 
 		inventoryController.RemoveContainer(this);
 		base.Deconstruct();
 	}
 
-	public virtual bool Deposit(string goodName, uint amount)
+	public virtual bool Deposit(string goodName, uint amount, Vector2? teleportationSource)
 	{
 		GoodManager.Good good = goodManager.GetGood(goodName);
 		uint volume = (uint)Mathf.CeilToInt(good.volume) * amount;
@@ -89,6 +90,22 @@ public class Container : Module
 
 		if(volume <= storage.GetFreeCapacity())
 		{
+			if(teleportationSource.HasValue)
+			{
+				if(teleporter == null)
+				{
+					teleporter = spacecraft.GetTeleporter();
+				}
+
+				if(!teleporter.Teleport(teleportationSource.Value, transform.position, good.mass * amount))
+				{
+					float energyCost = teleporter.CalculateTeleportationEnergyCost(transform.position, teleportationSource.Value, good.mass * amount);
+					infoController.AddMessage("Teleportation of " + amount + " " + goodName + " needs " + energyCost.ToString("F2") + " kWh, but only "
+						+ teleporter.GetCapacitor().GetCharge().ToString("F2") + " kWh are available in the Teleporter Capacitor!", true);
+					return false;
+				}
+			}
+
 			if(!loads.ContainsKey(goodName))
 			{
 				loads[goodName] = amount;
@@ -101,6 +118,7 @@ public class Container : Module
 			if(!storage.Deposit(volume))
 			{
 				Debug.LogWarning("Depositing " + amount + " " + goodName + " in " + storageComponentType + " failed!");
+				teleporter.Rollback();
 			}
 
 			float goodMass = good.mass * amount;
@@ -117,7 +135,7 @@ public class Container : Module
 		}
 	}
 
-	public bool Withdraw(string goodName, uint amount)
+	public bool Withdraw(string goodName, uint amount, Vector2? teleportationDestination)
 	{
 		GoodManager.Good good = goodManager.GetGood(goodName);
 		uint volume = (uint)Mathf.CeilToInt(good.volume) * amount;
@@ -129,6 +147,22 @@ public class Container : Module
 
 		if(loads.ContainsKey(goodName) && loads[goodName] >= amount)
 		{
+			if(teleportationDestination.HasValue)
+			{
+				if(teleporter == null)
+				{
+					teleporter = spacecraft.GetTeleporter();
+				}
+
+				if(!teleporter.Teleport(transform.position, teleportationDestination.Value, good.mass * amount))
+				{
+					float energyCost = teleporter.CalculateTeleportationEnergyCost(transform.position, teleportationDestination.Value, good.mass * amount);
+					infoController.AddMessage("Teleportation of " + amount + " " + goodName + " needs " + energyCost.ToString("F2") + " kWh, but only "
+						+ teleporter.GetCapacitor().GetCharge().ToString("F2") + " kWh are available in the Teleporter Capacitor!", true);
+					return false;
+				}
+			}
+
 			loads[goodName] -= amount;
 			if(!storage.Withdraw(volume))
 			{

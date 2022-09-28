@@ -18,7 +18,11 @@ public class InventoryController : MonoBehaviour, IListener
 	private int money = 0;
 	private Dictionary<GoodManager.State, List<Container>> containers = null;
 	private Dictionary<string, int> roundRobinWithdrawalIndices = null;
+	private SpacecraftController spacecraft = null;
+	private new Transform transform = null;
 	private new Rigidbody2D rigidbody = null;
+	private Teleporter teleporter = null;
+	private EnergyStorage teleporterCapacitor = null;
 	private float heaviestCargoMass = 0.0f;
 
 	private void Awake()
@@ -34,6 +38,8 @@ public class InventoryController : MonoBehaviour, IListener
 		containers[GoodManager.State.fluid] = new List<Container>();
 		roundRobinWithdrawalIndices = new Dictionary<string, int>();
 
+		spacecraft = GetComponent<SpacecraftController>();
+		transform = GetComponent<Transform>();
 		rigidbody = GetComponent<Rigidbody2D>();
 	}
 
@@ -92,7 +98,7 @@ public class InventoryController : MonoBehaviour, IListener
 		}
 	}
 
-	public bool Deposit(string goodName, uint amount)
+	public bool Deposit(string goodName, uint amount, Vector2? teleportationSource)
 	{
 		if(amount == 0)
 		{
@@ -103,29 +109,43 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			goodManager = GoodManager.GetInstance();
 		}
+		if(teleportationSource.HasValue && (teleporter == null || teleporterCapacitor == null))
+		{
+			teleporter = spacecraft.GetTeleporter();
+			teleporterCapacitor = teleporter.GetCapacitor();
+		}
 
-		GoodManager.State state = goodManager.GetGood(goodName).state;
-		uint freeCapacity = 0;
-
+		GoodManager.Good good = goodManager.GetGood(goodName);
+		GoodManager.State state = good.state;
+		int amountLeft = (int)amount;
+		uint freeAmountCapacity = 0;
+		float neededEnergy = 0.0f;
+		float availableEnergy = teleportationSource.HasValue ? teleporterCapacitor.GetCapacity() : 0.0f;
 		foreach(Container container in containers[state])
 		{
-			if(container.Deposit(goodName, amount))
+			if(container.Deposit(goodName, amount, teleportationSource))
 			{
 				UpdateInventoryDisplays();
 				return true;
 			}
 			else
 			{
-				freeCapacity += container.GetFreeCapacity(goodName);
+				uint containerAmountCapacity = (uint)Mathf.Min(((int)container.GetFreeCapacity(goodName) / good.volume), amountLeft);
+				freeAmountCapacity += containerAmountCapacity;
+				if(teleportationSource.HasValue && amountLeft > 0 && containerAmountCapacity > 0)
+				{
+					neededEnergy += teleporter.CalculateTeleportationEnergyCost(teleportationSource.Value, container.GetPosition(), good.mass * containerAmountCapacity);
+				}
+				amountLeft -= (int)containerAmountCapacity;
 			}
 		}
 
-		if(freeCapacity >= amount * (uint)Mathf.CeilToInt(goodManager.GetGood(goodName).volume))
+		if(freeAmountCapacity >= amount && neededEnergy <= availableEnergy)
 		{
 			foreach(Container container in containers[state])
 			{
-				uint partialAmount = (uint)Mathf.Min((int)(container.GetFreeCapacity(goodName) / goodManager.GetGood(goodName).volume), (int)amount);
-				if(partialAmount > 0 && container.Deposit(goodName, partialAmount))
+				uint partialAmount = (uint)Mathf.Min((int)(container.GetFreeCapacity(goodName) / good.volume), (int)amount);
+				if(partialAmount > 0 && container.Deposit(goodName, partialAmount, teleportationSource))
 				{
 					amount -= partialAmount;
 				}
@@ -137,7 +157,7 @@ public class InventoryController : MonoBehaviour, IListener
 				}
 			}
 
-			Debug.LogError("Could not completely deposit a Load of " + goodName + " in Inventory of " + gameObject + ", although enough Space should have been available!");
+			Debug.LogError("Could not completely deposit a Load of " + goodName + " in Inventory of " + gameObject + ", although enough Space and Energy should have been available!");
 
 			UpdateInventoryDisplays();
 			return false;               // Some Cargo would have been stored already, so avoid storing only a Part but subtracting full Costs for something
@@ -176,7 +196,8 @@ public class InventoryController : MonoBehaviour, IListener
 
 		foreach(GoodManager.Load good in goods)
 		{
-			if(!Deposit(good.goodName, good.amount))
+			// Can't think of a Way to handle Teleportation Energy Constraints in this Method
+			if(!Deposit(good.goodName, good.amount, null))
 			{
 				Debug.LogWarning("Goods could not be deposited in Inventory, although they should be!");
 				return false;
@@ -186,7 +207,7 @@ public class InventoryController : MonoBehaviour, IListener
 		return true;
 	}
 
-	public bool Withdraw(string goodName, uint amount, bool roundRobin = false)
+	public bool Withdraw(string goodName, uint amount, Vector2? teleportationDestination, bool roundRobin = false)
 	{
 		if(amount == 0)
 		{
@@ -197,31 +218,45 @@ public class InventoryController : MonoBehaviour, IListener
 		{
 			goodManager = GoodManager.GetInstance();
 		}
+		if(teleportationDestination.HasValue && (teleporter == null || teleporterCapacitor == null))
+		{
+			teleporter = spacecraft.GetTeleporter();
+			teleporterCapacitor = teleporter.GetCapacitor();
+		}
 
-		GoodManager.State state = goodManager.GetGood(goodName).state;
+		GoodManager.Good good = goodManager.GetGood(goodName);
+		GoodManager.State state = good.state;
+		int amountLeft = (int)amount;
 		uint availableAmount = 0;
-
+		float neededEnergy = 0.0f;
+		float availableEnergy = teleportationDestination.HasValue ? teleporterCapacitor.GetCapacity() : 0.0f;
 		foreach(Container container in containers[state])
 		{
-			if(!roundRobin && container.Withdraw(goodName, amount))
+			if(!roundRobin && container.Withdraw(goodName, amount, teleportationDestination))
 			{
 				UpdateInventoryDisplays();
 				return true;
 			}
 			else
 			{
-				availableAmount += container.GetGoodAmount(goodName);
+				uint containerAmount = (uint)Mathf.Min((int)container.GetGoodAmount(goodName), amountLeft);
+				availableAmount += containerAmount;
+				if(teleportationDestination.HasValue && amountLeft > 0 && containerAmount > 0)
+				{
+					neededEnergy += teleporter.CalculateTeleportationEnergyCost(container.GetPosition(), teleportationDestination.Value, good.mass * containerAmount);
+				}
+				amountLeft -= (int)containerAmount;
 			}
 		}
 
-		if(availableAmount >= amount)
+		if(availableAmount >= amount && neededEnergy <= availableEnergy)
 		{
 			if(!roundRobin)
 			{
 				foreach(Container container in containers[state])
 				{
 					uint partialAmount = (uint)Mathf.Min((int)container.GetGoodAmount(goodName), (int)amount);
-					if(amount > 0 && container.Withdraw(goodName, partialAmount))
+					if(amount > 0 && container.Withdraw(goodName, partialAmount, teleportationDestination))
 					{
 						amount -= partialAmount;
 					}
@@ -241,7 +276,7 @@ public class InventoryController : MonoBehaviour, IListener
 				while(amount > 0 && emptyContainers < containers.Count)
 				{
 					containerIndex = (containerIndex + 1) % containers.Count;
-					if(containers[containerIndex].Withdraw(goodName, 1))
+					if(containers[containerIndex].Withdraw(goodName, 1, teleportationDestination))
 					{
 						--amount;
 						emptyContainers = 0;
@@ -261,7 +296,7 @@ public class InventoryController : MonoBehaviour, IListener
 				}
 			}
 
-			Debug.LogError("Could not completely withdraw a Load of " + goodName + " from Inventory of " + gameObject + ", although enough Cargo should have been available!");
+			Debug.LogError("Could not completely withdraw a Load of " + goodName + " from Inventory of " + gameObject + ", although enough Cargo and Energy should have been available!");
 
 			UpdateInventoryDisplays();
 			return true;                // Some Cargo would have been deleted already, so avoid deleting partial Costs of something and then give nothing in return
@@ -285,7 +320,8 @@ public class InventoryController : MonoBehaviour, IListener
 
 		foreach(GoodManager.Load good in goods)
 		{
-			if(!Withdraw(good.goodName, good.amount))
+			// Can't think of a Way to handle Teleportation Energy Constraints in this Method
+			if(!Withdraw(good.goodName, good.amount, null))
 			{
 				Debug.LogWarning("Goods could not be withdrawn from Inventory, although they should be!");
 				return false;
@@ -486,6 +522,11 @@ public class InventoryController : MonoBehaviour, IListener
 		}
 
 		return sum;
+	}
+
+	public Vector2 GetPosition()
+	{
+		return transform.position;
 	}
 
 	public void AddEnergyProducer(EnergyProducer producer)

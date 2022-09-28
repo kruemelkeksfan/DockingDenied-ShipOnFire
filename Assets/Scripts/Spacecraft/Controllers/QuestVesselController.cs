@@ -301,7 +301,7 @@ public class QuestVesselController : MonoBehaviour, IUpdateListener, IDockingLis
 			interaction = delegate
 					{
 						int amount = Mathf.Min(quest.infoInt, (int)localPlayerMainInventory.GetGoodAmount(quest.infoString));
-						if(localPlayerMainInventory.Withdraw(quest.infoString, (uint)amount))
+						if(localPlayerMainInventory.Withdraw(quest.infoString, (uint)amount, transform.position))
 						{
 							quest.progress += (float)amount / (float)quest.infoInt;
 						}

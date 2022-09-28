@@ -558,8 +558,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 		menuController.UpdateFlightControls();
 	}
 
-	public void ComponentSlotClick(int componentSlotIndex)
+	public virtual void ComponentSlotClick(int componentSlotIndex, bool useTeleporter = true)
 	{
+		// TODO: Return if useTeleporter == false and no Engineers available
+		// TODO: Take Time and Crew for Removal/Installation if useTeleporter == false
+
 		GoodManager.ComponentType slotType = orderedComponentSlots[componentSlotIndex];
 
 		if(componentSlots[slotType].IsSet())
@@ -567,14 +570,14 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 			string componentName = componentSlots[slotType].GetName();
 			if(RemoveComponent(slotType))
 			{
-				if(inventoryController.Deposit(componentName, 1))
+				if(inventoryController.Deposit(componentName, 1, (useTeleporter ? ((Vector2?) transform.position) : null)))
 				{
 					infoController.AddMessage("Successfully removed '" + componentName + "'!", false);
 				}
 				else
 				{
 					InstallComponent(componentName);
-					infoController.AddMessage("Unable to remove '" + componentName + "', because there is to Space to store it!", true);
+					infoController.AddMessage("Unable to remove '" + componentName + "', because there is no Space or Energy to store it!", true);
 				}
 			}
 		}
@@ -647,9 +650,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 				componentSlotEntryTexts[2].text = attributeStrings[1];
 
 				int localComponentData = orderedComponentSlots.Count - 1;
+				bool localUseTeleporter = useTeleporter;
+				Transform localTransform = transform;
 				componentSlotEntry.GetComponent<Button>().onClick.AddListener(delegate
 					{
-						if(inventoryController.Withdraw(componentData.goodName, 1))
+						if(inventoryController.Withdraw(componentData.goodName, 1, (localUseTeleporter ? ((Vector2?) localTransform.position) : null)))
 						{
 							InstallComponent(componentData.goodName);
 							moduleComponentSelectionPanel.gameObject.SetActive(false);
@@ -683,6 +688,11 @@ public class Module : MonoBehaviour, IUpdateListener, IFixedUpdateListener
 	public T GetModuleComponent<T>(GoodManager.ComponentType componentType) where T : ModuleComponent
 	{
 		return (T)componentSlots[componentType];
+	}
+
+	public GoodManager.ComponentType GetComponentType(int componentSlotIndex)
+	{
+		return orderedComponentSlots[componentSlotIndex];
 	}
 
 	public string GetModuleName()

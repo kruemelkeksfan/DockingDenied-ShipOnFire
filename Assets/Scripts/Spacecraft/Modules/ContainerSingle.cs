@@ -4,11 +4,11 @@ using UnityEngine;
 
 public class ContainerSingle : Container
 {
-	public override bool Deposit(string goodName, uint amount)
+	public override bool Deposit(string goodName, uint amount, Vector2? teleportationSource)
 	{
 		if(loads.Count <= 0 || loads.ContainsKey(goodName))
 		{
-			return base.Deposit(goodName, amount);
+			return base.Deposit(goodName, amount, teleportationSource);
 		}
 		else
 		{

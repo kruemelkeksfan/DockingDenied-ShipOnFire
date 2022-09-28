@@ -364,7 +364,7 @@ public class MenuController : MonoBehaviour, IListener
 					buyButton.gameObject.SetActive(true);
 					buyButton.onClick.AddListener(delegate
 					{
-						requester.Trade(goodName, (uint)localAmount, playerInventory, stationInventory, stationAmount, false, false, buyPrice);
+						requester.Trade(goodName, (uint)localAmount, playerInventory, stationInventory, stationAmount, true, false, false, buyPrice);
 					});
 				}
 				else
@@ -386,7 +386,7 @@ public class MenuController : MonoBehaviour, IListener
 					sellButton.gameObject.SetActive(true);
 					sellButton.onClick.AddListener(delegate
 					{
-						requester.Trade(goodName, (uint)localAmount, stationInventory, playerInventory, stationAmount, false, false, sellPrice);
+						requester.Trade(goodName, (uint)localAmount, stationInventory, playerInventory, stationAmount, true, false, false, sellPrice);
 					});
 				}
 				else

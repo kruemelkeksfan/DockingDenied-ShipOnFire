@@ -107,27 +107,6 @@
       "description": "Tow a helpless Vessel to the Station"
     },
     {
-      "description": "Sell 40 Steel to Station"
-    },
-    {
-      "description": "Sell 40 Food to the Station"
-    },
-    {
-      "description": "Sell 10 Sanitary Products to the Station"
-    },
-    {
-      "description": "Sell 10 Medicine to the Station"
-    },
-    {
-      "description": "Sell 80 Oxygen to the Station"
-    },
-    {
-      "description": "Sell 80 Hydrogen to the Station"
-    },
-    {
-      "description": "Sell 8 Drugs to the Station"
-    },
-    {
       "description": "Plunder a Trading Vessel"
     }
   ]

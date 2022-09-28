@@ -43,9 +43,9 @@ public class InventoryEntryController : DraggableEntry
 
 					amount = (uint)Mathf.Min((int)amount, destinationFreeCapacity);
 
-					if(sourceContainer.Withdraw(goodName, amount))
+					if(sourceContainer.Withdraw(goodName, amount, destinationContainer.GetTransform().position))
 					{
-						if(destinationContainer.Deposit(goodName, amount))
+						if(destinationContainer.Deposit(goodName, amount, null))
 						{
 							sourceContainer.UpdateModuleStatus();
 							sourceContainer.UpdateModuleMenuInventory();
@@ -55,7 +55,7 @@ public class InventoryEntryController : DraggableEntry
 						}
 						else
 						{
-							if(!sourceContainer.Deposit(goodName, amount))
+							if(!sourceContainer.Deposit(goodName, amount, null))
 							{
 								Debug.LogWarning("Inventory Transfer of " + amount + " " + goodName
 									+ " from " + sourceContainer.GetCustomModuleName() + " to " + destinationContainer.GetCustomModuleName() + " could not be rolled back correctly!");
@@ -71,8 +71,8 @@ public class InventoryEntryController : DraggableEntry
 					}
 					else
 					{
-						Debug.LogWarning("Only " + sourceContainer.GetGoodAmount(goodName) + "/" + amount + " " + goodName
-							+ " available in " + sourceContainer.GetCustomModuleName() + "!");
+						Debug.LogWarning(sourceContainer.GetGoodAmount(goodName) + "/" + amount + " " + goodName
+							+ " available in " + sourceContainer.GetCustomModuleName() + ", also check Energy!");
 
 						sourceContainer.UpdateModuleStatus();
 						sourceContainer.UpdateModuleMenuInventory();
@@ -95,7 +95,7 @@ public class InventoryEntryController : DraggableEntry
 		infoController.ActivateConfirmationPanel("Do you want to dump " + amount + " " + goodName + "?",
 			delegate
 		{
-			if(!sourceContainer.Withdraw(localGoodName, localAmount))
+			if(!sourceContainer.Withdraw(localGoodName, localAmount, null))
 			{
 				infoController.AddMessage("Only " + sourceContainer.GetGoodAmount(goodName) + "/" + amount + " " + goodName
 					   + " available to dump in " + sourceContainer.GetCustomModuleName() + "!", true);

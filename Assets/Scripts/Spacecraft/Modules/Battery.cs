@@ -17,7 +17,7 @@ public class Battery : Module
 		if(moduleMenu != null)
 		{
 			// Status
-			AddStatusField("Battery Charge", (powerCells.GetCharge().ToString("F2") + "/" + powerCells.GetCapacity().ToString("F2") + " kWh"));
+			AddStatusField("Battery Charge", powerCells.GetChargeString());
 		}
 	}
 
@@ -33,6 +33,6 @@ public class Battery : Module
 		base.UpdateNotify();
 
 		// Status
-		UpdateStatusField("Battery Charge", (powerCells.GetCharge().ToString("F2") + "/" + powerCells.GetCapacity().ToString("F2") + " kWh"));
+		UpdateStatusField("Battery Charge", powerCells.GetChargeString());
 	}
 }

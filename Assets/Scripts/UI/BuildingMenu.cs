@@ -642,7 +642,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 		}
 		else if(errorCode == 1)
 		{
-			infoController.AddMessage("Constructor Module is missing a Teleporter!", true);
+			infoController.AddMessage("Command Module is missing a Teleporter!", true);
 		}
 		else if(errorCode == 2)
 		{
@@ -653,6 +653,10 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			infoController.AddMessage("Constructor Module is missing a Construction Unit!", true);
 		}
 		else if(errorCode == 4)
+		{
+			infoController.AddMessage("Not enough Energy available in Teleporter Capacitor in Command Module!", true);
+		}
+		else if(errorCode == 5)
 		{
 			infoController.AddMessage("Not enough Energy available for Construction!", true);
 		}
@@ -704,7 +708,7 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 		}
 		else if(errorCode == 1)
 		{
-			infoController.AddMessage("Constructor Module is missing a Teleporter!", true);
+			infoController.AddMessage("Command Module is missing a Teleporter!", true);
 		}
 		else if(errorCode == 2)
 		{
@@ -715,6 +719,10 @@ public class BuildingMenu : MonoBehaviour, IUpdateListener, IListener
 			infoController.AddMessage("Constructor Module is missing a Construction Unit!", true);
 		}
 		else if(errorCode == 4)
+		{
+			infoController.AddMessage("Not enough Energy available in Teleporter Capacitor in Command Module!", true);
+		}
+		else if(errorCode == 5)
 		{
 			infoController.AddMessage("Not enough Energy available for Deconstruction!", true);
 		}
