@@ -309,7 +309,6 @@ Multiplayer
 		When in multiple Scenes, Objects belong to Scene they entered first
 		Every Scene communicates with its corresponding Client
 Building System 2.0
-	Construction via Contructors should cost Energy and possibly Time
 	Enable spawning Blueprints over existing Ships when external Constructor is used and has enough Capacity to store all Deconstruction Materials
 	Spawn Starter Ship instead of blank Command Module
 	Multiple Ships
@@ -324,15 +323,15 @@ Building System 2.0
 	Categories for Modules
 	CPU-System for limiting Ship Size (like Robocraft)
 	Somehow show CoM of individual Vessel AND CoM of all docked Vessels together
-	Redesign Command Module
-		Spacecraft don't have Windows
-		Pressure Hull on current Module would be a Nightmare
 	Lore
 		Planetary Nations are afraid of Cruise Missiles
 		Therefore they agreed on a "Free Flight Zone" around the equatorial Plane
 		Zone is very narrow, about 20m, to restrict possible planetary Attacks to a small Area
 		Spacecraft outside the Zone (even just partially outside) will be fired upon from the Surface
 	SpaceStations could take Ship Size into Account when assigning Docking Ports to Docking Requests (Collider Extents, Physics2D.OverlayBox)
+	Blueprint Saving
+		Give the Player a Warning Panel before overwriting an existing Blueprint File
+		Paste the Name of the last loaded or saved Blueprint as Blueprint Name when opening the Blueprint Save Panel
 Factions
 More Modules
 	Fuel Cells for Electric Energy
